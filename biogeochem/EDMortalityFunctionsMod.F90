@@ -42,11 +42,11 @@ contains
 
 
 
-  subroutine mortality_rates( cohort_in,bc_in,cmort,hmort,bmort,frmort )
+  subroutine mortality_rates( cohort_in,bc_in,cmort,hmort,bmort,frmort,smort )
 
     ! ============================================================================
     !  Calculate mortality rates from carbon storage, hydraulic cavitation, 
-    !  background and freezing
+    !  background and freezing and size dependent senescence
     ! ============================================================================
     
     use FatesConstantsMod,  only : tfrz => t_water_freeze_k_1atm
@@ -58,6 +58,7 @@ contains
     real(r8),intent(out) :: cmort  ! carbon starvation mortality
     real(r8),intent(out) :: hmort  ! hydraulic failure mortality
     real(r8),intent(out) :: frmort ! freezing stress mortality
+    real(r8),intent(out) :: smort  ! size dependent senesence term 
 
     real(r8) :: frac  ! relativised stored carbohydrate
     real(r8) :: leaf_c_target      ! target leaf biomass kgC
@@ -80,7 +81,17 @@ contains
 
     ! 'Background' mortality (can vary as a function of 
     !  density as in ED1.0 and ED2.0, but doesn't here for tractability) 
-    bmort = EDPftvarcon_inst%bmort(cohort_in%pft) 
+       
+       bmort = EDPftvarcon_inst%bmort(cohort_in%pft)
+
+       ! size dependent senescence
+       ! for each pft there are two parameters rate and ip
+       ! which define the rate at which mortality increases with dbh and the
+       ! size at which mortality is 0.5 (the inflection point)
+       mort_r_senescence = EDPftvarcon_inst%mort_r_senescence(cohort_in%pft)
+       mort_ip_senescence = EDPftvarcon_inst%mort_ip_senescence(cohort_in%pft)
+       smort = 1 / (1 + exp( -mort_r_senescence *
+       (cohort_in%dbh - mort_ip_senescence)) )  
 
     ! Proxy for hydraulic failure induced mortality. 
     hf_sm_threshold = EDPftvarcon_inst%hf_sm_threshold(cohort_in%pft)
@@ -141,9 +152,15 @@ contains
 
     !mortality_rates = bmort + hmort + cmort
 
-    else ! i.e. hlm_use_ed_prescribed_phys is true
+ else ! i.e. hlm_use_ed_prescribed_phys is true
+    mort_r_senescence = EDPftvarcon_inst%mort_r_senescence(cohort_in%pft)
+    mort_ip_senescence = EDPftvarcon_inst%mort_ip_senescence(cohort_in%pft)
+
+    smort = 1 / (1 + exp( -mort_r_senescence *
+       (cohort_in%dbh - mort_ip_senescence)) 
+    
        if ( cohort_in%canopy_layer .eq. 1) then
-          bmort = EDPftvarcon_inst%prescribed_mortality_canopy(cohort_in%pft)
+          bmort = EDPftvarcon_inst%prescribed_mortality_canopy(cohort_in%pft) 
        else
           bmort = EDPftvarcon_inst%prescribed_mortality_understory(cohort_in%pft)
        endif
@@ -185,6 +202,7 @@ contains
     real(r8) :: bmort    ! background mortality rate (fraction per year)
     real(r8) :: hmort    ! hydraulic failure mortality rate (fraction per year)
     real(r8) :: frmort   ! freezing mortality rate (fraction per year)
+    real(r8) :: smort    ! size dependent senescence mortality rate (fraction per year) 
     real(r8) :: dndt_logging      ! Mortality rate (per day) associated with the a logging event
     integer  :: ipft              ! local copy of the pft index
     !----------------------------------------------------------------------
@@ -193,7 +211,7 @@ contains
     
     ! Mortality for trees in the understorey. 
     !if trees are in the canopy, then their death is 'disturbance'. This probably needs a different terminology
-    call mortality_rates(currentCohort,bc_in,cmort,hmort,bmort,frmort)
+    call mortality_rates(currentCohort,bc_in,cmort,hmort,bmort,frmort, smort)
     call LoggingMortality_frac(ipft, currentCohort%dbh, currentCohort%canopy_layer, &
                                currentCohort%lmort_direct,                       &
                                currentCohort%lmort_collateral,                    &
@@ -207,10 +225,10 @@ contains
                        currentCohort%lmort_collateral + &
                        currentCohort%lmort_infra)/hlm_freq_day
 
-       currentCohort%dndt = -1.0_r8 * (cmort+hmort+bmort+frmort+dndt_logging) * currentCohort%n
+       currentCohort%dndt = -1.0_r8 * (cmort+hmort+bmort+frmort+smort + dndt_logging) * currentCohort%n
     else
        currentCohort%dndt = -(1.0_r8 - fates_mortality_disturbance_fraction) &
-            * (cmort+hmort+bmort+frmort) * currentCohort%n
+            * (cmort+hmort+bmort+frmort+smort) * currentCohort%n
     endif
 
     return

@@ -734,6 +734,7 @@ contains
           currentCohort%hmort = 0.0_r8
           currentCohort%cmort = 0.0_r8
           currentCohort%frmort = 0.0_r8
+          currentCohort%smort = 0.0_r8
 
           currentCohort%dndt      = 0.0_r8
 	  currentCohort%dhdt      = 0.0_r8
