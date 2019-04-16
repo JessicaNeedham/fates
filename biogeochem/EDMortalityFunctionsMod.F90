@@ -85,13 +85,12 @@ contains
        bmort = EDPftvarcon_inst%bmort(cohort_in%pft)
 
        ! size dependent senescence
-       ! for each pft there are two parameters rate and ip
-       ! which define the rate at which mortality increases with dbh and the
+       !  rate and ip define the rate at which mortality increases with dbh and the
        ! size at which mortality is 0.5 (the inflection point)
        mort_r_senescence = EDPftvarcon_inst%mort_r_senescence(cohort_in%pft)
        mort_ip_senescence = EDPftvarcon_inst%mort_ip_senescence(cohort_in%pft)
-       smort = 1 / (1 + exp( -mort_r_senescence *
-       (cohort_in%dbh - mort_ip_senescence)) )  
+       smort = 1 / (1 + exp( -1 * mort_r_senescence * &
+            (cohort_in%dbh - mort_ip_senescence)) )  
 
     ! Proxy for hydraulic failure induced mortality. 
     hf_sm_threshold = EDPftvarcon_inst%hf_sm_threshold(cohort_in%pft)
@@ -156,7 +155,7 @@ contains
     mort_r_senescence = EDPftvarcon_inst%mort_r_senescence(cohort_in%pft)
     mort_ip_senescence = EDPftvarcon_inst%mort_ip_senescence(cohort_in%pft)
 
-    smort = 1 / (1 + exp( -mort_r_senescence *
+    smort = 1 / (1 + exp( -1 * mort_r_senescence * &
        (cohort_in%dbh - mort_ip_senescence)) 
     
        if ( cohort_in%canopy_layer .eq. 1) then
