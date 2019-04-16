@@ -339,6 +339,12 @@ variables:
 	float fates_mort_bmort(fates_pft) ;
 		fates_mort_bmort:units = "1/yr" ;
 		fates_mort_bmort:long_name = "background mortality rate" ;
+	float fates_mort_ip_senescence(fates_pft);
+		fates_mort_ip_senescence:units = "dbh cm";
+		fates_mort_ip_senescence:long_name ="Mortality senescence inflection point"; 
+	float fates_mort_r_senescence(fates_pft);
+		fates_mort_r_senescence:units = "mortality rate dbh^-1";
+		fates_mort_r_senescence:long_name = "Mortality senescence rate of change";
 	float fates_mort_freezetol(fates_pft) ;
 		fates_mort_freezetol:units = "NA" ;
 		fates_mort_freezetol:long_name = "minimum temperature tolerance (NOT USED)" ;
