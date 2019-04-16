@@ -224,7 +224,8 @@ contains
                        currentCohort%lmort_collateral + &
                        currentCohort%lmort_infra)/hlm_freq_day
 
-       currentCohort%dndt = -1.0_r8 * (cmort+hmort+bmort+frmort+smort + dndt_logging) * currentCohort%n
+       currentCohort%dndt = -1.0_r8 * (cmort+hmort+bmort+frmort+smort + dndt_logging) &
+            * currentCohort%n
     else
        currentCohort%dndt = -(1.0_r8 - fates_mortality_disturbance_fraction) &
             * (cmort+hmort+bmort+frmort+smort) * currentCohort%n

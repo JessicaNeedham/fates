@@ -95,8 +95,8 @@ module EDPftvarcon
      real(r8), allocatable :: maintresp_reduction_intercept(:) ! intercept of MR reduction as f(carbon storage), 
                                                                ! 0=no throttling, 1=max throttling
      real(r8), allocatable :: bmort(:)
-     real(r8), allocatable :: mort_ip_senescence(:)     ! inflection point for size dependent senescence
-     real(r8), allocatable :: mort_r_senescence(:)      ! rate of change in mortality for size dependent senescence
+     real(r8), allocatable :: mort_ip_senescence(:)   ! inflection point for dbh dependent senescence
+     real(r8), allocatable :: mort_r_senescence(:)    ! rate of change in mortality with dbh
 
 
      ! real(r8), allocatable :: 

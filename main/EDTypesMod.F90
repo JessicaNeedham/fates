@@ -293,7 +293,8 @@ module EDTypesMod
      real(r8) ::  cmort                                  ! carbon starvation mortality rate n/year
      real(r8) ::  hmort                                  ! hydraulic failure mortality rate n/year
      real(r8) ::  frmort                                 ! freezing mortality               n/year
-
+     real(r8) ::  smort                                  ! senesence mortality              n/year
+     
       ! Logging Mortality Rate 
       ! Yi Xu & M. Huang
      real(r8) ::  lmort_direct                           ! directly logging rate            fraction /per logging activity
@@ -865,6 +866,7 @@ module EDTypesMod
      write(fates_log(),*) 'co%c_area                 = ', ccohort%c_area
      write(fates_log(),*) 'co%cmort                  = ', ccohort%cmort
      write(fates_log(),*) 'co%bmort                  = ', ccohort%bmort
+     write(fates_log(),*) 'co%smort                  = ', ccohort%smort
      write(fates_log(),*) 'co%hmort                  = ', ccohort%hmort
      write(fates_log(),*) 'co%frmort                 = ', ccohort%frmort
      write(fates_log(),*) 'co%isnew                  = ', ccohort%isnew
