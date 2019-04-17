@@ -65,6 +65,8 @@ contains
     real(r8) :: store_c
     real(r8) :: hf_sm_threshold    ! hydraulic failure soil moisture threshold 
     real(r8) :: hf_flc_threshold   ! hydraulic failure fractional loss of conductivity threshold
+    real(r8) :: mort_ip_senescence ! inflection point for increase in mortality with dbh 
+    real(r8) :: mort_r_senescence  ! rate of mortality increase with dbh in senesence term
     real(r8) :: temp_dep_fraction  ! Temp. function (freezing mortality)
     real(r8) :: temp_in_C          ! Daily averaged temperature in Celcius
     real(r8) :: min_fmc_ag         ! minimum fraction of maximum conductivity for aboveground
@@ -156,7 +158,7 @@ contains
     mort_ip_senescence = EDPftvarcon_inst%mort_ip_senescence(cohort_in%pft)
 
     smort = 1 / (1 + exp( -1 * mort_r_senescence * &
-       (cohort_in%dbh - mort_ip_senescence)) 
+       (cohort_in%dbh - mort_ip_senescence) )) 
     
        if ( cohort_in%canopy_layer .eq. 1) then
           bmort = EDPftvarcon_inst%prescribed_mortality_canopy(cohort_in%pft) 
