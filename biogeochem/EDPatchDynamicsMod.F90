@@ -114,6 +114,7 @@ contains
     real(r8) :: bmort
     real(r8) :: hmort
     real(r8) :: frmort
+    real(r8) :: smort
 
     real(r8) :: lmort_direct
     real(r8) :: lmort_collateral
@@ -137,8 +138,8 @@ contains
           ! Mortality for trees in the understorey.
           currentCohort%patchptr => currentPatch
 
-          call mortality_rates(currentCohort,bc_in,cmort,hmort,bmort,frmort)
-          currentCohort%dmort  = cmort+hmort+bmort+frmort
+          call mortality_rates(currentCohort,bc_in,cmort,hmort,bmort,frmort,smort)
+          currentCohort%dmort  = cmort+hmort+bmort+frmort+smort
           call carea_allom(currentCohort%dbh,currentCohort%n,site_in%spread,currentCohort%pft, &
                currentCohort%c_area)
 
@@ -147,6 +148,7 @@ contains
           currentCohort%bmort = bmort
           currentCohort%hmort = hmort
           currentCohort%frmort = frmort
+          currentCohort%smort = smort
 
           call LoggingMortality_frac(currentCohort%pft, currentCohort%dbh, currentCohort%canopy_layer, &
                 lmort_direct,lmort_collateral,lmort_infra,l_degrad )
@@ -260,6 +262,7 @@ contains
                 currentCohort%bmort = currentCohort%bmort*(1.0_r8 - fates_mortality_disturbance_fraction)
                 currentCohort%dmort = currentCohort%dmort*(1.0_r8 - fates_mortality_disturbance_fraction)
                 currentCohort%frmort = currentCohort%frmort*(1.0_r8 - fates_mortality_disturbance_fraction)
+                currentCohort%smort = currentCohort%smort*(1.0_r8 - fates_mortality_disturbance_fraction)
                 currentCohort%lmort_direct    = 0.0_r8
                 currentCohort%lmort_collateral = 0.0_r8
                 currentCohort%lmort_infra      = 0.0_r8
@@ -540,6 +543,7 @@ contains
                       nc%hmort = nan
                       nc%bmort = nan
                       nc%frmort = nan
+                      nc%smort = nan
                       nc%lmort_direct     = nan
                       nc%lmort_collateral = nan
                       nc%lmort_infra      = nan
@@ -593,6 +597,7 @@ contains
                          nc%hmort            = currentCohort%hmort
                          nc%bmort            = currentCohort%bmort
                          nc%frmort           = currentCohort%frmort
+                         nc%smort            = currentCohort%smort
                          nc%dmort            = currentCohort%dmort
                          nc%lmort_direct     = currentCohort%lmort_direct
                          nc%lmort_collateral = currentCohort%lmort_collateral
@@ -617,6 +622,7 @@ contains
                          nc%hmort            = currentCohort%hmort
                          nc%bmort            = currentCohort%bmort
                          nc%frmort           = currentCohort%frmort
+                         nc%smort            = currentCohort%smort
                          nc%dmort            = currentCohort%dmort
                          nc%lmort_direct    = currentCohort%lmort_direct
                          nc%lmort_collateral = currentCohort%lmort_collateral
@@ -675,6 +681,7 @@ contains
                    nc%hmort            = currentCohort%hmort
                    nc%bmort            = currentCohort%bmort
                    nc%frmort           = currentCohort%frmort
+                   nc%smort            = currentCohort%smort
                    nc%dmort            = currentCohort%dmort
                    nc%lmort_direct     = currentCohort%lmort_direct
                    nc%lmort_collateral = currentCohort%lmort_collateral
@@ -707,6 +714,7 @@ contains
                       nc%hmort            = currentCohort%hmort
                       nc%bmort            = currentCohort%bmort
                       nc%frmort           = currentCohort%frmort
+                      nc%smort            = currentCohort%smort
                       nc%dmort            = currentCohort%dmort
 
                       ! since these are the ones that weren't logged, 
@@ -766,6 +774,7 @@ contains
                          nc%hmort            = currentCohort%hmort
                          nc%bmort            = currentCohort%bmort
                          nc%frmort           = currentCohort%frmort
+                         nc%smort            = currentCohort%smort
                          nc%dmort            = currentCohort%dmort
                          nc%lmort_direct     = currentCohort%lmort_direct
                          nc%lmort_collateral = currentCohort%lmort_collateral
@@ -786,6 +795,7 @@ contains
                          nc%hmort            = currentCohort%hmort
                          nc%bmort            = currentCohort%bmort
                          nc%frmort           = currentCohort%frmort
+                         nc%smort            = currentCohort%smort
                          nc%dmort            = currentCohort%dmort
                          nc%lmort_direct     = currentCohort%lmort_direct
                          nc%lmort_collateral = currentCohort%lmort_collateral
