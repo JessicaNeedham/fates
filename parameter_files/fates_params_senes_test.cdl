@@ -930,9 +930,9 @@ data:
  
  fates_mort_hf_flc_threshold = 0.5, 0.5 ;
  
- fates_mort_r_senescence = 0.3, 0.1 ;
+ fates_mort_r_senescence = 0.2, 0.2 ;
 
-fates_mort_ip_senescence = 50.0, 140.0 ; 
+fates_mort_ip_senescence = 60.0, 120.0 ; 
 
  fates_mort_scalar_coldstress = 3, 3 ;
 
