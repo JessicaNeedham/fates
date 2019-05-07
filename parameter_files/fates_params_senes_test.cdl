@@ -885,8 +885,8 @@ data:
 
  fates_leaf_jmaxse = 495, 495 ;
 
- fates_leaf_long = 1.5, 1.5,
-                   1.5, 1.5 ;
+ fates_leaf_long = 1000, 1000,
+                   1000, 1000 ;
 
 
  fates_leaf_slamax = 0.0954, 0.0954 ;
@@ -952,7 +952,7 @@ fates_mort_ip_senescence = 60.0, 120.0 ;
 
  fates_prescribed_mortality_understory = 0.025, 0.025 ;
 
- fates_prescribed_npp_canopy = 0.4, 0.4 ;
+ fates_prescribed_npp_canopy = 1, 1 ;
 
  fates_prescribed_npp_understory = 0.03125, 0.03125 ;
 
@@ -972,7 +972,7 @@ fates_mort_ip_senescence = 60.0, 120.0 ;
 
  fates_senleaf_long_fdrought = 1.0, 1.0 ;
 
- fates_root_long = 1, 1 ;
+ fates_root_long = 1000, 1000 ;
 
  fates_roota_par = 7, 7 ;
 
