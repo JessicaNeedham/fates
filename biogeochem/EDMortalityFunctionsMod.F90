@@ -208,7 +208,7 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
     
     ! Mortality for trees in the understorey. 
     !if trees are in the canopy, then their death is 'disturbance'. This probably needs a different terminology
-    call mortality_rates(currentCohort,bc_in,cmort,hmort,bmort,frmort, smort)
+    call mortality_rates(currentCohort,bc_in,cmort,hmort,bmort,frmort,smort)
     call LoggingMortality_frac(ipft, currentCohort%dbh, currentCohort%canopy_layer, &
                                currentCohort%lmort_direct,                       &
                                currentCohort%lmort_collateral,                    &
