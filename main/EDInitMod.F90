@@ -459,7 +459,8 @@ contains
 
        if ( debug ) write(fates_log(),*) 'EDInitMod.F90 call create_cohort '
 
-       call create_cohort(site_in, patch_in, pft, temp_cohort%n, temp_cohort%hite, temp_cohort%dbh, &
+       call create_cohort(site_in, patch_in, pft, temp_cohort%n, temp_cohort%hite, & 
+            temp_cohort%coage, temp_cohort%dbh, &
             b_leaf, b_fineroot, b_sapwood, b_dead, b_store, & 
             temp_cohort%laimemory, cstatus, rstatus, temp_cohort%canopy_trim, 1, &
             site_in%spread, first_leaf_aclass, bc_in)

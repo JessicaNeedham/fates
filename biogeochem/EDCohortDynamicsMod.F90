@@ -118,7 +118,7 @@ contains
 
   !-------------------------------------------------------------------------------------!
 
-  subroutine create_cohort(currentSite, patchptr, pft, nn, hite, dbh, coage, bleaf, bfineroot, &
+  subroutine create_cohort(currentSite, patchptr, pft, nn, hite, coage, dbh  bleaf, bfineroot, &
                            bsap, bdead, bstore, laimemory, status, recruitstatus,ctrim, &
                            clayer, spread, leaf_aclass_init, bc_in)
 

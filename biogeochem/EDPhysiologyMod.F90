@@ -1102,6 +1102,7 @@ contains
        temp_cohort%canopy_trim = 0.8_r8  !starting with the canopy not fully expanded 
        temp_cohort%pft         = ft
        temp_cohort%hite        = EDPftvarcon_inst%hgt_min(ft)
+       temp_cohort%coage       = 0.0_r8
        call h2d_allom(temp_cohort%hite,ft,temp_cohort%dbh)
 
        ! Initialize live pools
@@ -1145,7 +1146,8 @@ contains
        if (temp_cohort%n > min_n_safemath )then
           if ( debug ) write(fates_log(),*) 'EDPhysiologyMod.F90 call create_cohort '
 
-          call create_cohort(currentSite,currentPatch, temp_cohort%pft, temp_cohort%n, temp_cohort%hite, temp_cohort%dbh, &
+          call create_cohort(currentSite,currentPatch, temp_cohort%pft, temp_cohort%n, temp_cohort%hite, &
+               temp_cohort%coage, temp_cohort%dbh, &
                b_leaf, b_fineroot, b_sapwood, b_dead, b_store, &  
                temp_cohort%laimemory, cohortstatus,recruitstatus, temp_cohort%canopy_trim, currentPatch%NCL_p, &
                currentSite%spread, first_leaf_aclass, bc_in)

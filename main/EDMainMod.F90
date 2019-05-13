@@ -437,7 +437,10 @@ contains
              call updateSizeDepTreeHydProps(currentSite,currentCohort, bc_in)
              call updateSizeDepTreeHydStates(currentSite,currentCohort)
           end if
-  
+          
+          ! update cohort age
+          currentCohort%coage = currentCohort%coage + hlm_freq_day
+
           currentCohort => currentCohort%taller
 
        enddo
