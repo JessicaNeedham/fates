@@ -201,6 +201,7 @@ module EDTypesMod
      integer  ::  pft                                    ! pft number
      real(r8) ::  n                                      ! number of individuals in cohort per 'area' (10000m2 default)
      real(r8) ::  dbh                                    ! dbh: cm
+     real(r8) ::  coage                                  ! cohort age in days
      real(r8) ::  hite                                   ! height: meters
      integer  ::  indexnumber                            ! unique number for each cohort. (within clump?)
      real(r8) ::  laimemory                              ! target leaf biomass- set from previous year: kGC per indiv
@@ -226,10 +227,13 @@ module EDTypesMod
                                                          ! this is used for history output. We maintain this in the main cohort memory
                                                          ! because we don't want to continually re-calculate the cohort's position when
                                                          ! performing size diagnostics at high-frequency calls
+     integer  ::  coage_class                            ! An index that indicates which age bin the cohort currently resides in 
+                                                         ! used for history output.
      integer  ::  size_by_pft_class                      ! An index that indicates the cohorts position of the joint size-class x functional
                                                          ! type classification. We also maintain this in the main cohort memory
                                                          ! because we don't want to continually re-calculate the cohort's position when
                                                          ! performing size diagnostics at high-frequency calls
+     integer  ::  coage_by_pft_class                     ! An index that indicates the cohorts position of the join cohort age class x PFT 
      integer ::  size_class_lasttimestep                 ! size class of the cohort at the end of the previous timestep (used for calculating growth flux)
 
 
@@ -309,6 +313,7 @@ module EDTypesMod
      real(r8) ::  hmort                                  ! hydraulic failure mortality rate n/year
      real(r8) ::  frmort                                 ! freezing mortality               n/year
      real(r8) ::  smort                                  ! senesence mortality              n/year
+     real(r8) ::  asmort                                 ! age senescence mortality         n/year
      
       ! Logging Mortality Rate 
       ! Yi Xu & M. Huang
@@ -870,6 +875,8 @@ module EDTypesMod
      write(fates_log(),*) 'co%prom_weight            = ', ccohort%prom_weight               
      write(fates_log(),*) 'co%size_class             = ', ccohort%size_class
      write(fates_log(),*) 'co%size_by_pft_class      = ', ccohort%size_by_pft_class
+     write(fates_log(),*) 'co%coage_class            = ', ccohort%coage_class
+     write(fates_log(),*) 'co%coage_by_pft_class     = ', ccohort%coage_by_pft_class
      write(fates_log(),*) 'co%gpp_acc_hold           = ', ccohort%gpp_acc_hold
      write(fates_log(),*) 'co%gpp_acc                = ', ccohort%gpp_acc
      write(fates_log(),*) 'co%gpp_tstep              = ', ccohort%gpp_tstep
@@ -895,6 +902,7 @@ module EDTypesMod
      write(fates_log(),*) 'co%smort                  = ', ccohort%smort
      write(fates_log(),*) 'co%hmort                  = ', ccohort%hmort
      write(fates_log(),*) 'co%frmort                 = ', ccohort%frmort
+     write(fates_log(),*) 'co%asmort                 = ', ccohort%asmort
      write(fates_log(),*) 'co%isnew                  = ', ccohort%isnew
      write(fates_log(),*) 'co%dndt                   = ', ccohort%dndt
      write(fates_log(),*) 'co%dhdt                   = ', ccohort%dhdt

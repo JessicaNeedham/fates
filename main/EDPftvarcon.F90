@@ -97,6 +97,8 @@ module EDPftvarcon
      real(r8), allocatable :: bmort(:)
      real(r8), allocatable :: mort_ip_senescence(:)  ! inflection point of dbh dependent senescence
      real(r8), allocatable :: mort_r_senescence(:) ! rate of change in mortality with dbh
+     real(r8), allocatable :: mort_ip_age_senescence(:) ! inflection point of age dependent senescence 
+     real(r8), allocatable :: mort_r_age_senescence(:) ! rate of change in mortality with age 
 
      ! real(r8), allocatable :: 
      real(r8), allocatable :: mort_scalar_coldstress(:)
@@ -678,6 +680,14 @@ contains
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
 
+    name = 'fates_mort_r_age_senescence'
+    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
+         dimension_names=dim_names, lower_bounds=dim_lower_bound)
+
+    name = 'fates_mort_ip_age_senescence'
+    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
+         dimension_names=dim_names, lower_bounds=dim_lower_bound)
+
     name = 'fates_mort_scalar_coldstress'
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
@@ -1120,6 +1130,14 @@ contains
     name = 'fates_mort_r_senescence'
     call fates_params%RetreiveParameterAllocate(name=name, &
          data=this%mort_r_senescence)
+
+    name = 'fates_mort_ip_age_senescence'
+    call fates_params%RetreiveParameterAllocate(name=name, &
+         data=this%mort_ip_age_senescence)
+
+    name = 'fates_mort_r_age_senescence'
+    call fates_params%RetreiveParameterAllocate(name=name, &
+         data=this%mort_r_age_senescence)
 
     name = 'fates_mort_scalar_coldstress'
     call fates_params%RetreiveParameterAllocate(name=name, &
@@ -1784,6 +1802,8 @@ contains
         write(fates_log(),fmt0) 'bmort = ',EDPftvarcon_inst%bmort
         write(fates_log(),fmt0) 'mort_ip_senescence = ', EDPftvarcon_inst%mort_ip_senescence
         write(fates_log(),fmt0) 'mort_r_senescence = ', EDPftvarcon_inst%mort_r_senescence
+        write(fates_log(),fmt0) 'mort_ip_age_senescence = ', EDPftvarcon_inst%mort_ip_age_senescence
+        write(fates_log(),fmt0) 'mort_r_age_senescence = ', EDPftvarcon_inst%mort_r_age_senescence 
         write(fates_log(),fmt0) 'mort_scalar_coldstress = ',EDPftvarcon_inst%mort_scalar_coldstress
         write(fates_log(),fmt0) 'mort_scalar_cstarvation = ',EDPftvarcon_inst%mort_scalar_cstarvation
         write(fates_log(),fmt0) 'mort_scalar_hydrfailure = ',EDPftvarcon_inst%mort_scalar_hydrfailure

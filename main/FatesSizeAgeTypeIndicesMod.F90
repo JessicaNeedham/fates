@@ -75,6 +75,37 @@ contains
 
   ! =====================================================================================
 
+ subroutine coagetype_class_index(coage,pft,coage_class,coage_by_pft_class)
+
+  ! Arguments
+  real(r8),intent(in) :: coage
+  integer,intent(in)  :: pft
+  integer,intent(in)  :: coage_class
+  integer,intent(in)  :: coage_by_pft_class
+
+  coage_class           = get_coage_class_index(coage)
+
+  coage_by_pft_class    = (pft-1)*nlevsclass+coage_class
+
+  return
+ end subroutine coage_class_index
+
+ ! ========================================================================================
+
+ function get_coage_class_index(coage) result(cohort_coage_class)
+
+   real(r8), intent(in) :: coage
+
+   integer :: cohort_coage_class
+
+   cohort_coage_class = count(coage-ED_val_history_coageclass_bin_edges.ge.0.0_r8)
+
+ end function get_coage_class_index
+
+
+
+  ! =====================================================================================
+
   function get_height_index(height) result(cohort_height_index)
 
      real(r8), intent(in) :: height

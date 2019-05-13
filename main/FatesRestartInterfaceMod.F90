@@ -97,6 +97,7 @@ module FatesRestartInterfaceMod
   integer, private :: ir_canopy_trim_co
   integer, private :: ir_size_class_lasttimestep_co
   integer, private :: ir_dbh_co
+  integer, private :: ir_coage_co
   integer, private :: ir_g_sb_laweight_co
   integer, private :: ir_height_co
   integer, private :: ir_laimemory_co
@@ -113,6 +114,7 @@ module FatesRestartInterfaceMod
   integer, private :: ir_cmort_co
   integer, private :: ir_frmort_co
   integer, private :: ir_smort_co
+  integer, private :: ir_asmort_co
 
    !Logging
   integer, private :: ir_lmort_direct_co
@@ -778,6 +780,11 @@ contains
          long_name='ed cohort - senescence mortality rate', &
          units='/year', flushval = flushzero, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_smort_co )
+
+    call this%set_restart_var(vname='fates_asmort', vtype=cohort_r8, &
+         long_name='ed cohort - age senescence mortality rate', &
+         units = '/year', flushval = flushzero, & 
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, indx = ir_asmort_co )
 
     call this%set_restart_var(vname='fates_lmort_direct', vtype=cohort_r8, &
          long_name='ed cohort - directly logging mortality rate', &
@@ -1506,6 +1513,7 @@ contains
            rio_hmort_co                => this%rvars(ir_hmort_co)%r81d, &
            rio_cmort_co                => this%rvars(ir_cmort_co)%r81d, &
            rio_smort_co                => this%rvars(ir_smort_co)%r81d, &
+           rio_asmort_co               => this%rvars(ir_asmort_co)%r81d, &
            rio_frmort_co               => this%rvars(ir_frmort_co)%r81d, &
            rio_lmort_direct_co         => this%rvars(ir_lmort_direct_co)%r81d, &
            rio_lmort_collateral_co     => this%rvars(ir_lmort_collateral_co)%r81d, &
@@ -1696,6 +1704,7 @@ contains
                 rio_hmort_co(io_idx_co)        = ccohort%hmort
                 rio_cmort_co(io_idx_co)        = ccohort%cmort
                 rio_smort_co(io_idx_co)        = ccohort%smort
+                rio_asmort_co(io_idx_co)       = ccohort%asmort
                 rio_frmort_co(io_idx_co)       = ccohort%frmort                
 
                 !Logging
@@ -2213,6 +2222,7 @@ contains
           rio_hmort_co                => this%rvars(ir_hmort_co)%r81d, &
           rio_cmort_co                => this%rvars(ir_cmort_co)%r81d, &
           rio_smort_co                => this%rvars(ir_smort_co)%r81d, &
+          rio_asmort_co               => this%rvars(ir_asmort_co)%r81d, &
           rio_frmort_co               => this%rvars(ir_frmort_co)%r81d, &
           rio_lmort_direct_co         => this%rvars(ir_lmort_direct_co)%r81d, &
           rio_lmort_collateral_co     => this%rvars(ir_lmort_collateral_co)%r81d, &
@@ -2365,6 +2375,7 @@ contains
                 ccohort%hmort        = rio_hmort_co(io_idx_co)
                 ccohort%cmort        = rio_cmort_co(io_idx_co)
                 ccohort%smort        = rio_smort_co(io_idx_co)
+                ccohort%asmort       = rio_asmort_co(io_idx_co)
                 ccohort%frmort        = rio_frmort_co(io_idx_co)
 
                 !Logging

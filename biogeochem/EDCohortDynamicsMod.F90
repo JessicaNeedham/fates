@@ -118,7 +118,7 @@ contains
 
   !-------------------------------------------------------------------------------------!
 
-  subroutine create_cohort(currentSite, patchptr, pft, nn, hite, dbh, bleaf, bfineroot, &
+  subroutine create_cohort(currentSite, patchptr, pft, nn, hite, dbh, coage, bleaf, bfineroot, &
                            bsap, bdead, bstore, laimemory, status, recruitstatus,ctrim, &
                            clayer, spread, leaf_aclass_init, bc_in)
 
@@ -150,6 +150,7 @@ contains
                                                          ! per 'area' (10000m2 default)
     real(r8), intent(in)   :: hite                       ! height: meters
     real(r8), intent(in)   :: dbh                        ! dbh: cm
+    reaL(r8), intent(in)   :: coage                      ! cohort age: days
     real(r8), intent(in)   :: bleaf                      ! biomass in leaves: kgC
     real(r8), intent(in)   :: bfineroot                  ! biomass in fineroots: kgC
     real(r8), intent(in)   :: bsap                       ! biomass in sapwood: kgC
@@ -196,6 +197,7 @@ contains
     new_cohort%n            = nn
     new_cohort%hite         = hite
     new_cohort%dbh          = dbh
+    new_cohort%coage        = coage
     new_cohort%canopy_trim  = ctrim
     new_cohort%canopy_layer = clayer
     new_cohort%canopy_layer_yesterday = real(clayer, r8)
@@ -258,9 +260,11 @@ contains
     ! leaf age fractions
     call UpdateCohortBioPhysRates(new_cohort)
 
-    call sizetype_class_index(new_cohort%dbh,new_cohort%pft, &
+    call sizetype_class_index(new_cohort%dbh, new_cohort%pft, &
                               new_cohort%size_class,new_cohort%size_by_pft_class)
 
+    call coagetype_class_index(new_cohort%coage, new_cohort%pft, &
+                               new_cohort%coage_class,new_cohort%coage_by_pft_class)
 
     ! This routine may be called during restarts, and at this point in the call sequence
     ! the actual cohort data is unknown, as this is really only used for allocation
@@ -476,7 +480,8 @@ contains
     currentCohort%size_by_pft_class  = fates_unset_int  ! size by pft classification index
 
     currentCohort%n                  = nan ! number of individuals in cohort per 'area' (10000m2 default)     
-    currentCohort%dbh                = nan ! 'diameter at breast height' in cm                            
+    currentCohort%dbh                = nan ! 'diameter at breast height' in cm
+    currentCohort%coage              = nan ! age of the cohort in days
     currentCohort%hite               = nan ! height: meters                   
     currentCohort%laimemory          = nan ! target leaf biomass- set from previous year: kGC per indiv
     currentCohort%lai                = nan ! leaf area index of cohort   m2/m2      
@@ -1171,6 +1176,7 @@ contains
                                    currentCohort%hmort = (currentCohort%n*currentCohort%hmort + nextc%n*nextc%hmort)/newn
                                    currentCohort%bmort = (currentCohort%n*currentCohort%bmort + nextc%n*nextc%bmort)/newn
                                    currentCohort%smort = (currentCohort%n*currentCohort%smort + nextc%n*nextc%smort)/newn
+                                   currentCohort%asmort = (currentCohort%n*currentCohort%asmort + nextc%n*nextc%asmort)/newn
                                    currentCohort%frmort = (currentCohort%n*currentCohort%frmort + nextc%n*nextc%frmort)/newn
 
                                    ! logging mortality, Yi Xu
@@ -1498,7 +1504,8 @@ contains
     ! VEGETATION STRUCTURE
     n%pft             = o%pft
     n%n               = o%n                         
-    n%dbh             = o%dbh                                        
+    n%dbh             = o%dbh
+    n%coage           = o%coage 
     n%hite            = o%hite
     n%laimemory       = o%laimemory
     n%lai             = o%lai                         
@@ -1567,6 +1574,7 @@ contains
     n%bmort = o%bmort
     n%hmort = o%hmort
     n%smort = o%smort
+    n%asmort = o%asmort
     n%frmort = o%frmort
 
     ! logging mortalities, Yi Xu

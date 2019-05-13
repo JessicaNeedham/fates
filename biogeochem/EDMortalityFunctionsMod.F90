@@ -67,6 +67,8 @@ contains
     real(r8) :: hf_flc_threshold   ! hydraulic failure fractional loss of conductivity threshold
     real(r8) :: mort_ip_senescence ! inflection point for increase in mortality with dbh 
     real(r8) :: mort_r_senescence  ! rate of mortality increase with dbh in senesence term
+    real(r8) :: mort_ip_age_senescence ! inflection point for increase in mortality with age
+    real(r8) :: mort_r_age_senescence ! rate of mortality increase with age in senescence term 
     real(r8) :: temp_dep_fraction  ! Temp. function (freezing mortality)
     real(r8) :: temp_in_C          ! Daily averaged temperature in Celcius
     real(r8) :: min_fmc_ag         ! minimum fraction of maximum conductivity for aboveground
@@ -86,6 +88,13 @@ contains
     smort = 1.0_r8 / ( 1.0_r8 + exp( -1.0_r8 * mort_r_senescence * &
         (cohort_in%dbh - mort_ip_senescence) ) ) 
  !  smort = 0.0_r8
+
+    ! Age Dependent Senescence
+    ! rate and inflection point define the change in mortality with age
+    mort_r_age_senescence = EDPftvarcon_inst%mort_r_age_senescence(cohort_in%pft)
+    mort_ip_age_senescence = EDPftvarcon_inst%mort_ip_age_senescence(cohort_in%pft)
+    asmort = 1.0_r8 / (1.0_r8 + exp(-1.0_r8 * mort_r_age_senescence * &
+         (cohort_in%cohage - mort_ip_age_senescence ) ) )
 
 if (hlm_use_ed_prescribed_phys .eq. ifalse) then
 
@@ -171,6 +180,7 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
        frmort = 0.0_r8
        bmort = 0.0_r8
        smort = 0.0_r8
+       asmort = 0.0_r8
     end if
        
     return
@@ -199,7 +209,8 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
     real(r8) :: bmort    ! background mortality rate (fraction per year)
     real(r8) :: hmort    ! hydraulic failure mortality rate (fraction per year)
     real(r8) :: frmort   ! freezing mortality rate (fraction per year)
-    real(r8) :: smort    ! size dependent senescence mortality rate (fraction per year) 
+    real(r8) :: smort    ! size dependent senescence mortality rate (fraction per year)
+    real(r8) :: asmort   ! age dependent senescence mortality rate (fraction per year)
     real(r8) :: dndt_logging      ! Mortality rate (per day) associated with the a logging event
     integer  :: ipft              ! local copy of the pft index
     !----------------------------------------------------------------------
@@ -208,7 +219,7 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
     
     ! Mortality for trees in the understorey. 
     !if trees are in the canopy, then their death is 'disturbance'. This probably needs a different terminology
-    call mortality_rates(currentCohort,bc_in,cmort,hmort,bmort,frmort,smort)
+    call mortality_rates(currentCohort,bc_in,cmort,hmort,bmort,frmort,smort, asmort)
     call LoggingMortality_frac(ipft, currentCohort%dbh, currentCohort%canopy_layer, &
                                currentCohort%lmort_direct,                       &
                                currentCohort%lmort_collateral,                    &
@@ -222,11 +233,11 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
                        currentCohort%lmort_collateral + &
                        currentCohort%lmort_infra)/hlm_freq_day
 
-       currentCohort%dndt = -1.0_r8 * (cmort+hmort+bmort+frmort+smort + dndt_logging) &
+       currentCohort%dndt = -1.0_r8 * (cmort+hmort+bmort+frmort+smort+asmort + dndt_logging) &
             * currentCohort%n
     else
        currentCohort%dndt = -(1.0_r8 - fates_mortality_disturbance_fraction) &
-            * (cmort+hmort+bmort+frmort+smort) * currentCohort%n
+            * (cmort+hmort+bmort+frmort+smort+asmort) * currentCohort%n
     endif
 
     return
