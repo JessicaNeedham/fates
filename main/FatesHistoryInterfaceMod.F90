@@ -97,7 +97,9 @@ module FatesHistoryInterfaceMod
   ! scag = size class bin x age bin
   ! scagpft = size class bin x age bin x PFT
   ! agepft  = age bin x PFT
-  !
+  ! coage = cohort age class
+  ! coagepf = cohort age class x PFT 
+
   ! A recipe for adding a new history variable to this module:
   ! (1) decide what time frequency it makes sense to update the variable at, and what dimension(s)
   !     you want to output the variable on
@@ -280,6 +282,7 @@ module FatesHistoryInterfaceMod
   integer, private :: ih_m8_si_scpf
   integer, private :: ih_m9_si_scpf
   integer, private :: ih_m10_si_scpf
+  integer, private :: ih_m10_si_coagepf
   integer, private :: ih_crownfiremort_si_scpf
   integer, private :: ih_cambialfiremort_si_scpf
 
@@ -547,6 +550,8 @@ module FatesHistoryInterfaceMod
      procedure, public :: column_index
      procedure, public :: levgrnd_index
      procedure, public :: levscpf_index
+     procedure, public :: levcoage_index
+     procedure, public :: levcoagepf_index
      procedure, public :: levscls_index
      procedure, public :: levpft_index
      procedure, public :: levage_index
@@ -571,6 +576,8 @@ module FatesHistoryInterfaceMod
      procedure, private :: set_column_index
      procedure, private :: set_levgrnd_index
      procedure, private :: set_levscpf_index
+     procedure, private :: set_levcoage_index
+     procedure, private :: set_levcoagepf_index
      procedure, private :: set_levscls_index
      procedure, private :: set_levpft_index
      procedure, private :: set_levage_index
@@ -597,6 +604,7 @@ contains
 
     use FatesIODimensionsMod, only : patch, column, levgrnd, levscpf
     use FatesIODimensionsMod, only : levscls, levpft, levage
+    use FatesIODimensionsMod, only : levcoage, levcoagepf
     use FatesIODimensionsMod, only : levfuel, levcwdsc, levscag
     use FatesIODimensionsMod, only : levscagpft, levagepft
     use FatesIODimensionsMod, only : levcan, levcnlf, levcnlfpft
@@ -635,6 +643,16 @@ contains
     call this%set_levscls_index(dim_count)
     call this%dim_bounds(dim_count)%Init(levscls, num_threads, &
          fates_bounds%size_class_begin, fates_bounds%size_class_end)
+
+    dim_count = dim_count + 1
+    call this%set_levcoage_index(dim_count)
+    call this%dim_bounds(dim_count)%Init(levcoage, num_threads, &
+         fates_bounds%coage_class_begin, fates_bounds%coage_class_end)
+
+    dim_count = dim_count + 1
+    call this%set_levcoagepf_index(dim_count)
+    call this%dim_bounds(dim_count)%Init(levcoagepf, num_threads, &
+         fates_bounds%coagepf_class_begin, fates_bounds%coagepf_class_end)
 
     dim_count = dim_count + 1
     call this%set_levpft_index(dim_count)
@@ -732,6 +750,14 @@ contains
     index = this%levscls_index()
     call this%dim_bounds(index)%SetThreadBounds(thread_index, &
          thread_bounds%size_class_begin, thread_bounds%size_class_end)
+
+    index = this%levcoage_index()
+    call this%dim_bounds(index)%SetThreadBounds(thread_index, &
+         thread_bounds%coage_class_begin, thread_bounds%coage_class_end)
+
+    index = this%levcoagepft_index()
+    call this%dim_bounds(index)%SetThreadBounds(thread_index, &
+         thread_bounds%coagepft_class_begin, thread_bounds%coagepft_class_end)
 
     index = this%levpft_index()
     call this%dim_bounds(index)%SetThreadBounds(thread_index, &
