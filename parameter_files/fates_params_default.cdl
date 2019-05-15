@@ -1,4 +1,3 @@
-
 netcdf fates_params_default {
 dimensions:
 	fates_NCWD = 4 ;
