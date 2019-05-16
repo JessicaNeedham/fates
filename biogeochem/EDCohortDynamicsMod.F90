@@ -16,6 +16,7 @@ module EDCohortDynamicsMod
   use FatesConstantsMod     , only : nearzero
   use FatesConstantsMod     , only : calloc_abs_error
   use FatesInterfaceMod     , only : hlm_days_per_year
+  use EDTypesMod            , only : cohort_age_fusion_tol
   use FatesInterfaceMod     , only : nleafage
   use EDPftvarcon           , only : EDPftvarcon_inst
   use FatesParameterDerivedMod, only : param_derived
@@ -478,6 +479,10 @@ contains
     currentCohort%size_class         = fates_unset_int  ! size class index
     currentCohort%size_class_lasttimestep = fates_unset_int  ! size class index
     currentCohort%size_by_pft_class  = fates_unset_int  ! size by pft classification index
+    currentCohort%coage_class        = fates_unset_int  ! cohort age class index
+    currentCohort%coage_by_pft_class = fates_unset_int  ! cohort age by pft class index 
+
+
 
     currentCohort%n                  = nan ! number of individuals in cohort per 'area' (10000m2 default)     
     currentCohort%dbh                = nan ! 'diameter at breast height' in cm
@@ -594,6 +599,7 @@ contains
     currentcohort%seed_prod          = 0._r8
     currentcohort%fraction_crown_burned = 0._r8 
     currentCohort%size_class            = 1
+    currentCohort%coage_class        = 1
     currentCohort%size_class_lasttimestep = 0
     currentcohort%npp_acc_hold       = 0._r8 
     currentcohort%gpp_acc_hold       = 0._r8  
@@ -832,6 +838,8 @@ contains
      !
      ! !USES:
      use EDParamsMod , only :  ED_val_cohort_fusion_tol
+     use FatesConstantsMod, only : days_per_year
+     use FatesConstantsMod, only : cohort_age_fusion_tol
      !
      ! !ARGUMENTS   
      type (ed_site_type), intent(inout),  target :: currentSite 
@@ -853,10 +861,12 @@ contains
      integer  :: nocohorts
      real(r8) :: newn
      real(r8) :: diff
+     real(r8) :: coage_diff
      real(r8) :: leaf_c_next   ! Leaf carbon * plant density of current (for weighting)
      real(r8) :: leaf_c_curr   ! Leaf carbon * plant density of next (for weighting)
      real(r8) :: leaf_c_target 
      real(r8) :: dynamic_fusion_tolerance
+     real(r8) :: coage_fusion_tolerance 
      real(r8) :: dbh
      real(r8) :: leaf_c             ! leaf carbon [kg]
 
@@ -870,6 +880,8 @@ contains
 
      !set initial fusion tolerance
      dynamic_fusion_tolerance = ED_val_cohort_fusion_tol
+     ! set the cohort age fusion tolerance (this is in days - remains constant)
+     coage_fusion_tolerance = cohort_age_fusion_tol
 
      !This needs to be a function of the canopy layer, because otherwise, at canopy closure
      !the number of cohorts doubles and very dissimilar cohorts are fused together
@@ -906,6 +918,10 @@ contains
 
                  if (diff < dynamic_fusion_tolerance) then
 
+                    ! Only fuse if the cohorts are within x years of each other 
+                    coage_diff = abs( currentCohort%coage - nextc%coage )
+                    if (coage_diff < coage_fusion_tolerance ) then 
+
                     ! Don't fuse a cohort with itself!
                     if (.not.associated(currentCohort,nextc) ) then
 
@@ -935,6 +951,7 @@ contains
                                    write(fates_log(),*) 'isnew:',currentCohort%isnew,nextc%isnew
                                    write(fates_log(),*) 'laimemory:',currentCohort%laimemory,nextc%laimemory
                                    write(fates_log(),*) 'hite:',currentCohort%hite,nextc%hite
+                                   write(fates_log(),*) 'coage:',currentCohort%coage,nextc%coage
                                    write(fates_log(),*) 'dbh:',currentCohort%dbh,nextc%dbh
                                    write(fates_log(),*) 'pft:',currentCohort%pft,nextc%pft
                                    write(fates_log(),*) 'canopy_trim:',currentCohort%canopy_trim,nextc%canopy_trim
@@ -1251,6 +1268,7 @@ contains
                           endif !canopy layer
                        endif !pft
                     endif  !index no. 
+                    endif  ! cohort age diff 
                  endif !diff   
                  
                  nextc => nextnextc

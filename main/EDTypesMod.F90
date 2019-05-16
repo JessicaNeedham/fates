@@ -36,6 +36,7 @@ module EDTypesMod
   integer, parameter :: max_nleafage = 4          ! This is the maximum number of leaf age pools, 
                                                   ! used for allocating scratch space
 
+
   ! -------------------------------------------------------------------------------------
   ! Radiation parameters
   ! These should be part of the radiation module, but since we only have one option
@@ -151,6 +152,7 @@ module EDTypesMod
   ! COHORT FUSION
   real(r8), parameter :: HITEMAX              = 30.0_r8    ! max dbh value used in hgt profile comparison 
   integer , parameter :: N_HITE_BINS          = 60         ! no. of hite bins used to distribute LAI
+  real(r8), parameter :: cohort_age_fusion_tol = 5.0_r8 * hlm_days_per_year  ! fusion tol based on cohort age
 
   ! COHORT TERMINATION
 
@@ -853,6 +855,7 @@ module EDTypesMod
      write(fates_log(),*) 'co%n                      = ', ccohort%n                         
      write(fates_log(),*) 'co%dbh                    = ', ccohort%dbh                                        
      write(fates_log(),*) 'co%hite                   = ', ccohort%hite
+     write(fates_log(),*) 'co%coage                  = ', ccohort%coage
      write(fates_log(),*) 'co%laimemory              = ', ccohort%laimemory
      
      write(fates_log(),*) 'leaf carbon               = ', ccohort%prt%GetState(leaf_organ,all_carbon_elements) 
@@ -900,6 +903,7 @@ module EDTypesMod
      write(fates_log(),*) 'co%cmort                  = ', ccohort%cmort
      write(fates_log(),*) 'co%bmort                  = ', ccohort%bmort
      write(fates_log(),*) 'co%smort                  = ', ccohort%smort
+     write(fates_log(),*) 'co%asmort                 = ', ccohort%asmort
      write(fates_log(),*) 'co%hmort                  = ', ccohort%hmort
      write(fates_log(),*) 'co%frmort                 = ', ccohort%frmort
      write(fates_log(),*) 'co%asmort                 = ', ccohort%asmort
