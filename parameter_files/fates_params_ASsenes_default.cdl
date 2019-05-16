@@ -3,7 +3,8 @@ dimensions:
 	fates_NCWD = 4 ;
 	fates_history_age_bins = 7 ;
 	fates_history_height_bins = 6 ;
-	fates_history_size_bins = 100 ;
+	fates_history_size_bins = 13 ;
+	fates_history_cohort_age_bins = 40 ;
 	fates_hydr_organs = 4 ;
 	fates_leafage_class = 1 ;
 	fates_litterclass = 6 ;
@@ -19,6 +20,10 @@ variables:
 	float fates_history_sizeclass_bin_edges(fates_history_size_bins) ;
 		fates_history_sizeclass_bin_edges:units = "cm" ;
 		fates_history_sizeclass_bin_edges:long_name = "Lower edges for DBH size class bins used in size-resolved cohort history output" ;
+	float fates_history_cohort_age_bin_edges(fates_history_cohort_age_bins) ;
+	        fates_history_cohort_age_bin_edges:units = "years" ;
+                fates_history_cohort_age_bin_edges:long_name = "Lower edges for cohort age bins used in cohort-age-resolved \
+cohort history output" ;
 	float fates_history_ageclass_bin_edges(fates_history_age_bins) ;
 		fates_history_ageclass_bin_edges:units = "yr" ;
 		fates_history_ageclass_bin_edges:long_name = "Lower edges for age class bins used in age-resolved patch history output" ;
@@ -370,6 +375,12 @@ variables:
         float fates_mort_r_senescence(fates_pft);
                 fates_mort_r_senescence:units = "mortality rate dbh^-1";
                 fates_mort_r_senescence:long_name = "Mortality senescence rate of change";
+	float fates_mort_ip_age_senescence(fates_pft);
+                fates_mort_ip_age_senescence:units = "age years";
+                fates_mort_ip_age_senescence:long_name ="Mortality age senescence inflection point";
+        float fates_mort_r_age_senescence(fates_pft);
+                fates_mort_r_age_senescence:units = "mortality rate year^-1";
+                fates_mort_r_age_senescence:long_name = "Mortality age senescence rate of change";
 	float fates_mort_freezetol(fates_pft) ;
 		fates_mort_freezetol:units = "NA" ;
 		fates_mort_freezetol:long_name = "minimum temperature tolerance (NOT USED)" ;
@@ -600,9 +611,13 @@ data:
 
  fates_history_height_bin_edges = 0, 0.1, 0.3, 1, 3, 10 ;
 
- fates_history_sizeclass_bin_edges = 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
-32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,
-74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100 ;
+ fates_history_sizeclass_bin_edges = 0, 5, 10, 15, 20, 25, 30, 35, 40, 45,  50,
+55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 
+145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200 ;
+
+ fates_history_cohort_age_bin_edges = 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 
+55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 
+145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200 ;
 
  fates_history_ageclass_bin_edges = 0, 1, 2, 5, 10, 20, 50 ;
 
@@ -656,7 +671,7 @@ data:
 
  fates_phen_b = 638 ;
 
- fates_phen_c = -0.001 ;
+ fates_phen_c = -0.01 ;
 
  fates_phen_chiltemp = 5 ;
 
@@ -950,11 +965,17 @@ data:
  fates_mort_bmort = 0.014, 0.014, 0.014, 0.014, 0.014, 0.014, 0.014, 0.014, 
     0.014, 0.014, 0.014, 0.014 ;
 
- fates_mort_r_senescence = 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2,
-    0.2, 0.2,0.2;
+ fates_mort_ip_senescence = 120.0, 120.0, 120.0, 120.0, 120.0, 120.0, 120.0, 
+     120.0, 120.0, 120.0, 120.0, 120.0 ;
 
-fates_mort_ip_senescence = 60.0, 120.0, 120, 120, 120, 120, 120, 120, 120,
-    120, 120, 120 ;
+ fates_mort_r_senescence = 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 
+     0.2, 0.2 ;
+
+ fates_mort_ip_age_senescence = 200.0, 200.0, 200.0, 200.0, 200.0, 200.0, 
+      200.0, 200.0, 200.0, 200.0, 200.0, 200.0 ;
+
+ fates_mort_r_age_senescence = 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 
+      0.2, 0.2, 0.2 ; 
 
  fates_mort_freezetol = 2.5, -55, -80, -30, 2.5, -30, -60, -10, -80, -80, 
     -20, 2.5 ;
@@ -973,7 +994,7 @@ fates_mort_ip_senescence = 60.0, 120.0, 120, 120, 120, 120, 120, 120, 120,
  fates_mort_scalar_hydrfailure = 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 
     0.6, 0.6, 0.6 ;
 
- fates_pft_used = 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ;
+ fates_pft_used = 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ;
 
  fates_phen_evergreen = 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0 ;
 

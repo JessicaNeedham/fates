@@ -202,6 +202,8 @@ module FatesInterfaceMod
    ! -------------------------------------------------------------------------------------
    
    real(r8), public, allocatable :: fates_hdim_levsclass(:)        ! plant size class lower bound dimension
+   real(r8), public, allocatable :: fates_hdim_levcoage(:)         ! cohort age class lower bound dimension
+   integer , public, allocatable :: fates_hdim_pfmap_levcoage(:)   ! map of pfts into cohort-class x pft dimension
    integer , public, allocatable :: fates_hdim_pfmap_levscpf(:)    ! map of pfts into size-class x pft dimension
    integer , public, allocatable :: fates_hdim_scmap_levscpf(:)    ! map of size-class into size-class x pft dimension
    real(r8), public, allocatable :: fates_hdim_levage(:)           ! patch age lower bound dimension
@@ -257,6 +259,7 @@ module FatesInterfaceMod
    integer, public, protected :: nlevsclass       ! The total number of cohort size class bins output to history
    integer, public, protected :: nlevage          ! The total number of patch age bins output to history
    integer, public, protected :: nlevheight       ! The total number of height bins output to history
+   integer, public, protected :: nlevcoage        ! The total number of cohort age bins output to history 
    integer, public, protected :: nleafage         ! The total number of leaf age classes
 
    ! -------------------------------------------------------------------------------------
@@ -938,6 +941,7 @@ contains
 
       use EDParamsMod, only : ED_val_history_sizeclass_bin_edges, ED_val_history_ageclass_bin_edges
       use EDParamsMod, only : ED_val_history_height_bin_edges
+      use EDParamsMod, only : ED_va_history_coageclass_bin_edges
       use CLMFatesParamInterfaceMod         , only : FatesReadParameters
       implicit none
       
@@ -1000,6 +1004,7 @@ contains
          nlevsclass = size(ED_val_history_sizeclass_bin_edges,dim=1)
          nlevage = size(ED_val_history_ageclass_bin_edges,dim=1)
          nlevheight = size(ED_val_history_height_bin_edges,dim=1)
+         nlevcoage = size(ED_val_history_coageclass_bin_edges,dim=1)
 
          ! do some checks on the size, age, and height bin arrays to make sure they make sense:
          ! make sure that all start at zero, and that both are monotonically increasing
@@ -1013,6 +1018,10 @@ contains
          endif
          if ( ED_val_history_height_bin_edges(1) .ne. 0._r8 ) then
             write(fates_log(), *) 'height class bins specified in parameter file must start at zero'
+            call endrun(msg=errMsg(sourcefile, __LINE__))
+         endif
+         if ( ED_val_history_coageclass_bin_edges(1) .ne. 0._r8 ) then 
+            write(fates_log(), *) 'cohort age class bines specified in parameter file must start at zero'
             call endrun(msg=errMsg(sourcefile, __LINE__))
          endif
          do i = 2,nlevsclass
@@ -1030,6 +1039,12 @@ contains
          do i = 2,nlevheight
             if ( (ED_val_history_height_bin_edges(i) - ED_val_history_height_bin_edges(i-1)) .le. 0._r8) then
                write(fates_log(), *) 'height class bins specified in parameter file must be monotonically increasing'
+               call endrun(msg=errMsg(sourcefile, __LINE__))
+            end if
+         end do
+         do i = 2,nlevcoage
+            if ( (ED_val_history_coageclass_bin_edges(i) - ED_val_history_coageclass_bin_edges(i-1)) .le. 0._r8) then
+               write(fates_log(), *) 'cohort age class bins specified in parameter file must be monotonically increasing'
                call endrun(msg=errMsg(sourcefile, __LINE__))
             end if
          end do
@@ -1065,10 +1080,11 @@ contains
        use EDParamsMod, only : ED_val_history_sizeclass_bin_edges
        use EDParamsMod, only : ED_val_history_ageclass_bin_edges
        use EDParamsMod, only : ED_val_history_height_bin_edges
+       use EDParamsMod, only : ED_val_history_coageclass_bin_edges
 
        ! ------------------------------------------------------------------------------------------
        ! This subroutine allocates and populates the variables
-       ! that define the mapping of variables in history files in multiplexed dimensions liked
+       ! that define the mapping of variables in history files in multiplexed dimensions like
        ! the "scpf" format
        ! back to
        ! their respective single component dimensions, like size-class "sc" and pft "pf"
@@ -1083,6 +1099,7 @@ contains
        integer :: ileaf
        integer :: iage
        integer :: iheight
+       integer :: icoage
 
        allocate( fates_hdim_levsclass(1:nlevsclass   ))
        allocate( fates_hdim_pfmap_levscpf(1:nlevsclass*numpft))
@@ -1092,6 +1109,9 @@ contains
        allocate( fates_hdim_levcwdsc(1:NCWD   ))
        allocate( fates_hdim_levage(1:nlevage   ))
        allocate( fates_hdim_levheight(1:nlevheight   ))
+       allocate( fates_hdim_levcoage(1:nlevcoage ))
+       allocate( fates_hdim_pfmap_levcoagepf(1:nlevcoage*numpft))
+       allocate( fates_hdim_coagemap_levcoagepf(1:nlevcoage*numpft))
 
        allocate( fates_hdim_levcan(nclmax))
        allocate( fates_hdim_canmap_levcnlf(nlevleaf*nclmax))
@@ -1111,6 +1131,7 @@ contains
        fates_hdim_levsclass(:) = ED_val_history_sizeclass_bin_edges(:)
        fates_hdim_levage(:) = ED_val_history_ageclass_bin_edges(:)
        fates_hdim_levheight(:) = ED_val_history_height_bin_edges(:)
+       fates_hdim_levcoage(:) = ED_val_history_coageclass_bin_edges(:)
 
        ! make pft array
        do ipft=1,numpft
@@ -1139,6 +1160,15 @@ contains
              i=i+1
              fates_hdim_pfmap_levscpf(i) = ipft
              fates_hdim_scmap_levscpf(i) = isc
+          end do
+       end do
+
+       i=0
+       do ipft=1,numpft
+          do ica=1,nlevcoage
+             i=i+1
+             fates_hdim_pfmap_levcoagepf(i) = ipft
+             fates_hdim_coagemap_levcoagepf(i) = ica
           end do
        end do
 
