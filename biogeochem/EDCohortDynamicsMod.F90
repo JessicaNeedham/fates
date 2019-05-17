@@ -151,7 +151,7 @@ contains
                                                          ! per 'area' (10000m2 default)
     real(r8), intent(in)   :: hite                       ! height: meters
     real(r8), intent(in)   :: dbh                        ! dbh: cm
-    reaL(r8), intent(in)   :: coage                      ! cohort age: days
+    integer,  intent(in)   :: coage                      ! cohort age: days
     real(r8), intent(in)   :: bleaf                      ! biomass in leaves: kgC
     real(r8), intent(in)   :: bfineroot                  ! biomass in fineroots: kgC
     real(r8), intent(in)   :: bsap                       ! biomass in sapwood: kgC
@@ -839,7 +839,7 @@ contains
      ! !USES:
      use EDParamsMod , only :  ED_val_cohort_fusion_tol
      use FatesConstantsMod, only : days_per_year
-     use FatesConstantsMod, only : cohort_age_fusion_tol
+     use EDTypesMod, only : cohort_age_fusion_tol
      !
      ! !ARGUMENTS   
      type (ed_site_type), intent(inout),  target :: currentSite 
@@ -861,7 +861,7 @@ contains
      integer  :: nocohorts
      real(r8) :: newn
      real(r8) :: diff
-     real(r8) :: coage_diff
+     integer :: coage_diff
      real(r8) :: leaf_c_next   ! Leaf carbon * plant density of current (for weighting)
      real(r8) :: leaf_c_curr   ! Leaf carbon * plant density of next (for weighting)
      real(r8) :: leaf_c_target 
