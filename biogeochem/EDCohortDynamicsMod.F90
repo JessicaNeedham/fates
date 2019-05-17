@@ -151,7 +151,7 @@ contains
                                                          ! per 'area' (10000m2 default)
     real(r8), intent(in)   :: hite                       ! height: meters
     real(r8), intent(in)   :: dbh                        ! dbh: cm
-    integer,  intent(in)   :: coage                      ! cohort age: days
+    real(r8), intent(in)   :: coage                      ! cohort age: days
     real(r8), intent(in)   :: bleaf                      ! biomass in leaves: kgC
     real(r8), intent(in)   :: bfineroot                  ! biomass in fineroots: kgC
     real(r8), intent(in)   :: bsap                       ! biomass in sapwood: kgC
@@ -861,7 +861,7 @@ contains
      integer  :: nocohorts
      real(r8) :: newn
      real(r8) :: diff
-     integer :: coage_diff
+     real(r8) :: coage_diff
      real(r8) :: leaf_c_next   ! Leaf carbon * plant density of current (for weighting)
      real(r8) :: leaf_c_curr   ! Leaf carbon * plant density of next (for weighting)
      real(r8) :: leaf_c_target 
@@ -963,6 +963,13 @@ contains
                                    end do
                                 end if
 
+
+                                ! new cohort age is weighted mean of two cohorts
+                                currentCohort%coage = &
+                                      (currentCohort%coage * (currentCohort%n/(currentCohort%n + nextc%n))) + &
+                                                      (nextc%coage * (nextc%n/(currentCohort%n + nextc%n)))
+
+                                
 
                                 ! Fuse all mass pools
                                 call currentCohort%prt%WeightedFusePRTVartypes(nextc%prt, &
@@ -1160,7 +1167,7 @@ contains
                                 endif
                                    
                                 ! Flux and biophysics variables have not been calculated for recruits we just default to 
-                                ! their initization values, which should be the same for eahc
+                                ! their initization values, which should be the same for each
                                 
                                 if ( .not.currentCohort%isnew) then
 
@@ -1268,8 +1275,8 @@ contains
                           endif !canopy layer
                        endif !pft
                     endif  !index no. 
-                    endif  ! cohort age diff 
-                 endif !diff   
+                  endif  ! cohort age diff 
+                endif !diff   
                  
                  nextc => nextnextc
                  
