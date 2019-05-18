@@ -83,6 +83,7 @@ module FatesHistoryInterfaceMod
   !
   ! For reference, some standardized abbreviations of the FATES dimensions are listed here:
   ! scls = size-class dimension
+  ! cacls = cohort age-class dimension
   ! pft  = the pft dimension
   ! age  = the age bin dimension
   ! height = the height bin dimension
@@ -92,13 +93,13 @@ module FatesHistoryInterfaceMod
   ! we have create some "multiplexed" dimensions that combine two or more dimensions into a
   ! single dimension.  Examples of these are the following:
   ! scpf = size class x PFT
+  ! cacpf = cohort age class x PFT
   ! cnlf = canopy layer x leaf layer
   ! cnlfpft = canopy layer x leaf layer x PFT
   ! scag = size class bin x age bin
   ! scagpft = size class bin x age bin x PFT
   ! agepft  = age bin x PFT
-  ! coage = cohort age class
-  ! coagepf = cohort age class x PFT 
+ 
 
   ! A recipe for adding a new history variable to this module:
   ! (1) decide what time frequency it makes sense to update the variable at, and what dimension(s)
@@ -286,8 +287,8 @@ module FatesHistoryInterfaceMod
   integer, private :: ih_cambialfiremort_si_scpf
 
 ! also track age dependent moratlity by cohort age x pft
-  integer, private :: ih_m10_si_coagepf
-  integer, private :: ih_nplant_si_coagepf
+  integer, private :: ih_m10_si_capf
+  integer, private :: ih_nplant_si_capf
 
  
   integer, private :: ih_ar_si_scpf
@@ -336,8 +337,8 @@ module FatesHistoryInterfaceMod
   integer, private :: ih_m10_si_scls
 
   ! age dependent mortality also tracked by cohort age (as well as size)
-  integer, private :: ih_m10_si_coage
-  integer, private :: ih_nplant_si_coage
+  integer, private :: ih_m10_si_cacls
+  integer, private :: ih_nplant_si_cacls
 
   ! lots of non-default diagnostics for understanding canopy versus understory carbon balances
   integer, private :: ih_rdark_canopy_si_scls
@@ -534,12 +535,12 @@ module FatesHistoryInterfaceMod
      type(iovar_map_type), pointer :: iovar_map(:)
 
      integer, private :: patch_index_, column_index_, levgrnd_index_, levscpf_index_
-     integer, private :: levscls_index_, levpft_index_, levage_index_
+     integer, private :: levscls_index_, levpft_index_, levage_index_, levcacls_index_
      integer, private :: levfuel_index_, levcwdsc_index_, levscag_index_
      integer, private :: levcan_index_, levcnlf_index_, levcnlfpft_index_
      integer, private :: levscagpft_index_, levagepft_index_
      integer, private :: levheight_index_
-     integer, private :: levcoage_index
+     integer, private :: levcapf_index_
    contains
      
      procedure, public :: Init
@@ -558,8 +559,8 @@ module FatesHistoryInterfaceMod
      procedure, public :: column_index
      procedure, public :: levgrnd_index
      procedure, public :: levscpf_index
-     procedure, public :: levcoage_index
-     procedure, public :: levcoagepf_index
+     procedure, public :: levcacls_index
+     procedure, public :: levcapf_index
      procedure, public :: levscls_index
      procedure, public :: levpft_index
      procedure, public :: levage_index
@@ -584,8 +585,8 @@ module FatesHistoryInterfaceMod
      procedure, private :: set_column_index
      procedure, private :: set_levgrnd_index
      procedure, private :: set_levscpf_index
-     procedure, private :: set_levcoage_index
-     procedure, private :: set_levcoagepf_index
+     procedure, private :: set_levcacls_index
+     procedure, private :: set_levcapf_index
      procedure, private :: set_levscls_index
      procedure, private :: set_levpft_index
      procedure, private :: set_levage_index
@@ -612,7 +613,7 @@ contains
 
     use FatesIODimensionsMod, only : patch, column, levgrnd, levscpf
     use FatesIODimensionsMod, only : levscls, levpft, levage
-    use FatesIODimensionsMod, only : levcoage, levcoagepf
+    use FatesIODimensionsMod, only : levcacls, levcapf
     use FatesIODimensionsMod, only : levfuel, levcwdsc, levscag
     use FatesIODimensionsMod, only : levscagpft, levagepft
     use FatesIODimensionsMod, only : levcan, levcnlf, levcnlfpft
@@ -653,13 +654,13 @@ contains
          fates_bounds%size_class_begin, fates_bounds%size_class_end)
 
     dim_count = dim_count + 1
-    call this%set_levcoage_index(dim_count)
-    call this%dim_bounds(dim_count)%Init(levcoage, num_threads, &
+    call this%set_levcacls_index(dim_count)
+    call this%dim_bounds(dim_count)%Init(levcacls, num_threads, &
          fates_bounds%coage_class_begin, fates_bounds%coage_class_end)
 
     dim_count = dim_count + 1
-    call this%set_levcoagepf_index(dim_count)
-    call this%dim_bounds(dim_count)%Init(levcoagepf, num_threads, &
+    call this%set_levcapf_index(dim_count)
+    call this%dim_bounds(dim_count)%Init(levcapf, num_threads, &
          fates_bounds%coagepf_class_begin, fates_bounds%coagepf_class_end)
 
     dim_count = dim_count + 1
@@ -759,13 +760,13 @@ contains
     call this%dim_bounds(index)%SetThreadBounds(thread_index, &
          thread_bounds%size_class_begin, thread_bounds%size_class_end)
 
-    index = this%levcoage_index()
+    index = this%levcacls_index()
     call this%dim_bounds(index)%SetThreadBounds(thread_index, &
          thread_bounds%coage_class_begin, thread_bounds%coage_class_end)
 
-    index = this%levcoagepft_index()
+    index = this%levcapf_index()
     call this%dim_bounds(index)%SetThreadBounds(thread_index, &
-         thread_bounds%coagepft_class_begin, thread_bounds%coagepft_class_end)
+         thread_bounds%coagepf_class_begin, thread_bounds%coagepf_class_end)
 
     index = this%levpft_index()
     call this%dim_bounds(index)%SetThreadBounds(thread_index, &
@@ -851,10 +852,10 @@ contains
     call this%set_dim_indices(site_size_r8, 2, this%levscls_index())
 
     call this%set_dim_indices(site_coage_r8, 1, this%column_index())
-    call this%set_dim_indices(site_coage_r8, 2, this%levcoage_index())
+    call this%set_dim_indices(site_coage_r8, 2, this%levcacls_index())
 
     call this%set_dim_indices(site_coage_pft_r8, 1, this%column_index())
-    call this%set_dim_indices(site_coage_pft_r8, 2, this%levcoagepf_index())
+    call this%set_dim_indices(site_coage_pft_r8, 2, this%levcapf_index())
 
     call this%set_dim_indices(site_pft_r8, 1, this%column_index())
     call this%set_dim_indices(site_pft_r8, 2, this%levpft_index())
@@ -1003,32 +1004,32 @@ contains
  end function levscls_index
 
 !=========================================================================
-subroutine set_levcoage_index(this, index)
+ subroutine set_levcacls_index(this, index)
   implicit none
   class(fates_history_interface_type), intent(inout) :: this
   integer, intent(in) :: index
-  this%levcoage_index_ = index
-end subroutine set_levcoage_index
+  this%levcacls_index_ = index
+end subroutine set_levcacls_index
 
-integer function levcoage_index(this)
+integer function levcacls_index(this)
   implicit none
   class(fates_history_interface_type), intent(in) :: this
-  levcoage_index = this%levcoage_index_
-end function levcoage_index
+  levcacls_index = this%levcacls_index_
+end function levcacls_index
 
 !=========================================================================
- subroutine set_levcoagepf_index(this, index)
+ subroutine set_levcapf_index(this, index)
    implicit none
    class(fates_history_interface_type), intent(inout) :: this
    integer, intent(in) :: index
-   this%levcoagepf_index_ = index
- end subroutine set_levcoagepf_index
+   this%levcapf_index_ = index
+ end subroutine set_levcapf_index
 
-integer function levcoagepf_index(this)
+integer function levcapf_index(this)
   implicit none
   class(fates_history_interface_type), intent(in) :: this
-  levcoagepf_index = this%levcoage_index_
-end function levcoagepf_index
+  levcapf_index = this%levcapf_index_
+end function levcapf_index
 
  ! =======================================================================
  subroutine set_levpft_index(this, index)
@@ -1474,7 +1475,7 @@ end subroutine flush_hvars
     integer  :: ivar             ! index of IO variable object vector
     integer  :: ft               ! functional type index
     integer  :: i_scpf,i_pft,i_scls     ! iterators for scpf, pft, and scls dims
-    integer  :: i_coage, i_coagepf      ! iterators for cohort age and cohort age x pft
+    integer  :: i_cacls, i_capf      ! iterators for cohort age and cohort age x pft
     integer  :: i_cwd,i_fuel            ! iterators for cwd and fuel dims
     integer  :: iscag        ! size-class x age index
     integer  :: iscagpft     ! size-class x age x pft index
@@ -1616,8 +1617,8 @@ end subroutine flush_hvars
                hio_m8_si_scpf          => this%hvars(ih_m8_si_scpf)%r82d, &
                hio_m9_si_scpf          => this%hvars(ih_m9_si_scpf)%r82d, &
                hio_m10_si_scpf         => this%hvars(ih_m10_si_scpf)%r82d, &
-               hio_m10_si_coagepf      => this%hvars(ih_m10_si_coagepf)%r82d, &
-               hio_nplant_si_coagepf   => this%hvars(ih_nplant_si_coagepf)%r82d, &
+               hio_m10_si_capf      => this%hvars(ih_m10_si_capf)%r82d, &
+               hio_nplant_si_capf   => this%hvars(ih_nplant_si_capf)%r82d, &
                hio_crownfiremort_si_scpf     => this%hvars(ih_crownfiremort_si_scpf)%r82d, &
                hio_cambialfiremort_si_scpf   => this%hvars(ih_cambialfiremort_si_scpf)%r82d, &
 
@@ -1631,8 +1632,8 @@ end subroutine flush_hvars
                hio_m8_si_scls          => this%hvars(ih_m8_si_scls)%r82d, &
                hio_m9_si_scls          => this%hvars(ih_m9_si_scls)%r82d, &
                hio_m10_si_scls         => this%hvars(ih_m10_si_scls)%r82d, &
-               hio_m10_si_coage        => this%hvars(ih_m10_si_coage)%r82d, &
-               hio_nplant_si_coage     => this%hvars(ih_nplant_si_coage)%r82d, &
+               hio_m10_si_cacls        => this%hvars(ih_m10_si_cacls)%r82d, &
+               hio_nplant_si_cacls     => this%hvars(ih_nplant_si_cacls)%r82d, &
 	       hio_c13disc_si_scpf     => this%hvars(ih_c13disc_si_scpf)%r82d, &                    
 
 
@@ -2058,10 +2059,9 @@ end subroutine flush_hvars
                     hio_m8_si_scpf(io_si,scpf) = hio_m8_si_scpf(io_si,scpf) + ccohort%frmort*ccohort%n
                     hio_m9_si_scpf(io_si,scpf) = hio_m9_si_scpf(io_si,scpf) + ccohort%smort*ccohort%n
                     hio_m10_si_scpf(io_si,scpf) = hio_m10_si_scpf(io_si,scpf) + ccohort%asmort*ccohort%n
-                    hio_m10_si_coagepf(io_si,coagepf) = hio_m10_si_coagepf(io_si,coagepf) + &
+                    hio_m10_si_capf(io_si,capf) = hio_m10_si_capf(io_si,capf) + &
                          ccohort%asmort*ccohort%n
-                    hio_nplant_si_coagepf(io_si,coagepf) = hio_nplant_si_coagepf(io_si,coagepf) + &
-                         ccohort%n
+                   
 
                     hio_m1_si_scls(io_si,scls) = hio_m1_si_scls(io_si,scls) + ccohort%bmort*ccohort%n
                     hio_m2_si_scls(io_si,scls) = hio_m2_si_scls(io_si,scls) + ccohort%hmort*ccohort%n
@@ -2072,10 +2072,9 @@ end subroutine flush_hvars
                          ccohort%frmort*ccohort%n
                     hio_m9_si_scls(io_si,scls) = hio_m9_si_scls(io_si,scls) + ccohort%smort*ccohort%n
                     hio_m10_si_scls(io_si,scls) = hio_m10_si_scls(io_si,scls) + ccohort%asmort*ccohort%n
-                    hio_m10_si_coage(io_si,coage) = hio_m10_si_coage(io_si,coage) + &
+                    hio_m10_si_cacls(io_si,cacls) = hio_m10_si_cacls(io_si,cacls) + &
                          ccohort%asmort*ccohort%n
-                    hio_nplant_si_coage(io_si,coage) = hio_nplant_si_coage(io_si,coage) + &
-                         ccohort%n
+                    
                     
 
                     !C13 discrimination
@@ -2089,7 +2088,11 @@ end subroutine flush_hvars
                     ! number density [/ha]
                     hio_nplant_si_scpf(io_si,scpf) = hio_nplant_si_scpf(io_si,scpf) + ccohort%n
 
+                    ! number density along the cohort age dimension
+                    hio_nplant_si_capf(io_si,capf) = hio_nplant_si_capf(io_si,capf) + ccohort%n
+                    hio_nplant_si_cacls(io_si,cacls) = hio_nplant_si_cacls(io_si,cacls) + ccohort%n
 
+                    ! number density by size and biomass
                     hio_agb_si_scls(io_si,scls) = hio_agb_si_scls(io_si,scls) + &
                           total_c * ccohort%n * EDPftvarcon_inst%allom_agb_frac(ccohort%pft) * AREA_INV
 
@@ -2104,6 +2107,8 @@ end subroutine flush_hvars
 
                     hio_nplant_si_scls(io_si,scls) = hio_nplant_si_scls(io_si,scls) + ccohort%n
 
+                    hio_nplant_si_cacls(io_si,cacls) = hio_nplant_si_cacls(io_si,cacls) + ccohort%n
+                    
                     ! update size, age, and PFT - indexed quantities
 
                     iscagpft = get_sizeagepft_class_index(ccohort%dbh,cpatch%age,ccohort%pft)
@@ -2267,7 +2272,7 @@ end subroutine flush_hvars
                              ccohort%n * sec_per_day * days_per_year
                        
                        hio_understory_mortality_carbonflux_si(io_si) = hio_understory_mortality_carbonflux_si(io_si) + &
-                             (ccohort%bmort + ccohort%hmort + ccohort%cmort & 
+                             (ccohort%bmort + ccohort%hmort + ccohort%cmort + & 
                              ccohort%frmort + ccohort%smort + ccohort%asmort) * &
                              total_c * ccohort%n * g_per_kg * days_per_sec * years_per_day * ha_per_m2 + &
                              (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * total_c * &
@@ -4363,15 +4368,15 @@ end subroutine flush_hvars
          avgflag='A', vtype =site_size_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m10_si_scpf )
     
-    call this%set_history_var(vname='M10_COAGEPF',units='N/ha/yr',         &
+    call this%set_history_var(vname='M10_CAPF',units='N/ha/yr',         &
          long='age senescence mortality by pft/cohort age',use_default='inactive', &
-         avgfloag='A', vtype = site_coage_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,   &
-         upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m10_si_coagepf )
+         avgflag='A', vtype = site_coage_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,   &
+         upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m10_si_capf )
 
-    call this%set_history_var(vname='NPLANT_COAGEPF',units='N/ha/yr',        &
+    call this%set_history_var(vname='NPLANT_CAPF',units='N/ha/yr',        &
          long='no. plants by pft/cohort age',use_default='inactive', &
-         avgfloag='A', vtype = site_coage_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
-         upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_si_coagepf )
+         avgflag='A', vtype = site_coage_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
+         upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_si_capf )
 
     call this%set_history_var(vname='MORTALITY_CANOPY_SCPF', units = 'N/ha/yr',          &
           long='total mortality of canopy plants by pft/size', use_default='inactive', &
@@ -4622,15 +4627,15 @@ end subroutine flush_hvars
           avgflag='A', vtype=site_size_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m10_si_scls ) 
 
-    call this%set_history_var(vname='M10_COAGE', units = 'N/ha/yr',             &
+    call this%set_history_var(vname='M10_CACLS', units = 'N/ha/yr',             &
           long='age senescence mortality by cohort age',use_default='active',      &
           avgflag='A', vtype=site_coage_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
-          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m10_si_coage )
+          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m10_si_cacls )
 
-    call this%set_history_var(vname='NPLANT_COAGE', units = 'N/ha',            &
+    call this%set_history_var(vname='NPLANT_CACLS', units = 'N/ha',            &
          long='no. plants by cohort age', use_default='active',   &
          avgflag='A', vtype=site_coage_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
-         upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_si_coage )
+         upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_si_cacls )
 
     
     call this%set_history_var(vname='CARBON_BALANCE_CANOPY_SCLS', units = 'kg C / ha / yr', &

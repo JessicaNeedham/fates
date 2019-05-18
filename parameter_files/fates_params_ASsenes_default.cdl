@@ -3,7 +3,7 @@ dimensions:
 	fates_NCWD = 4 ;
 	fates_history_age_bins = 7 ;
 	fates_history_height_bins = 6 ;
-	fates_history_size_bins = 13 ;
+	fates_history_size_bins = 40 ;
 	fates_history_cohort_age_bins = 40 ;
 	fates_hydr_organs = 4 ;
 	fates_leafage_class = 1 ;
@@ -22,8 +22,7 @@ variables:
 		fates_history_sizeclass_bin_edges:long_name = "Lower edges for DBH size class bins used in size-resolved cohort history output" ;
 	float fates_history_cohort_age_bin_edges(fates_history_cohort_age_bins) ;
 	        fates_history_cohort_age_bin_edges:units = "years" ;
-                fates_history_cohort_age_bin_edges:long_name = "Lower edges for cohort age bins used in cohort-age-resolved \
-cohort history output" ;
+                fates_history_cohort_age_bin_edges:long_name = "Lower edges for cohort age bins used in cohort-age-resolved cohort history output" ;
 	float fates_history_ageclass_bin_edges(fates_history_age_bins) ;
 		fates_history_ageclass_bin_edges:units = "yr" ;
 		fates_history_ageclass_bin_edges:long_name = "Lower edges for age class bins used in age-resolved patch history output" ;
@@ -971,8 +970,8 @@ data:
  fates_mort_r_senescence = 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 
      0.2, 0.2 ;
 
- fates_mort_ip_age_senescence = 200.0, 200.0, 200.0, 200.0, 200.0, 200.0, 
-      200.0, 200.0, 200.0, 200.0, 200.0, 200.0 ;
+ fates_mort_ip_age_senescence = 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 
+      100.0, 100.0, 100.0, 100.0, 100.0, 100.0 ;
 
  fates_mort_r_age_senescence = 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 
       0.2, 0.2, 0.2 ; 

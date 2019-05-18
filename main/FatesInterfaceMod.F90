@@ -203,9 +203,10 @@ module FatesInterfaceMod
    
    real(r8), public, allocatable :: fates_hdim_levsclass(:)        ! plant size class lower bound dimension
    real(r8), public, allocatable :: fates_hdim_levcoage(:)         ! cohort age class lower bound dimension
-   integer , public, allocatable :: fates_hdim_pfmap_levcoage(:)   ! map of pfts into cohort-class x pft dimension
    integer , public, allocatable :: fates_hdim_pfmap_levscpf(:)    ! map of pfts into size-class x pft dimension
    integer , public, allocatable :: fates_hdim_scmap_levscpf(:)    ! map of size-class into size-class x pft dimension
+   integer , public, allocatable :: fates_hdim_pfmap_levcapf(:)    ! map of pfts into cohort age class x pft dimension
+   integer , public, allocatable :: fates_hdim_camap_levcapf(:)    ! map of cohort age class into cohort age x pft dimension
    real(r8), public, allocatable :: fates_hdim_levage(:)           ! patch age lower bound dimension
    real(r8), public, allocatable :: fates_hdim_levheight(:)        ! height lower bound dimension
    integer , public, allocatable :: fates_hdim_levpft(:)           ! plant pft dimension
@@ -224,7 +225,8 @@ module FatesInterfaceMod
    integer , public, allocatable :: fates_hdim_pftmap_levscagpft(:)    ! map of pft into size-class x patch age x pft dimension
    integer , public, allocatable :: fates_hdim_agmap_levagepft(:)      ! map of patch-age into patch age x pft dimension
    integer , public, allocatable :: fates_hdim_pftmap_levagepft(:)     ! map of pft into patch age x pft dimension
-
+   
+   
    ! ------------------------------------------------------------------------------------
    !                              DYNAMIC BOUNDARY CONDITIONS
    ! ------------------------------------------------------------------------------------
@@ -941,7 +943,7 @@ contains
 
       use EDParamsMod, only : ED_val_history_sizeclass_bin_edges, ED_val_history_ageclass_bin_edges
       use EDParamsMod, only : ED_val_history_height_bin_edges
-      use EDParamsMod, only : ED_va_history_coageclass_bin_edges
+      use EDParamsMod, only : ED_val_history_coageclass_bin_edges
       use CLMFatesParamInterfaceMod         , only : FatesReadParameters
       implicit none
       
@@ -1092,6 +1094,7 @@ contains
 
        integer :: i
        integer :: isc
+       integer :: ica
        integer :: ipft
        integer :: icwd
        integer :: ifuel
@@ -1110,8 +1113,8 @@ contains
        allocate( fates_hdim_levage(1:nlevage   ))
        allocate( fates_hdim_levheight(1:nlevheight   ))
        allocate( fates_hdim_levcoage(1:nlevcoage ))
-       allocate( fates_hdim_pfmap_levcoagepf(1:nlevcoage*numpft))
-       allocate( fates_hdim_coagemap_levcoagepf(1:nlevcoage*numpft))
+       allocate( fates_hdim_pfmap_levcapf(1:nlevcoage*numpft))
+       allocate( fates_hdim_camap_levcapf(1:nlevcoage*numpft))
 
        allocate( fates_hdim_levcan(nclmax))
        allocate( fates_hdim_canmap_levcnlf(nlevleaf*nclmax))
@@ -1167,8 +1170,8 @@ contains
        do ipft=1,numpft
           do ica=1,nlevcoage
              i=i+1
-             fates_hdim_pfmap_levcoagepf(i) = ipft
-             fates_hdim_coagemap_levcoagepf(i) = ica
+             fates_hdim_pfmap_levcapf(i) = ipft
+             fates_hdim_camap_levcapf(i) = ica
           end do
        end do
 

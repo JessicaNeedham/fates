@@ -17,8 +17,8 @@ module FatesIODimensionsMod
     character(*), parameter :: levscpf = 'fates_levscpf'      ! matches histFileMod
     character(*), parameter :: levscls = 'fates_levscls'      ! matches histFileMod
     character(*), parameter :: levpft = 'fates_levpft'        ! matches histFileMod
-    character(*), parameter :: levcoage = 'fates_levcoage'    ! matchces histFileMod
-    character(*), parameter :: levcoagepf = 'fates_levcoagepf' ! matches histFileMod
+    character(*), parameter :: levcacls = 'fates_levcacls'    ! matchces histFileMod
+    character(*), parameter :: levcapf = 'fates_levcapf'      ! matches histFileMod
     character(*), parameter :: levage = 'fates_levage'        ! matches histFileMod
     character(*), parameter :: levheight = 'fates_levheight'  ! matches histFileMod
     character(*), parameter :: levfuel = 'fates_levfuel'      ! matches histFileMod
@@ -41,13 +41,13 @@ module FatesIODimensionsMod
     ! levscpf = This is a structure that records the boundaries for the
     ! number of size-class x pft dimension
 
-    ! levcoagepf = This is a structure that records the boundaries for the
+    ! levcapf = This is a structure that records the boundaries for the
     ! number of cohort-age-class x pft dimension
 
     ! levscls = This is a structure that records the boundaries for the
     ! number of size-class dimension
 
-    ! levcoage = This is a structure that records the boundaries for the 
+    ! levcacls = This is a structure that records the boundaries for the 
     ! number of cohort age class dimension
 
     ! levpft = This is a structure that records the boundaries for the
