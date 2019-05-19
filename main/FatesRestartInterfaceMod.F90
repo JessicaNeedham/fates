@@ -784,7 +784,7 @@ contains
     call this%set_restart_var(vname='fates_asmort', vtype=cohort_r8, &
          long_name='ed cohort - age senescence mortality rate', &
          units = '/year', flushval = flushzero, & 
-         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, indx = ir_asmort_co )
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_asmort_co )
 
     call this%set_restart_var(vname='fates_lmort_direct', vtype=cohort_r8, &
          long_name='ed cohort - directly logging mortality rate', &

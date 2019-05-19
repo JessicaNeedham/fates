@@ -963,7 +963,8 @@ contains
                  1, csite%spread
          endif
 
-         call create_cohort(csite, cpatch, temp_cohort%pft, temp_cohort%n, temp_cohort%hite, &
+         call create_cohort(csite, cpatch, temp_cohort%pft, temp_cohort%n, &
+              temp_cohort%hite, temp_cohort%coage, &
               temp_cohort%dbh, b_leaf, b_fineroot, b_sapwood, b_dead, b_store, &
               temp_cohort%laimemory, cstatus, rstatus, temp_cohort%canopy_trim, &
               1, csite%spread, equal_leaf_aclass, bc_in)

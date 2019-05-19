@@ -2004,7 +2004,9 @@ end subroutine flush_hvars
 
 
                   associate( scpf => ccohort%size_by_pft_class, &
-                             scls => ccohort%size_class )
+                       scls => ccohort%size_class, &
+                       cacls => ccohort%coage_class, &
+                       capf => ccohort%coage_by_pft_class)
      
 			     
 		    gpp_cached = hio_gpp_si_scpf(io_si,scpf)
