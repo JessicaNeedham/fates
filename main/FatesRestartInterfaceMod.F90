@@ -97,7 +97,6 @@ module FatesRestartInterfaceMod
   integer, private :: ir_canopy_trim_co
   integer, private :: ir_size_class_lasttimestep_co
   integer, private :: ir_dbh_co
-  integer, private :: ir_coage_co
   integer, private :: ir_g_sb_laweight_co
   integer, private :: ir_height_co
   integer, private :: ir_laimemory_co

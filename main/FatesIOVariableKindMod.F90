@@ -1,4 +1,4 @@
-module FatesIOVariableKindMod
+cdmodule FatesIOVariableKindMod
 
   use FatesConstantsMod, only : fates_long_string_length
   use FatesGlobals, only : fates_log
@@ -16,9 +16,9 @@ module FatesIOVariableKindMod
   character(*), parameter :: site_int = 'SI_INT'
   character(*), parameter :: site_ground_r8 = 'SI_GRND_R8'
   character(*), parameter :: site_size_pft_r8 = 'SI_SCPF_R8'
-  character(*), parameter :: site_coage_pft_r8 = 'SI_COAGEPF_R8'
+  character(*), parameter :: site_coage_pft_r8 = 'SI_CAPF_R8'
   character(*), parameter :: site_size_r8 = 'SI_SCLS_R8'
-  character(*), parameter :: site_coage_r8 = 'SI_COAGE_R8'
+  character(*), parameter :: site_coage_r8 = 'SI_CACLS_R8'
   character(*), parameter :: patch_int = 'PA_INT'
   character(*), parameter :: cohort_r8 = 'CO_R8'
   character(*), parameter :: cohort_int = 'CO_INT'
