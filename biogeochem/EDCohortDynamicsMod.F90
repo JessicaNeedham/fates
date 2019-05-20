@@ -47,6 +47,7 @@ module EDCohortDynamicsMod
   use FatesPlantHydraulicsMod, only : SavePreviousCompartmentVolumes
   use FatesPlantHydraulicsMod, only : ConstrainRecruitNumber
   use FatesSizeAgeTypeIndicesMod, only : sizetype_class_index
+  use FatesSizeAgeTypeIndicesMod, only : coagetype_class_index
   use FatesAllometryMod  , only : bleaf
   use FatesAllometryMod  , only : bfineroot
   use FatesAllometryMod  , only : bsap_allom
