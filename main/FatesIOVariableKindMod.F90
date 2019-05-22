@@ -1,4 +1,4 @@
-cdmodule FatesIOVariableKindMod
+module FatesIOVariableKindMod
 
   use FatesConstantsMod, only : fates_long_string_length
   use FatesGlobals, only : fates_log

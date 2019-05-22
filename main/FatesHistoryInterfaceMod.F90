@@ -25,6 +25,7 @@ module FatesHistoryInterfaceMod
   use FatesInterfaceMod        , only : nlevsclass, nlevage
   use FatesInterfaceMod        , only : nlevheight
   use FatesInterfaceMod        , only : hlm_model_day
+  use FatesInterfaceMod        , only : nlevcoage
 
   ! FIXME(bja, 2016-10) need to remove CLM dependancy 
   use EDPftvarcon              , only : EDPftvarcon_inst
@@ -290,7 +291,6 @@ module FatesHistoryInterfaceMod
   integer, private :: ih_m10_si_capf
   integer, private :: ih_nplant_si_capf
 
- 
   integer, private :: ih_ar_si_scpf
   integer, private :: ih_ar_grow_si_scpf
   integer, private :: ih_ar_maint_si_scpf
@@ -541,6 +541,7 @@ module FatesHistoryInterfaceMod
      integer, private :: levscagpft_index_, levagepft_index_
      integer, private :: levheight_index_
      integer, private :: levcapf_index_
+     
    contains
      
      procedure, public :: Init
@@ -1617,8 +1618,8 @@ end subroutine flush_hvars
                hio_m8_si_scpf          => this%hvars(ih_m8_si_scpf)%r82d, &
                hio_m9_si_scpf          => this%hvars(ih_m9_si_scpf)%r82d, &
                hio_m10_si_scpf         => this%hvars(ih_m10_si_scpf)%r82d, &
-               hio_m10_si_capf      => this%hvars(ih_m10_si_capf)%r82d, &
-               hio_nplant_si_capf   => this%hvars(ih_nplant_si_capf)%r82d, &
+               hio_m10_si_capf         => this%hvars(ih_m10_si_capf)%r82d, &
+               hio_nplant_si_capf      => this%hvars(ih_nplant_si_capf)%r82d, &
                hio_crownfiremort_si_scpf     => this%hvars(ih_crownfiremort_si_scpf)%r82d, &
                hio_cambialfiremort_si_scpf   => this%hvars(ih_cambialfiremort_si_scpf)%r82d, &
 
@@ -1846,6 +1847,8 @@ end subroutine flush_hvars
                ft = ccohort%pft
 
                call sizetype_class_index(ccohort%dbh, ccohort%pft, ccohort%size_class, ccohort%size_by_pft_class)
+               call coagetype_class_index(ccohort%coage, ccohort%pft, &
+                                          ccohort%coage_class, ccohort%coage_by_pft_class)
               
                ! Increment the number of cohorts per site
                hio_ncohorts_si(io_si) = hio_ncohorts_si(io_si) + 1._r8
@@ -2061,6 +2064,8 @@ end subroutine flush_hvars
                     hio_m8_si_scpf(io_si,scpf) = hio_m8_si_scpf(io_si,scpf) + ccohort%frmort*ccohort%n
                     hio_m9_si_scpf(io_si,scpf) = hio_m9_si_scpf(io_si,scpf) + ccohort%smort*ccohort%n
                     hio_m10_si_scpf(io_si,scpf) = hio_m10_si_scpf(io_si,scpf) + ccohort%asmort*ccohort%n
+                    ! JFNeedham - can we allocate to the cohort age dimension here? even though it 
+                    ! might not be aligned with the size dimension
                     hio_m10_si_capf(io_si,capf) = hio_m10_si_capf(io_si,capf) + &
                          ccohort%asmort*ccohort%n
                    
@@ -2074,6 +2079,7 @@ end subroutine flush_hvars
                          ccohort%frmort*ccohort%n
                     hio_m9_si_scls(io_si,scls) = hio_m9_si_scls(io_si,scls) + ccohort%smort*ccohort%n
                     hio_m10_si_scls(io_si,scls) = hio_m10_si_scls(io_si,scls) + ccohort%asmort*ccohort%n
+                    ! JFNeedham - see above
                     hio_m10_si_cacls(io_si,cacls) = hio_m10_si_cacls(io_si,cacls) + &
                          ccohort%asmort*ccohort%n
                     
@@ -2091,6 +2097,7 @@ end subroutine flush_hvars
                     hio_nplant_si_scpf(io_si,scpf) = hio_nplant_si_scpf(io_si,scpf) + ccohort%n
 
                     ! number density along the cohort age dimension
+                    ! JFNeedham - not sure this is correct?! shortest to tallest cohort != youngest to oldest
                     hio_nplant_si_capf(io_si,capf) = hio_nplant_si_capf(io_si,capf) + ccohort%n
                     hio_nplant_si_cacls(io_si,cacls) = hio_nplant_si_cacls(io_si,cacls) + ccohort%n
 
@@ -2784,7 +2791,7 @@ end subroutine flush_hvars
                   ! Calculate index for the scpf class
                   associate( scpf => ccohort%size_by_pft_class, &
                              scls => ccohort%size_class )
-
+                    
                   ! scale up cohort fluxes to their patches
                   hio_npp_pa(io_pa) = hio_npp_pa(io_pa) + &
                         ccohort%npp_tstep * g_per_kg * n_density * per_dt_tstep

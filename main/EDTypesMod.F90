@@ -238,7 +238,7 @@ module EDTypesMod
                                                          ! performing size diagnostics at high-frequency calls
      integer  ::  coage_by_pft_class                     ! An index that indicates the cohorts position of the join cohort age class x PFT 
      integer ::  size_class_lasttimestep                 ! size class of the cohort at the end of the previous timestep (used for calculating growth flux)
-
+     integer :: coage_class_lasttimestep                 ! cohort age class last time step - JFNeedham  - not sure if this actually needs to be calculated
 
      ! CARBON FLUXES 
      

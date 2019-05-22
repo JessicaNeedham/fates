@@ -4,7 +4,7 @@ dimensions:
 	fates_history_age_bins = 7 ;
 	fates_history_height_bins = 6 ;
 	fates_history_size_bins = 40 ;
-	fates_history_cohort_age_bins = 40 ;
+	fates_history_coage_bins = 40 ;
 	fates_hydr_organs = 4 ;
 	fates_leafage_class = 1 ;
 	fates_litterclass = 6 ;
@@ -20,9 +20,9 @@ variables:
 	float fates_history_sizeclass_bin_edges(fates_history_size_bins) ;
 		fates_history_sizeclass_bin_edges:units = "cm" ;
 		fates_history_sizeclass_bin_edges:long_name = "Lower edges for DBH size class bins used in size-resolved cohort history output" ;
-	float fates_history_cohort_age_bin_edges(fates_history_cohort_age_bins) ;
-	        fates_history_cohort_age_bin_edges:units = "years" ;
-                fates_history_cohort_age_bin_edges:long_name = "Lower edges for cohort age bins used in cohort-age-resolved cohort history output" ;
+	float fates_history_coageclass_bin_edges(fates_history_coage_bins) ;
+	        fates_history_coageclass_bin_edges:units = "years" ;
+                fates_history_coageclass_bin_edges:long_name = "Lower edges for cohort age bins used in cohort-age-resolved cohort history output" ;
 	float fates_history_ageclass_bin_edges(fates_history_age_bins) ;
 		fates_history_ageclass_bin_edges:units = "yr" ;
 		fates_history_ageclass_bin_edges:long_name = "Lower edges for age class bins used in age-resolved patch history output" ;
@@ -614,7 +614,7 @@ data:
 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 
 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200 ;
 
- fates_history_cohort_age_bin_edges = 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 
+ fates_history_coageclass_bin_edges = 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 
 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 
 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200 ;
 
