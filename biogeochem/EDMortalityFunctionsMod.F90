@@ -231,12 +231,24 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
        
        ! Include understory logging mortality rates not associated with disturbance
        dndt_logging = (currentCohort%lmort_direct     + &
-                       currentCohort%lmort_collateral + &
-                       currentCohort%lmort_infra)/hlm_freq_day
+            currentCohort%lmort_collateral + &
+            currentCohort%lmort_infra)/hlm_freq_day
 
+       ! this check caps asmort so that daily mortality cannot exceed 0.995
+       if (cmort+hmort+bmort+frmort+smort+asmort+dndt_logging > 0.995_r8)then
+          asmort = 0.995_r8 - (cmort+hmort+bmort+frmort+smort+dndt_logging)
+       endif
+       
        currentCohort%dndt = -1.0_r8 * (cmort+hmort+bmort+frmort+smort+asmort + dndt_logging) &
             * currentCohort%n
     else
+
+        ! cap on smort for canopy layers - smort is adjusted so that total mortality
+       ! including disturbance fraction does not exceed 0.995
+       if(cmort+hmort+bmort+frmort+smort+asmort > 0.995_r8-fates_mortality_disturbance_fraction)then
+          asmort=0.995_r8-(fates_mortality_disturbance_fraction+cmort+hmort+bmort+frmort+smort)
+       endif
+       
        currentCohort%dndt = -(1.0_r8 - fates_mortality_disturbance_fraction) &
             * (cmort+hmort+bmort+frmort+smort+asmort) * currentCohort%n
     endif
