@@ -215,6 +215,13 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
                                currentCohort%lmort_infra,                        &
                                currentCohort%l_degrad)
 
+    ! this cap should prevent daily mortality rates that exceed 0.995
+    ! it reduces size dependent mortality to the point that total mortality
+    ! is equal to 0.995
+    if (cmort + hmort + bmort + frmort + smort > 0.995_r8)then
+       smort = 0.995_r8 - (cmort + hmort + bmort + frmort)
+       endif 
+    
     if (currentCohort%canopy_layer > 1)then 
        
        ! Include understory logging mortality rates not associated with disturbance
