@@ -214,13 +214,7 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
                                currentCohort%lmort_collateral,                    &
                                currentCohort%lmort_infra,                        &
                                currentCohort%l_degrad)
-
-    ! this cap should prevent daily mortality rates that exceed 0.995
-    ! it reduces size dependent mortality to the point that total mortality
-    ! is equal to 0.995
-    if (cmort + hmort + bmort + frmort + smort > 0.995_r8)then
-       smort = 0.995_r8 - (cmort + hmort + bmort + frmort)
-       endif 
+ 
     
     if (currentCohort%canopy_layer > 1)then 
        
@@ -229,9 +223,21 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
                        currentCohort%lmort_collateral + &
                        currentCohort%lmort_infra)/hlm_freq_day
 
+       ! this check caps smort so that daily mortality cannot exceed 0.995
+       if (cmort+hmort+bmort+frmort+smort+dndt_logging > 0.995_r8)then
+          smort = 0.995_r8 - (cmort+hmort+bmort+frmort+dndt_logging)
+       endif
+
        currentCohort%dndt = -1.0_r8 * (cmort+hmort+bmort+frmort+smort + dndt_logging) &
             * currentCohort%n
     else
+
+       ! cap on smort for canopy layers - smort is adjusted so that total mortality
+       ! including disturbance fraction does not exceed 0.995
+       if(cmort+hmort+bmort+frmort+smort > 0.995_r8-fates_mortality_disturbance_fraction)then
+          smort=0.995_r8-(fates_mortality_disturbance_fraction+cmort+hmort+bmort+frmort)
+       endif
+
        currentCohort%dndt = -(1.0_r8 - fates_mortality_disturbance_fraction) &
             * (cmort+hmort+bmort+frmort+smort) * currentCohort%n
     endif
