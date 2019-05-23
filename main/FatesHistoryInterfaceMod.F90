@@ -2064,8 +2064,7 @@ end subroutine flush_hvars
                     hio_m8_si_scpf(io_si,scpf) = hio_m8_si_scpf(io_si,scpf) + ccohort%frmort*ccohort%n
                     hio_m9_si_scpf(io_si,scpf) = hio_m9_si_scpf(io_si,scpf) + ccohort%smort*ccohort%n
                     hio_m10_si_scpf(io_si,scpf) = hio_m10_si_scpf(io_si,scpf) + ccohort%asmort*ccohort%n
-                    ! JFNeedham - can we allocate to the cohort age dimension here? even though it 
-                    ! might not be aligned with the size dimension
+                    
                     hio_m10_si_capf(io_si,capf) = hio_m10_si_capf(io_si,capf) + &
                          ccohort%asmort*ccohort%n
                    
@@ -2079,7 +2078,7 @@ end subroutine flush_hvars
                          ccohort%frmort*ccohort%n
                     hio_m9_si_scls(io_si,scls) = hio_m9_si_scls(io_si,scls) + ccohort%smort*ccohort%n
                     hio_m10_si_scls(io_si,scls) = hio_m10_si_scls(io_si,scls) + ccohort%asmort*ccohort%n
-                    ! JFNeedham - see above
+                   
                     hio_m10_si_cacls(io_si,cacls) = hio_m10_si_cacls(io_si,cacls) + &
                          ccohort%asmort*ccohort%n
                     
@@ -2097,7 +2096,6 @@ end subroutine flush_hvars
                     hio_nplant_si_scpf(io_si,scpf) = hio_nplant_si_scpf(io_si,scpf) + ccohort%n
 
                     ! number density along the cohort age dimension
-                    ! JFNeedham - not sure this is correct?! shortest to tallest cohort != youngest to oldest
                     hio_nplant_si_capf(io_si,capf) = hio_nplant_si_capf(io_si,capf) + ccohort%n
                     hio_nplant_si_cacls(io_si,cacls) = hio_nplant_si_cacls(io_si,cacls) + ccohort%n
 
