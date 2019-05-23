@@ -2180,9 +2180,9 @@ contains
      integer  :: io_idx_si_lyr_shell ! site - layer x shell index
      integer  :: io_idx_si_scpf ! each size-class x pft index within site
      integer  :: io_idx_si_sc   ! each size-class index within site
+     integer  :: io_idx_si_coage ! each coage class index within site
      integer  :: io_idx_si_capf ! each cohort age class x pft index within site
-     integer  :: io_idx_si_cacls ! each cohort age class index within site
-
+    
 
      ! Some counters (for checking mostly)
      integer  :: totalcohorts   ! total cohort count on this thread (diagnostic)
@@ -2310,6 +2310,8 @@ contains
 
           io_idx_si_scpf = io_idx_co_1st
           io_idx_si_sc   = io_idx_co_1st
+         ! JFN - gargh see previous concerns - the first cohort is not the youngest
+          io_idx_si_coage = io_idx_co_1st
 
           ! read seed_bank info(site-level, but PFT-resolved)
           do i_pft = 1,numpft 

@@ -496,8 +496,8 @@ module FatesHistoryInterfaceMod
   integer, private :: ih_crownarea_si_can
 
   ! The number of variable dim/kind types we have defined (static)
-  integer, parameter :: fates_history_num_dimensions = 16
-  integer, parameter :: fates_history_num_dim_kinds = 18
+  integer, parameter :: fates_history_num_dimensions = 18
+  integer, parameter :: fates_history_num_dim_kinds = 20
 
   ! These flags are used to help specify what to do with non-fates
   ! locations in the host model
@@ -2116,8 +2116,7 @@ end subroutine flush_hvars
 
                     hio_nplant_si_scls(io_si,scls) = hio_nplant_si_scls(io_si,scls) + ccohort%n
 
-                    hio_nplant_si_cacls(io_si,cacls) = hio_nplant_si_cacls(io_si,cacls) + ccohort%n
-                    
+                   
                     ! update size, age, and PFT - indexed quantities
 
                     iscagpft = get_sizeagepft_class_index(ccohort%dbh,cpatch%age,ccohort%pft)
