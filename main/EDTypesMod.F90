@@ -153,7 +153,7 @@ module EDTypesMod
   ! COHORT FUSION
   real(r8), parameter :: HITEMAX              = 30.0_r8    ! max dbh value used in hgt profile comparison 
   integer , parameter :: N_HITE_BINS          = 60         ! no. of hite bins used to distribute LAI
-  real(r8), parameter :: cohort_age_fusion_tol = 5.0_r8 * days_per_year  ! fusion tol based on cohort age
+ 
 
   ! COHORT TERMINATION
 

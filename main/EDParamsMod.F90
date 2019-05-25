@@ -40,6 +40,7 @@ module EDParamsMod
    real(r8),protected :: ED_val_phen_ncolddayslim
    real(r8),protected :: ED_val_phen_coldtemp
    real(r8),protected :: ED_val_cohort_fusion_tol
+   real(r8),protected :: ED_val_cohort_age_fusion_tol
    real(r8),protected :: ED_val_patch_fusion_tol
    real(r8),protected :: ED_val_canopy_closure_thresh ! site-level canopy closure point where trees take on forest (narrow) versus savannah (wide) crown allometry
 
@@ -69,7 +70,8 @@ module EDParamsMod
    character(len=param_string_length),parameter :: ED_name_phen_mindayson= "fates_phen_mindayson"   
    character(len=param_string_length),parameter :: ED_name_phen_ncolddayslim= "fates_phen_ncolddayslim"   
    character(len=param_string_length),parameter :: ED_name_phen_coldtemp= "fates_phen_coldtemp"   
-   character(len=param_string_length),parameter :: ED_name_cohort_fusion_tol= "fates_cohort_fusion_tol"   
+   character(len=param_string_length),parameter :: ED_name_cohort_fusion_tol= "fates_cohort_fusion_tol"
+   character(len=param_string_length),parameter :: ED_name_cohort_age_fusion_tol= "fates_cohort_age_fusion_tol"
    character(len=param_string_length),parameter :: ED_name_patch_fusion_tol= "fates_patch_fusion_tol"
    character(len=param_string_length),parameter :: ED_name_canopy_closure_thresh= "fates_canopy_closure_thresh"      
 
@@ -156,6 +158,7 @@ contains
     ED_val_phen_ncolddayslim              = nan
     ED_val_phen_coldtemp                  = nan
     ED_val_cohort_fusion_tol              = nan
+    ED_val_cohort_age_fusion_tol          = nan
     ED_val_patch_fusion_tol               = nan
     ED_val_canopy_closure_thresh          = nan    
     
@@ -252,6 +255,9 @@ contains
          dimension_names=dim_names)
 
     call fates_params%RegisterParameter(name=ED_name_phen_coldtemp, dimension_shape=dimension_shape_1d, &
+         dimension_names=dim_names)
+
+    call fates_params%RegisterParameter(name=ED_name_cohort_fusion_tol, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names)
 
     call fates_params%RegisterParameter(name=ED_name_cohort_fusion_tol, dimension_shape=dimension_shape_1d, &
@@ -381,6 +387,9 @@ contains
     call fates_params%RetreiveParameter(name=ED_name_cohort_fusion_tol, &
          data=ED_val_cohort_fusion_tol)
 
+    call fates_params%RetreiveParameter(name=ED_name_cohort_age_fusion_tol, &
+         data=ED_val_cohort_fusion_tol)
+
     call fates_params%RetreiveParameter(name=ED_name_patch_fusion_tol, &
          data=ED_val_patch_fusion_tol)
     
@@ -468,6 +477,7 @@ contains
         write(fates_log(),fmt0) 'ED_val_phen_ncolddayslim = ',ED_val_phen_ncolddayslim
         write(fates_log(),fmt0) 'ED_val_phen_coldtemp = ',ED_val_phen_coldtemp
         write(fates_log(),fmt0) 'ED_val_cohort_fusion_tol = ',ED_val_cohort_fusion_tol
+        write(fates_log(),fmt0) 'ED_val_cohort_age_fusion_tol = ',ED_val_cohort_age_fusion_tol
         write(fates_log(),fmt0) 'ED_val_patch_fusion_tol = ',ED_val_patch_fusion_tol
         write(fates_log(),fmt0) 'ED_val_canopy_closure_thresh = ',ED_val_canopy_closure_thresh      
 	write(fates_log(),fmt0) 'hydr_kmax_rsurf = ',hydr_kmax_rsurf  
