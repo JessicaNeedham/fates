@@ -16,7 +16,6 @@ module EDCohortDynamicsMod
   use FatesConstantsMod     , only : nearzero
   use FatesConstantsMod     , only : calloc_abs_error
   use FatesInterfaceMod     , only : hlm_days_per_year
-  use EDTypesMod            , only : cohort_age_fusion_tol
   use FatesInterfaceMod     , only : nleafage
   use EDPftvarcon           , only : EDPftvarcon_inst
   use FatesParameterDerivedMod, only : param_derived
@@ -839,8 +838,9 @@ contains
      !
      ! !USES:
      use EDParamsMod , only :  ED_val_cohort_fusion_tol
+     use EDParamsMod , only :  ED_val_cohort_age_fusion_tol
      use FatesConstantsMod, only : days_per_year
-     use EDTypesMod, only : cohort_age_fusion_tol
+     
      !
      ! !ARGUMENTS   
      type (ed_site_type), intent(inout),  target :: currentSite 
@@ -867,7 +867,7 @@ contains
      real(r8) :: leaf_c_curr   ! Leaf carbon * plant density of next (for weighting)
      real(r8) :: leaf_c_target 
      real(r8) :: dynamic_fusion_tolerance
-     real(r8) :: coage_fusion_tolerance 
+     real(r8) :: dynamic_age__fusion_tolerance 
      real(r8) :: dbh
      real(r8) :: leaf_c             ! leaf carbon [kg]
 
@@ -882,7 +882,7 @@ contains
      !set initial fusion tolerance
      dynamic_fusion_tolerance = ED_val_cohort_fusion_tol
      ! set the cohort age fusion tolerance (this is in days - remains constant)
-     coage_fusion_tolerance = cohort_age_fusion_tol
+     dynamic_age_fusion_tolerance = ED_val_cohort_age_fusion_tol
 
      !This needs to be a function of the canopy layer, because otherwise, at canopy closure
      !the number of cohorts doubles and very dissimilar cohorts are fused together
@@ -921,7 +921,7 @@ contains
 
                     ! Only fuse if the cohorts are within x years of each other 
                     coage_diff = abs( currentCohort%coage - nextc%coage )
-                    if (coage_diff < coage_fusion_tolerance ) then 
+                    if (coage_diff < dynamic_age_fusion_tolerance ) then 
 
                     ! Don't fuse a cohort with itself!
                     if (.not.associated(currentCohort,nextc) ) then
@@ -1312,7 +1312,7 @@ contains
               ! Making profile tolerance larger means that more fusion will happen  !
               !---------------------------------------------------------------------!        
               dynamic_fusion_tolerance = dynamic_fusion_tolerance * 1.1_r8
-
+              dynamic_age_fusion_tolerance = dynamic_fusion_tolerance * 1.1_r8
               !write(fates_log(),*) 'maxcohorts exceeded',dynamic_fusion_tolerance
 
            else
@@ -1326,7 +1326,8 @@ contains
               currentCohort => currentPatch%tallest
               nocohorts = 0
               do while(associated(currentCohort))
-                 write(fates_log(),*) 'cohort ', nocohorts, currentCohort%dbh, currentCohort%canopy_layer, currentCohort%n
+                 write(fates_log(),*) 'cohort ', nocohorts, currentCohort%dbh,&
+                      currentCohort%coage, currentCohort%canopy_layer, currentCohort%n
                  nocohorts = nocohorts + 1
                  currentCohort => currentCohort%shorter
               enddo
