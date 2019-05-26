@@ -187,7 +187,7 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
     ! elsewhere).
     !
     ! !USES:
-
+    use FatesInterfaceMod , only : hlm_freq_day
     !
     ! !ARGUMENTS    
     type(ed_site_type), intent(inout), target  :: currentSite
@@ -224,8 +224,9 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
                        currentCohort%lmort_infra)/hlm_freq_day
 
        ! this check caps smort so that daily mortality cannot exceed 0.995
-       if (cmort+hmort+bmort+frmort+smort+dndt_logging > 0.995_r8)then
-          smort = 0.995_r8 - (cmort+hmort+bmort+frmort+dndt_logging)
+       if ((cmort+hmort+bmort+frmort+smort+dndt_logging)/hlm_freq_day &
+            > 0.995_r8)then
+          smort = 0.995_r8 - ((cmort+hmort+bmort+frmort+dndt_logging)/hlm_freq_day)
        endif
 
        currentCohort%dndt = -1.0_r8 * (cmort+hmort+bmort+frmort+smort + dndt_logging) &
@@ -234,8 +235,10 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
 
        ! cap on smort for canopy layers - smort is adjusted so that total mortality
        ! including disturbance fraction does not exceed 0.995
-       if(cmort+hmort+bmort+frmort+smort > 0.995_r8-fates_mortality_disturbance_fraction)then
-          smort=0.995_r8-(fates_mortality_disturbance_fraction+cmort+hmort+bmort+frmort)
+       if((cmort+hmort+bmort+frmort+smort)/hlm_freq_day) > & 
+            0.995_r8-fates_mortality_disturbance_fraction)then
+          smort=0.995_r8 - fates_mortality_disturbance_fraction - & 
+               ((cmort+hmort+bmort+frmort)/hlm_freq_day)
        endif
 
        currentCohort%dndt = -(1.0_r8 - fates_mortality_disturbance_fraction) &
