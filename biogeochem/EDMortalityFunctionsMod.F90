@@ -235,8 +235,8 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
 
        ! cap on smort for canopy layers - smort is adjusted so that total mortality
        ! including disturbance fraction does not exceed 0.995
-       if((cmort+hmort+bmort+frmort+smort)/hlm_freq_day) > & 
-            0.995_r8-fates_mortality_disturbance_fraction)then
+       if(((cmort+hmort+bmort+frmort+smort)/hlm_freq_day) > & 
+            0.995_r8 - fates_mortality_disturbance_fraction)then
           smort=0.995_r8 - fates_mortality_disturbance_fraction - & 
                ((cmort+hmort+bmort+frmort)/hlm_freq_day)
        endif
