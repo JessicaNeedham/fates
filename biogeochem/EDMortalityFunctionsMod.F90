@@ -222,9 +222,9 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
                        currentCohort%lmort_infra)/hlm_freq_day
 
        ! this check caps smort so that daily mortality cannot exceed 0.995
-       if ((cmort+hmort+bmort+frmort+smort+dndt_logging)/hlm_freq_day &
+       if (((cmort+hmort+bmort+frmort+smort)/hlm_freq_day + dndt_logging) &
             > 0.995_r8)then
-          smort = 0.995_r8 - ((cmort+hmort+bmort+frmort+dndt_logging)/hlm_freq_day)
+          smort = 0.995_r8 - ((cmort+hmort+bmort+frmort)/hlm_freq_day + dndt_logging)
        endif
 
        currentCohort%dndt = -1.0_r8 * (cmort+hmort+bmort+frmort+smort + dndt_logging) &
