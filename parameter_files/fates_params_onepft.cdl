@@ -3,7 +3,7 @@ dimensions:
 	fates_NCWD = 4 ;
 	fates_history_age_bins = 7 ;
 	fates_history_height_bins = 6 ;
-	fates_history_size_bins = 13 ;
+	fates_history_size_bins = 40 ;
 	fates_hydr_organs = 4 ;
 	fates_leafage_class = 1 ;
 	fates_litterclass = 6 ;
@@ -590,8 +590,8 @@ variables:
 			" Indices = [1, 1]" ;
 data:
 
- fates_history_sizeclass_bin_edges = 0, 5, 10, 15, 20, 30, 40, 50, 60, 70, 
-    80, 90, 100 ;
+ fates_history_sizeclass_bin_edges = 0, 5, 10, 15, 20,25, 30,35, 40,45, 50,55, 60,65, 70,75, 
+    80,85, 90,95, 100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195 ;
 
  fates_history_ageclass_bin_edges = 0, 1, 2, 5, 10, 20, 50 ;
 
@@ -913,9 +913,9 @@ data:
 
  fates_prescribed_mortality_understory = 0.025, 0.025 ;
 
- fates_prescribed_npp_canopy = 0.8, 0.8 ;
+ fates_prescribed_npp_canopy = 1, 1 ;
 
- fates_prescribed_npp_understory = 0.05125, 0.05125 ;
+ fates_prescribed_npp_understory = 0.03125, 0.03125 ;
 
  fates_prescribed_recruitment = 0.02, 0.02 ;
 
