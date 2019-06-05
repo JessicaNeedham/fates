@@ -238,10 +238,10 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
             currentCohort%lmort_infra)/hlm_freq_day
 
        ! this check caps asmort so that daily mortality cannot exceed 0.995
-       if ((cmort+hmort+bmort+frmort+smort+asmort)/hlm_freq + & 
-            dndt_logging) > 0.995_r8)then
-          asmort = 0.995_r8 - (cmort+hmort+bmort+frmort+smort)/hlm_freq_day + &
-               dndt_logging
+       if ((cmort+hmort+bmort+frmort+smort+asmort + dndt_logging)*hlm_freq_day &
+            > 0.995_r8)then
+          asmort = (0.995_r8 - ((cmort+hmort+bmort+frmort+smort+dndt_logging)*hlm_freq_day)) &
+               /hlm_freq_day
        endif
        
        currentCohort%dndt = -1.0_r8 * &
@@ -251,18 +251,19 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
 
         ! cap on smort for canopy layers - smort is adjusted so that total mortality
        ! including disturbance fraction does not exceed 0.995
-       if((cmort+hmort+bmort+frmort+smort+asmort)/hlm_freq_day & 
-            > 0.995_r8-fates_mortality_disturbance_fraction)then
-          asmort = 0.995_r8 - &
-          ((fates_mortality_disturbance_fraction+cmort+hmort+bmort+frmort+smort)/hlm_freq_day)
+       if(((cmort+hmort+bmort+frmort+smort+asmort)*hlm_freq_day) > &
+            0.995_r8 - fates_mortality_disturbance_fraction)then
+          asmort = (0.995_r8 - fates_mortality_disturbance_fraction - &
+               ((cmort+hmort+bmort+frmort+smort)*hlm_freq_day))/hlm_freq_day
        endif
       
-                       currentCohort%lmort_collateral + &
-                       currentCohort%lmort_infra)/hlm_freq_day
-       currentCohort%dndt = -1.0_r8 * (cmort+hmort+bmort+frmort+dndt_logging) * currentCohort%n
-    else
+    
        ! Mortality from logging in the canopy is ONLY disturbance generating, don't
        ! update number densities via non-disturbance inducing death
+       currentCohort%dndt= -(1.0_r8-fates_mortality_disturbance_fraction) &
+            * (cmort+hmort+bmort+frmort+smort+asmort+dndt_logging) * &
+            currentCohort%n
+
     endif
 
     return

@@ -300,13 +300,13 @@ contains
          dimension_names=dim_names_scalar)
 
     call fates_params%RegisterParameter(name=ED_name_cohort_fusion_tol, dimension_shape=dimension_shape_1d, &
-         dimension_names=dim_names)
+         dimension_names=dim_names_scalar)
 
     call fates_params%RegisterParameter(name=ED_name_cohort_age_fusion_tol, dimension_shape=dimension_shape_1d, &
-         dimension_names=dim_names)
+         dimension_names=dim_names_scalar)
 
     call fates_params%RegisterParameter(name=ED_name_patch_fusion_tol, dimension_shape=dimension_shape_1d, &
-         dimension_names=dim_names)
+         dimension_names=dim_names_scalar)
     
     call fates_params%RegisterParameter(name=hydr_name_psi0, dimension_shape=dimension_shape_scalar, &
          dimension_names=dim_names_scalar)

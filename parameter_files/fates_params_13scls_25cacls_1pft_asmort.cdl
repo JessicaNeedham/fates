@@ -1,4 +1,4 @@
-netcdf fates_params_onepft_25cacls_asmort {
+netcdf fates_params_13scls_25cacls_1pft_asmort {
 dimensions:
 	fates_NCWD = 4 ;
 	fates_history_age_bins = 7 ;
@@ -612,7 +612,7 @@ variables:
 		:history = "This file was made from FatesPFTIndexSwapper.py \n",
 			" Input File = parameter_files/fates_params_default_asmort.nc \n",
 			" Indices = [1, 1]\n",
-			" Fri May 31 2019, 15:11:52: modify_fates_paramfile.py --var=fates_history_coageclass_bin_edges --fin=parameter_files/fates_params_onepft_asmort.nc --fout=parameter_files/fates_params_onepft_25cacls_asmort.nc --changeshape --val=0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120" ;
+			" Wed Jun 05 2019, 09:22:25: modify_fates_paramfile.py --var=fates_history_coageclass_bin_edges --fin=parameter_files/fates_params_13scls_13cacls_1pft_asmort.nc --fout=parameter_files/fates_params_13scls_25cacls_1pft_asmort.nc --changeshape --val=0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120" ;
 data:
 
  fates_history_coageclass_bin_edges = 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 

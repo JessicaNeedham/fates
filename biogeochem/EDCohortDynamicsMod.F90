@@ -867,7 +867,7 @@ contains
      real(r8) :: leaf_c_curr   ! Leaf carbon * plant density of next (for weighting)
      real(r8) :: leaf_c_target 
      real(r8) :: dynamic_fusion_tolerance
-     real(r8) :: dynamic_age__fusion_tolerance 
+     real(r8) :: dynamic_age_fusion_tolerance 
      real(r8) :: dbh
      real(r8) :: leaf_c             ! leaf carbon [kg]
 
