@@ -1312,7 +1312,7 @@ contains
               ! Making profile tolerance larger means that more fusion will happen  !
               !---------------------------------------------------------------------!        
               dynamic_fusion_tolerance = dynamic_fusion_tolerance * 1.1_r8
-              dynamic_age_fusion_tolerance = dynamic_fusion_tolerance * 1.1_r8
+              dynamic_age_fusion_tolerance = dynamic_age_fusion_tolerance * 1.1_r8
               !write(fates_log(),*) 'maxcohorts exceeded',dynamic_fusion_tolerance
 
            else
