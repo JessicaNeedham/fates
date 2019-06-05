@@ -1,4 +1,4 @@
-netcdf fates_params_onepft_25scls_smort {
+netcdf fates_params_25scls_1pft_smort {
 dimensions:
 	fates_NCWD = 4 ;
 	fates_history_age_bins = 7 ;
@@ -602,7 +602,7 @@ variables:
 		:history = "This file was made from FatesPFTIndexSwapper.py \n",
 			" Input File = parameter_files/fates_params_default_smort.nc \n",
 			" Indices = [1, 1]\n",
-			" Fri May 31 2019, 13:55:13: modify_fates_paramfile.py --var=fates_history_sizeclass_bin_edges --fin=parameter_files/fates_params_onepft_smort.nc --fout=parameter_files/fates_params_onepft_25scls_smort.nc --changeshape --val=0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120" ;
+			" Tue Jun 04 2019, 14:53:06: modify_fates_paramfile.py --var=fates_history_sizeclass_bin_edges --fin=parameter_files/fates_params_13scls_1pft_smort.nc --fout=parameter_files/fates_params_25scls_1pft_smort.nc --changeshape --val=0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120" ;
 data:
 
  fates_history_sizeclass_bin_edges = 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 

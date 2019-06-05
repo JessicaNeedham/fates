@@ -1,4 +1,4 @@
-netcdf fates_params_onepft_smort {
+netcdf fates_params_13scls_1pft_smort {
 dimensions:
 	fates_NCWD = 4 ;
 	fates_history_age_bins = 7 ;
