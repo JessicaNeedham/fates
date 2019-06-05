@@ -240,7 +240,7 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
                ((cmort+hmort+bmort+frmort)*hlm_freq_day))/hlm_freq_day
        endif
        currentCohort%dndt = -(1.0_r8 - fates_mortality_disturbance_fraction) &
-            * (cmort+hmort+bmort+frmort+dndt_logging) * currentCohort%n
+            * (cmort+hmort+bmort+frmort+smort+dndt_logging) * currentCohort%n
    
        endif
 
