@@ -2065,8 +2065,7 @@ end subroutine flush_hvars
                     hio_m9_si_scpf(io_si,scpf) = hio_m9_si_scpf(io_si,scpf) + ccohort%smort*ccohort%n
                     hio_m10_si_scpf(io_si,scpf) = hio_m10_si_scpf(io_si,scpf) + ccohort%asmort*ccohort%n
                     
-                    hio_m10_si_capf(io_si,capf) = hio_m10_si_capf(io_si,capf) + &
-                         ccohort%asmort*ccohort%n
+                    hio_m10_si_capf(io_si,capf) = hio_m10_si_capf(io_si,capf) + ccohort%asmort*ccohort%n
                    
 
                     hio_m1_si_scls(io_si,scls) = hio_m1_si_scls(io_si,scls) + ccohort%bmort*ccohort%n
@@ -2079,8 +2078,7 @@ end subroutine flush_hvars
                     hio_m9_si_scls(io_si,scls) = hio_m9_si_scls(io_si,scls) + ccohort%smort*ccohort%n
                     hio_m10_si_scls(io_si,scls) = hio_m10_si_scls(io_si,scls) + ccohort%asmort*ccohort%n
                    
-                    hio_m10_si_cacls(io_si,cacls) = hio_m10_si_cacls(io_si,cacls) + &
-                         ccohort%asmort*ccohort%n
+                    hio_m10_si_cacls(io_si,cacls) = hio_m10_si_cacls(io_si,cacls)+ccohort%asmort*ccohort%n
                     
                     
 
@@ -4643,7 +4641,6 @@ end subroutine flush_hvars
          avgflag='A', vtype=site_coage_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_si_cacls )
 
-    
     call this%set_history_var(vname='CARBON_BALANCE_CANOPY_SCLS', units = 'kg C / ha / yr', &
           long='CARBON_BALANCE for canopy plants by size class', use_default='inactive',    &
           avgflag='A', vtype=site_size_r8, hlms='CLM:ALM', flushval=0.0_r8,    &

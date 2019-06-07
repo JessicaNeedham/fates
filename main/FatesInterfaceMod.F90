@@ -1094,7 +1094,6 @@ contains
 
        integer :: i
        integer :: isc
-       integer :: ica
        integer :: ipft
        integer :: icwd
        integer :: ifuel
@@ -1168,10 +1167,10 @@ contains
 
        i=0
        do ipft=1,numpft
-          do ica=1,nlevcoage
+          do icoage=1,nlevcoage
              i=i+1
              fates_hdim_pfmap_levcapf(i) = ipft
-             fates_hdim_camap_levcapf(i) = ica
+             fates_hdim_camap_levcapf(i) = icoage
           end do
        end do
 

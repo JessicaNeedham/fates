@@ -1290,6 +1290,7 @@ contains
     use FatesAllometryMod    , only : set_root_fraction
     use FatesAllometryMod    , only : i_hydro_rootprof_context
     use FatesSizeAgeTypeIndicesMod, only : sizetype_class_index
+    use FatesSizeAgeTypeIndicesMod, only : coagetype_class_index
     use EDtypesMod           , only : area
     use EDPftvarcon          , only : EDPftvarcon_inst
 
@@ -1363,8 +1364,11 @@ contains
              ! Update the cohort's index within the size bin classes
              ! Update the cohort's index within the SCPF classification system
              call sizetype_class_index(currentCohort%dbh,currentCohort%pft, &
-                                       currentCohort%size_class,currentCohort%size_by_pft_class)
+                  currentCohort%size_class,currentCohort%size_by_pft_class)
 
+             call coagetype_class_index(currentCohort%coage,currentCohort%pft, &
+                  currentCohort%coage_class,currentCohort%coage_by_pft_class)
+             
              call carea_allom(currentCohort%dbh,currentCohort%n,sites(s)%spread,&
                   currentCohort%pft,currentCohort%c_area)
 

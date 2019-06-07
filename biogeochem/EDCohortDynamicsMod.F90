@@ -151,7 +151,7 @@ contains
                                                          ! per 'area' (10000m2 default)
     real(r8), intent(in)   :: hite                       ! height: meters
     real(r8), intent(in)   :: dbh                        ! dbh: cm
-    real(r8), intent(in)   :: coage                      ! cohort age: days
+    real(r8), intent(in)   :: coage                      ! cohort age: years
     real(r8), intent(in)   :: bleaf                      ! biomass in leaves: kgC
     real(r8), intent(in)   :: bfineroot                  ! biomass in fineroots: kgC
     real(r8), intent(in)   :: bsap                       ! biomass in sapwood: kgC
@@ -486,7 +486,7 @@ contains
 
     currentCohort%n                  = nan ! number of individuals in cohort per 'area' (10000m2 default)     
     currentCohort%dbh                = nan ! 'diameter at breast height' in cm
-    currentCohort%coage              = nan ! age of the cohort in days
+    currentCohort%coage              = nan ! age of the cohort in years
     currentCohort%hite               = nan ! height: meters                   
     currentCohort%laimemory          = nan ! target leaf biomass- set from previous year: kGC per indiv
     currentCohort%lai                = nan ! leaf area index of cohort   m2/m2      
@@ -970,7 +970,9 @@ contains
                                       (currentCohort%coage * (currentCohort%n/(currentCohort%n + nextc%n))) + &
                                                       (nextc%coage * (nextc%n/(currentCohort%n + nextc%n)))
 
-                                
+                                ! update the cohort age again
+                                call coagetype_class_index(currentCohort%coage, currentCohort%pft, &
+                                     currentCohort%coage_class, currentCohort%coage_by_pft_class)
 
                                 ! Fuse all mass pools
                                 call currentCohort%prt%WeightedFusePRTVartypes(nextc%prt, &
@@ -1120,7 +1122,7 @@ contains
 
                                 call sizetype_class_index(currentCohort%dbh,currentCohort%pft, &
                                       currentCohort%size_class,currentCohort%size_by_pft_class)
-				      
+                                                             
 
                                 if(hlm_use_planthydro.eq.itrue) then			  					  				  
                                     call FuseCohortHydraulics(currentSite,currentCohort,nextc,bc_in,newn)				    
@@ -1636,7 +1638,9 @@ contains
     n%size_class      = o%size_class
     n%size_class_lasttimestep      = o%size_class_lasttimestep
     n%size_by_pft_class   = o%size_by_pft_class
-
+    n%coage_class     = o%coage_class
+    n%size_by_pft_class   = o%coage_by_pft_class
+    
     !Pointers
     n%taller          => NULL()     ! pointer to next tallest cohort     
     n%shorter         => NULL()     ! pointer to next shorter cohort     
