@@ -205,7 +205,7 @@ module EDTypesMod
      integer  ::  pft                                    ! pft number
      real(r8) ::  n                                      ! number of individuals in cohort per 'area' (10000m2 default)
      real(r8) ::  dbh                                    ! dbh: cm
-     real(r8) ::  coage                                  ! cohort age in days
+     real(r8) ::  coage                                  ! cohort age in years
      real(r8) ::  hite                                   ! height: meters
      integer  ::  indexnumber                            ! unique number for each cohort. (within clump?)
      real(r8) ::  laimemory                              ! target leaf biomass- set from previous year: kGC per indiv
@@ -707,9 +707,9 @@ module EDTypesMod
      real(r8), allocatable :: fmort_rate_crown(:,:)              ! rate of individuals killed due to fire mortality 
                                                                  ! from crown damage per year.  on size x pft array
 
-     real(r8), allocatable :: growthflux_fusion(:,:)             ! rate of individuals moving into a given size class bin 
-                                                                 ! due to fusion in a given day. on size x pft array 
-
+     real(r8), allocatable :: growthflux_fusion(:,:)             ! rate of individuals moving into a given size class bin
+     ! due to fusion in a given day. on size x pft array 
+     real(r8), allocatable :: ageflux_fusion(:,:)                ! rate of individuals movign into a given age class bin due to fusion- age x pft
 
      ! some diagnostic-only (i.e. not resolved by ODE solver) flux of carbon to CWD and litter pools from termination and canopy mortality
      real(r8) :: CWD_AG_diagnostic_input_carbonflux(1:ncwd)       ! diagnostic flux to AG CWD [kg C / m2 / yr]

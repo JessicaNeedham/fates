@@ -28,6 +28,7 @@ module FatesRestartInterfaceMod
   use EDCohortDynamicsMod,      only : InitPRTCohort
   use FatesPlantHydraulicsMod,  only : InitHydrCohort
   use FatesInterfaceMod, only : nlevsclass
+  use FatesInterfaceMod, only : nlevcoage
   use PRTGenericMod, only : prt_global
 
 
@@ -164,6 +165,7 @@ module FatesRestartInterfaceMod
   integer, private :: ir_termnindiv_cano_siscpf
   integer, private :: ir_termnindiv_usto_siscpf
   integer, private :: ir_growflx_fusion_siscpf
+  integer, private :: ir_ageflx_fusion_sicapf
   integer, private :: ir_demorate_sisc
   integer, private :: ir_promrate_sisc
   integer, private :: ir_termcflux_cano_si
@@ -1058,6 +1060,11 @@ contains
          long_name='fates diag: rate of indivs moving via fusion', &
          units='indiv/ha/day', flushval = flushzero, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_growflx_fusion_siscpf)
+
+    call this%set_restart_var(vname='fates_ageflx_fusion', vtype=cohort_r8, &
+         long_name='fates diag: rate of indivs moving cohort age via fusion', &
+         units='indiv/ha/day', flushval = flushzero, &
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_ageflx_fusion_sicapf)
     
     call this%set_restart_var(vname='fates_demorate', vtype=cohort_r8, &
          long_name='fates diagnoatic rate of indivs demoted', &
@@ -1563,6 +1570,7 @@ contains
            rio_termnindiv_cano_siscpf  => this%rvars(ir_termnindiv_cano_siscpf)%r81d, &
            rio_termnindiv_usto_siscpf  => this%rvars(ir_termnindiv_usto_siscpf)%r81d, &
            rio_growflx_fusion_siscpf   => this%rvars(ir_growflx_fusion_siscpf)%r81d,  &
+           rio_ageflx_fusion_sicapf    => this%rvars(ir_ageflx_fusion_sicapf)%r81d, &
            rio_demorate_sisc           => this%rvars(ir_demorate_sisc)%r81d, &
            rio_promrate_sisc           => this%rvars(ir_promrate_sisc)%r81d, &
            rio_termcflux_cano_si       => this%rvars(ir_termcflux_cano_si)%r81d, &
@@ -1833,7 +1841,7 @@ contains
                 rio_termnindiv_cano_siscpf(io_idx_si_scpf) = sites(s)%term_nindivs_canopy(i_scls,i_pft)
                 rio_termnindiv_usto_siscpf(io_idx_si_scpf) = sites(s)%term_nindivs_ustory(i_scls,i_pft)
                 rio_growflx_fusion_siscpf(io_idx_si_scpf)  = sites(s)%growthflux_fusion(i_scls, i_pft)
-
+                
                 io_idx_si_scpf = io_idx_si_scpf + 1
              end do
 
@@ -1842,8 +1850,16 @@ contains
                 
              io_idx_si_sc = io_idx_si_sc + 1
           end do
-         
 
+          
+          do i_cacls = 1, nlevcoage
+             do i_pft = 1, numpft
+                rio_ageflx_fusion_sicapf(io_idx_si_capf) = sites(s)%ageflux_fusion(i_cacls, i_pft)
+                io_idx_si_capf = io_idx_si_capf + 1
+             end do
+             io_idx_si_cacls = io_idx_si_cacls + 1
+          end do
+          
           rio_termcflux_cano_si(io_idx_si)  = sites(s)%term_carbonflux_canopy
           rio_termcflux_usto_si(io_idx_si)  = sites(s)%term_carbonflux_ustory
           rio_democflux_si(io_idx_si)       = sites(s)%demotion_carbonflux
@@ -2281,6 +2297,7 @@ contains
           rio_termnindiv_cano_siscpf  => this%rvars(ir_termnindiv_cano_siscpf)%r81d, &
           rio_termnindiv_usto_siscpf  => this%rvars(ir_termnindiv_usto_siscpf)%r81d, &
           rio_growflx_fusion_siscpf   => this%rvars(ir_growflx_fusion_siscpf)%r81d,  &
+          rio_ageflx_fusion_sicapf    => this%rvars(ir_ageflx_fusion_sicapf)%r81d, &
           rio_demorate_sisc           => this%rvars(ir_demorate_sisc)%r81d, &
           rio_promrate_sisc           => this%rvars(ir_promrate_sisc)%r81d, &
           rio_termcflux_cano_si       => this%rvars(ir_termcflux_cano_si)%r81d, &
@@ -2597,8 +2614,16 @@ contains
                 
              io_idx_si_sc = io_idx_si_sc + 1
           end do
-         
 
+          do i_cacls = i,nlevcoage
+             do i_pft = 1, numpft
+                sites(s)%ageflux_fusion(i_cacls, i_pft) = rio_ageflx_fusion_sicapf(io_idx_si_capf)
+                io_idx_si_capf = io_idx_si_capf + 1
+             end do
+             io_idx_si_cacls = io_idx_si_cacls + 1
+          end do
+          
+         
           sites(s)%term_carbonflux_canopy   = rio_termcflux_cano_si(io_idx_si)
           sites(s)%term_carbonflux_ustory   = rio_termcflux_usto_si(io_idx_si)
           sites(s)%demotion_carbonflux      = rio_democflux_si(io_idx_si)

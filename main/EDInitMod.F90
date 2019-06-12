@@ -40,6 +40,7 @@ module EDInitMod
   use FatesInterfaceMod         , only : nleafage
   use ChecksBalancesMod         , only : SiteCarbonStock
   use FatesInterfaceMod         , only : nlevsclass
+  use FatesInterfaceMod         , only : nlevcoage
   use FatesAllometryMod         , only : h2d_allom
   use FatesAllometryMod         , only : bagw_allom
   use FatesAllometryMod         , only : bbgw_allom
@@ -93,7 +94,7 @@ contains
     allocate(site_in%fmort_rate_cambial(1:nlevsclass,1:numpft))
     allocate(site_in%fmort_rate_crown(1:nlevsclass,1:numpft))
     allocate(site_in%growthflux_fusion(1:nlevsclass,1:numpft))
-
+    allocate(site_in%ageflux_fusion(1:nlevcoage, 1:numpft))
     !
     end subroutine init_site_vars
 
@@ -159,6 +160,7 @@ contains
 
     ! fusoin-induced growth flux of individuals
     site_in%growthflux_fusion(:,:) = 0._r8
+    site_in%ageflux_fusion(:,:) = 0._r8
 
     ! demotion/promotion info
     site_in%demotion_rate(:) = 0._r8
@@ -459,6 +461,8 @@ contains
 
        if ( debug ) write(fates_log(),*) 'EDInitMod.F90 call create_cohort '
 
+       temp_cohort%coage = 0.0_r8
+       
        call create_cohort(site_in, patch_in, pft, temp_cohort%n, temp_cohort%hite, & 
             temp_cohort%coage, temp_cohort%dbh, &
             b_leaf, b_fineroot, b_sapwood, b_dead, b_store, & 

@@ -38,7 +38,6 @@ module EDMainMod
   use EDCohortDynamicsMod      , only : UpdateCohortBioPhysRates
   use SFMainMod                , only : fire_model 
   use FatesSizeAgeTypeIndicesMod, only : get_age_class_index
-  use FatesSizeAgeTypeIndicesMod, only : get_coage_class_index
   use FatesSizeAgeTypeIndicesMod, only : coagetype_class_index
   use EDtypesMod               , only : ncwd
   use EDtypesMod               , only : ed_site_type
@@ -443,8 +442,13 @@ contains
           
           ! update cohort age
           currentCohort%coage = currentCohort%coage + hlm_freq_day
-          ! update cohort age class
-          currentCohort%coage_class = get_coage_class_index(currentCohort%coage)
+          if(currentCohort%coage < 0.0_r8)then
+             write(fates_log(),*) 'negative cohort age?',currentCohort%coage
+             endif 
+
+          ! update cohort age class and age x pft class
+          call coagetype_class_index(currentCohort%coage, currentCohort%pft, &
+               currentCohort%coage_class,currentCohort%coage_by_pft_class)
 
 
           currentCohort => currentCohort%taller
