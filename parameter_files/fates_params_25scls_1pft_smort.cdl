@@ -908,7 +908,7 @@ data:
 
  fates_mort_hf_sm_threshold = 1e-06, 1e-06 ;
 
- fates_mort_ip_senescence = 80, 180 ;
+ fates_mort_ip_senescence = 150, 150 ;
 
  fates_mort_r_senescence = 0.2, 0.2 ;
 
