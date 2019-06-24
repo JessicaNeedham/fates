@@ -276,6 +276,7 @@ contains
     real(r8) :: delta_dbh             ! correction for dbh
     real(r8) :: delta_hite            ! correction for hite
 
+    real(r8) :: current_npp           ! place holder for calculating npp each year in prescribed physiology mode
     !-----------------------------------------------------------------------
 
     small_no = 0.0000000000_r8  ! Obviously, this is arbitrary.  RF - changed to zero
@@ -334,13 +335,24 @@ contains
           ! -----------------------------------------------------------------------------
           
           if (hlm_use_ed_prescribed_phys .eq. itrue) then
+             
              if (currentCohort%canopy_layer .eq. 1) then
-                currentCohort%npp_acc_hold = EDPftvarcon_inst%prescribed_npp_canopy(ft) &
+                ! set npp for the current day - adds a % to prescribed NPP based on day of simulation
+               call  prescribed_npp_fertilisation(EDPftvarcon_inst%prescribed_npp_ramp(ft), &
+                    EDPftvarcon_inst%prescribed_npp_max(ft), EDPftvarcon_inst%prescribed_npp_canopy(ft), &
+                    current_npp)
+
+                currentCohort%npp_acc_hold = current_npp &
                      * currentCohort%c_area / currentCohort%n
                 ! add these for balance checking purposes
                 currentCohort%npp_acc = currentCohort%npp_acc_hold / hlm_days_per_year 
              else
-                currentCohort%npp_acc_hold = EDPftvarcon_inst%prescribed_npp_understory(ft) &
+
+                call prescribed_npp_fertilisation(EDPftvarcon_inst%prescribed_npp_ramp(ft), &
+                     EDPftvarcon_inst%prescribed_npp_max(ft), EDPftvarcon_inst%prescribed_npp_understory(ft), &
+                     current_npp)
+
+                currentCohort%npp_acc_hold = current_npp &
                      * currentCohort%c_area / currentCohort%n
                 ! add these for balance checking purposes
                 currentCohort%npp_acc = currentCohort%npp_acc_hold / hlm_days_per_year
@@ -741,4 +753,32 @@ contains
  end subroutine bypass_dynamics
 
 
+subroutine prescribed_npp_fertilisation(prescribed_npp_ramp, prescribed_npp_max, &
+ prescribed_npp, current_npp)
+
+! This subroutine calculates the current day npp - assumes it ramps up to a max - some multiplier of the start,
+!  with slope 'ramp'
+
+use FatesInterfaceMod, only : hlm_current_day
+
+real(r8),intent(out) :: current_npp 
+real(r8) :: prescribed_npp_ramp
+real(r8) :: prescribed_npp_max
+real(r8) :: prescribed_npp
+
+
+current_npp = prescribed_npp + &
+((1.0_r8 - exp(-prescribed_npp_ramp * hlm_current_day)) * &
+prescribed_npp_max)
+
+end subroutine prescribed_npp_fertilisation
+
+
+
+
+
 end module EDMainMod
+
+
+
+

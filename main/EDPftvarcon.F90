@@ -168,6 +168,10 @@ module EDPftvarcon
                                                                  ! prescribed_physiology_mode
      real(r8), allocatable :: prescribed_npp_understory(:)       ! this is only for the special 
                                                                  ! prescribed_physiology_mode
+     real(r8), allocatable :: prescribed_npp_ramp(:)             ! this is only for the special
+                                                                 ! prescribed physiology mode
+     real(r8), allocatable :: prescribed_npp_max(:)              ! this is only for the special
+                                                                 ! prescribed physiology mode
      real(r8), allocatable :: prescribed_mortality_canopy(:)     ! this is only for the special
                                                                  ! prescribed_physiology_mode
      real(r8), allocatable :: prescribed_mortality_understory(:) ! this is only for the special 
@@ -510,6 +514,14 @@ contains
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
 
     name = 'fates_prescribed_npp_understory'
+    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
+         dimension_names=dim_names, lower_bounds=dim_lower_bound)
+
+    name = 'fates_prescribed_npp_ramp'
+    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
+         dimension_names=dim_names, lower_bounds=dim_lower_bound)
+
+    name = 'fates_prescribed_npp_max'
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
 
@@ -939,6 +951,14 @@ contains
     name = 'fates_prescribed_npp_understory'
     call fates_params%RetreiveParameterAllocate(name=name, &
          data=this%prescribed_npp_understory)
+
+    name = 'fates_prescribed_npp_ramp'
+    call fates_params%RetreiveParameterAllocate(name=name, &
+         data=this%prescribed_npp_ramp)
+
+    name = 'fates_prescribed_npp_max'
+    call fates_params%RetreiveParameterAllocate(name=name, &
+         data=this%prescribed_npp_max)
 
     name = 'fates_prescribed_mortality_canopy'
     call fates_params%RetreiveParameterAllocate(name=name, &
