@@ -1531,6 +1531,8 @@ end subroutine flush_hvars
     real(r8), parameter :: tiny = 1.e-5_r8      ! some small number
     real(r8), parameter :: reallytalltrees = 1000.   ! some large number (m)
     
+    integer :: tmp
+
     associate( hio_npatches_si         => this%hvars(ih_npatches_si)%r81d, &
                hio_ncohorts_si         => this%hvars(ih_ncohorts_si)%r81d, &
                hio_trimming_pa         => this%hvars(ih_trimming_pa)%r81d, &
@@ -1762,6 +1764,16 @@ end subroutine flush_hvars
          io_pa1 = this%iovar_map(nc)%patch1_index(s)
          io_soipa = io_pa1-1
          
+         hio_nplant_si_cacls(io_si, :) = (/(tmp, tmp=1,13)/)
+         hio_nplant_si_capf(io_si, :) = (/(tmp, tmp=1,26)/)
+         hio_nplant_si_scls(io_si, :) = (/(tmp, tmp=1,13)/)
+         hio_nplant_si_scpf(io_si, :) = (/(tmp, tmp=1,26)/)
+
+         hio_m10_si_cacls(io_si, :) = (/(tmp, tmp=1,13)/)
+         hio_m10_si_capf(io_si, :) = (/(tmp, tmp=1,26)/)
+         hio_m10_si_scls(io_si, :) = (/(tmp, tmp=1,13)/)
+         hio_m10_si_scpf(io_si, :) = (/(tmp, tmp=1,26)/)
+
          ! Set trimming on the soil patch to 1.0
          hio_trimming_pa(io_soipa) = 1.0_r8
 
@@ -2070,9 +2082,9 @@ end subroutine flush_hvars
                          (ccohort%lmort_direct+ccohort%lmort_collateral+ccohort%lmort_infra) * ccohort%n
                     hio_m8_si_scpf(io_si,scpf) = hio_m8_si_scpf(io_si,scpf) + ccohort%frmort*ccohort%n
                     hio_m9_si_scpf(io_si,scpf) = hio_m9_si_scpf(io_si,scpf) + ccohort%smort*ccohort%n
-                    hio_m10_si_scpf(io_si,scpf) = hio_m10_si_scpf(io_si,scpf) + ccohort%asmort*ccohort%n
+                !    hio_m10_si_scpf(io_si,scpf) = hio_m10_si_scpf(io_si,scpf) + ccohort%asmort*ccohort%n
                     
-                    hio_m10_si_capf(io_si,capf) = hio_m10_si_capf(io_si,capf) + ccohort%asmort*ccohort%n
+                 !   hio_m10_si_capf(io_si,capf) = hio_m10_si_capf(io_si,capf) + ccohort%asmort*ccohort%n
                    
 
                     hio_m1_si_scls(io_si,scls) = hio_m1_si_scls(io_si,scls) + ccohort%bmort*ccohort%n
@@ -2083,9 +2095,9 @@ end subroutine flush_hvars
                     hio_m8_si_scls(io_si,scls) = hio_m8_si_scls(io_si,scls) + &
                          ccohort%frmort*ccohort%n
                     hio_m9_si_scls(io_si,scls) = hio_m9_si_scls(io_si,scls) + ccohort%smort*ccohort%n
-                    hio_m10_si_scls(io_si,scls) = hio_m10_si_scls(io_si,scls) + ccohort%asmort*ccohort%n
+                  !  hio_m10_si_scls(io_si,scls) = hio_m10_si_scls(io_si,scls) + ccohort%asmort*ccohort%n
                    
-                    hio_m10_si_cacls(io_si,cacls) = hio_m10_si_cacls(io_si,cacls)+ccohort%asmort*ccohort%n
+                   ! hio_m10_si_cacls(io_si,cacls) = hio_m10_si_cacls(io_si,cacls)+ccohort%asmort*ccohort%n
                     
                     
 
@@ -2098,9 +2110,9 @@ end subroutine flush_hvars
                     endif
 
                     ! number density [/ha]
-                    hio_nplant_si_scpf(io_si,scpf) = hio_nplant_si_scpf(io_si,scpf) + ccohort%n
+                  !  hio_nplant_si_scpf(io_si,scpf) = hio_nplant_si_scpf(io_si,scpf) + ccohort%n
                     ! number density along the cohort age dimension
-                    hio_nplant_si_capf(io_si,capf) = hio_nplant_si_capf(io_si,capf) + ccohort%n
+                  !  hio_nplant_si_capf(io_si,capf) = hio_nplant_si_capf(io_si,capf) + ccohort%n
                    
                     ! number density by size and biomass
                     hio_agb_si_scls(io_si,scls) = hio_agb_si_scls(io_si,scls) + &
@@ -2115,8 +2127,8 @@ end subroutine flush_hvars
                     
                     hio_nplant_si_scag(io_si,iscag) = hio_nplant_si_scag(io_si,iscag) + ccohort%n
 
-                    hio_nplant_si_scls(io_si,scls) = hio_nplant_si_scls(io_si,scls) + ccohort%n
-                    hio_nplant_si_cacls(io_si,cacls) = hio_nplant_si_cacls(io_si,cacls)+ccohort%n
+                   ! hio_nplant_si_scls(io_si,scls) = hio_nplant_si_scls(io_si,scls) + ccohort%n
+                   ! hio_nplant_si_cacls(io_si,cacls) = hio_nplant_si_cacls(io_si,cacls)+ccohort%n
                    
                     ! update size, age, and PFT - indexed quantities
 
