@@ -2085,13 +2085,13 @@ end subroutine flush_hvars
                     hio_m9_si_scpf(io_si,scpf) = hio_m9_si_scpf(io_si,scpf) + ccohort%smort*ccohort%n
                     hio_m10_si_scpf(io_si,scpf) = hio_m10_si_scpf(io_si,scpf) + ccohort%asmort*ccohort%n
                   
-                    hio_m10_si_scpf(io_si,scpf) = 1.0_r8 ! 0.968 1 and 14 (smallest bins each pft)
+                   ! hio_m10_si_scpf(io_si,scpf) = 1.0_r8 ! 0.968 1 and 14 (smallest bins each pft)
                    ! hio_m10_si_scpf(io_si,scpf) = scpf
                    ! hio_m10_si_scpf(io_si,scpf) = ccohort%n
                     
-                   ! hio_m10_si_capf(io_si,capf) = hio_m10_si_capf(io_si,capf) + ccohort%asmort*ccohort%n
+                    hio_m10_si_capf(io_si,capf) = hio_m10_si_capf(io_si,capf) + ccohort%asmort*ccohort%n
 
-                    hio_m10_si_capf(io_si,capf) = 1.0_r8 ! 0.968 in bin1, 1.294 in bin 14?? 
+                   ! hio_m10_si_capf(io_si,capf) = 1.0_r8 ! 0.968 in bin1, 1.294 in bin 14?? 
                    ! hio_m10_si_capf(io_si,capf) = capf ! as expected 
                    ! hio_m10_si_capf(io_si,capf) = ccohort%asmort
 
@@ -2105,14 +2105,14 @@ end subroutine flush_hvars
                          ccohort%frmort*ccohort%n
                     hio_m9_si_scls(io_si,scls) = hio_m9_si_scls(io_si,scls) + ccohort%smort*ccohort%n
                   
-                   ! hio_m10_si_scls(io_si,scls) = hio_m10_si_scls(io_si,scls) + ccohort%asmort*ccohort%n
-                     hio_m10_si_scls(io_si,scls) = 1.0_r8  ! returns 0.9680 bin 1
+                    hio_m10_si_scls(io_si,scls) = hio_m10_si_scls(io_si,scls) + ccohort%asmort*ccohort%n
+                   ! hio_m10_si_scls(io_si,scls) = 1.0_r8  ! returns 0.9680 bin 1
                    ! hio_m10_si_scls(io_si,scls) = scls
                    ! hio_m10_si_scls(io_si,scls) = ccohort%asmort
 
-                   ! hio_m10_si_cacls(io_si,cacls) = hio_m10_si_cacls(io_si,cacls)+ &
-                    !     ccohort%asmort*ccohort%n
-                     hio_m10_si_cacls(io_si,cacls) = 1.0_r8 ! returns 0.968 bin1, 1.09 in bin2 
+                    hio_m10_si_cacls(io_si,cacls) = hio_m10_si_cacls(io_si,cacls)+ &
+                         ccohort%asmort*ccohort%n
+                   !  hio_m10_si_cacls(io_si,cacls) = 1.0_r8 ! returns 0.968 bin1, 1.09 in bin2 
                      ! suggests something wrong with cacls iterator? 
                    ! hio_m10_si_cacls(io_si,cacls) = cacls  !!! MESSED UP
                     !hio_m10_si_cacls(io_si,cacls) = ccohort%asmort
@@ -2126,15 +2126,15 @@ end subroutine flush_hvars
                     endif
 
                     ! number density [/ha]
-                   ! hio_nplant_si_scpf(io_si,scpf) = hio_nplant_si_scpf(io_si,scpf) + ccohort%n
+                    hio_nplant_si_scpf(io_si,scpf) = hio_nplant_si_scpf(io_si,scpf) + ccohort%n
                    ! hio_nplant_si_scpf(io_si,scpf) = ccohort%n
                    ! hio_nplant_si_scpf(io_si,scpf) = scpf
-                    hio_nplant_si_scpf(io_si,scpf) = 1.0_r8
+                   ! hio_nplant_si_scpf(io_si,scpf) = 1.0_r8
                     ! number density along the cohort age dimension
-                   ! hio_nplant_si_capf(io_si,capf) = hio_nplant_si_capf(io_si,capf) + ccohort%n
+                    hio_nplant_si_capf(io_si,capf) = hio_nplant_si_capf(io_si,capf) + ccohort%n
                    ! hio_nplant_si_capf(io_si,capf) = ccohort%n
                    ! hio_nplant_si_capf(io_si,capf) = capf
-                    hio_nplant_si_capf(io_si,capf) = 1.0_r8
+                   ! hio_nplant_si_capf(io_si,capf) = 1.0_r8
                     
                     
                     ! number density by size and biomass
@@ -2150,12 +2150,12 @@ end subroutine flush_hvars
                     
                     hio_nplant_si_scag(io_si,iscag) = hio_nplant_si_scag(io_si,iscag) + ccohort%n
 
-                   ! hio_nplant_si_scls(io_si,scls) = hio_nplant_si_scls(io_si,scls) + ccohort%n
-                   ! hio_nplant_si_cacls(io_si,cacls) = hio_nplant_si_cacls(io_si,cacls)+ccohort%n
+                    hio_nplant_si_scls(io_si,scls) = hio_nplant_si_scls(io_si,scls) + ccohort%n
+                    hio_nplant_si_cacls(io_si,cacls) = hio_nplant_si_cacls(io_si,cacls)+ccohort%n
                    ! hio_nplant_si_scls(io_si,scls) = scls
                    ! hio_nplant_si_cacls(io_si,cacls) = cacls
-                    hio_nplant_si_scls(io_si,scls) = 1.0_r8
-                    hio_nplant_si_cacls(io_si,cacls) = 1.0_r8
+                   ! hio_nplant_si_scls(io_si,scls) = 1.0_r8
+                   ! hio_nplant_si_cacls(io_si,cacls) = 1.0_r8
 
                     ! update size, age, and PFT - indexed quantities
 
@@ -4398,7 +4398,7 @@ end subroutine flush_hvars
 
     call this%set_history_var(vname='NPLANT_CAPF', units = 'N/ha',       &
          long='stem number density by pft/coage', use_default='inactive', &
-         avgflag='A', vtype=site_coage_pft_r8, hlms='CLM:ALM',flushval=0.0_r8,     &
+         avgflag='A', vtype=site_size_pft_r8, hlms='CLM:ALM',flushval=0.0_r8,     &
          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_si_capf )
 
     call this%set_history_var(vname='M1_SCPF', units = 'N/ha/yr',          &
@@ -4463,7 +4463,7 @@ end subroutine flush_hvars
     
     call this%set_history_var(vname='M10_CAPF',units='N/ha/yr',         &
          long='age senescence mortality by pft/cohort age',use_default='inactive', &
-         avgflag='A', vtype =site_coage_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,         &
+         avgflag='A', vtype =site_size_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,         &
          upfreq=1, ivar=ivar, initialize=initialize_variables, index =ih_m10_si_capf )
 
     call this%set_history_var(vname='MORTALITY_CANOPY_SCPF', units = 'N/ha/yr',          &
@@ -4667,7 +4667,7 @@ end subroutine flush_hvars
 
     call this%set_history_var(vname='NPLANT_CACLS', units = 'indiv/ha',          &
          long='number of plants by coage class', use_default='active',   &
-         avgflag='A', vtype=site_coage_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
+         avgflag='A', vtype=site_size_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_si_cacls )
 
     call this%set_history_var(vname='M1_SCLS', units = 'N/ha/yr',          &
@@ -4722,7 +4722,7 @@ end subroutine flush_hvars
 
     call this%set_history_var(vname='M10_CACLS', units = 'N/ha/yr',             &
           long='age senescence mortality by cohort age',use_default='active',      &
-          avgflag='A', vtype=site_coage_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
+          avgflag='A', vtype=site_size_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m10_si_cacls )
 
     call this%set_history_var(vname='CARBON_BALANCE_CANOPY_SCLS', units = 'kg C / ha / yr', &
