@@ -1763,16 +1763,17 @@ end subroutine flush_hvars
          io_si  = this%iovar_map(nc)%site_index(s)
          io_pa1 = this%iovar_map(nc)%patch1_index(s)
          io_soipa = io_pa1-1
-         
-         hio_nplant_si_cacls(io_si, :) = (/(tmp, tmp=1,13)/)
-         hio_nplant_si_capf(io_si, :) = (/(tmp, tmp=1,26)/)
-         hio_nplant_si_scls(io_si, :) = (/(tmp, tmp=1,13)/)
-         hio_nplant_si_scpf(io_si, :) = (/(tmp, tmp=1,26)/)
 
-    !     hio_m10_si_cacls(io_si, :) = (/(tmp, tmp=1,13)/)
-    !     hio_m10_si_capf(io_si, :) = (/(tmp, tmp=1,26)/)
-    !     hio_m10_si_scls(io_si, :) = (/(tmp, tmp=1,13)/)
-    !     hio_m10_si_scpf(io_si, :) = (/(tmp, tmp=1,26)/)
+        ! all of the above give expected results (except weird rounding ?)         
+        ! hio_nplant_si_cacls(io_si, :) = (/(tmp, tmp=1,13)/)
+        ! hio_nplant_si_capf(io_si, :) = (/(tmp, tmp=1,26)/)
+        ! hio_nplant_si_scls(io_si, :) = (/(tmp, tmp=1,13)/)
+        ! hio_nplant_si_scpf(io_si, :) = (/(tmp, tmp=1,26)/)
+ 
+        ! hio_m10_si_cacls(io_si, :) = (/(tmp, tmp=1,13)/)
+        ! hio_m10_si_capf(io_si, :) = (/(tmp, tmp=1,26)/)
+        ! hio_m10_si_scls(io_si, :) = (/(tmp, tmp=1,13)/)
+        ! hio_m10_si_scpf(io_si, :) = (/(tmp, tmp=1,26)/)
 
          ! Set trimming on the soil patch to 1.0
          hio_trimming_pa(io_soipa) = 1.0_r8
@@ -2083,9 +2084,17 @@ end subroutine flush_hvars
                     hio_m8_si_scpf(io_si,scpf) = hio_m8_si_scpf(io_si,scpf) + ccohort%frmort*ccohort%n
                     hio_m9_si_scpf(io_si,scpf) = hio_m9_si_scpf(io_si,scpf) + ccohort%smort*ccohort%n
                     hio_m10_si_scpf(io_si,scpf) = hio_m10_si_scpf(io_si,scpf) + ccohort%asmort*ccohort%n
+                  
+                    hio_m10_si_scpf(io_si,scpf) = 1.0_r8 ! 0.968 1 and 14 (smallest bins each pft)
+                   ! hio_m10_si_scpf(io_si,scpf) = scpf
+                   ! hio_m10_si_scpf(io_si,scpf) = ccohort%n
                     
-                    hio_m10_si_capf(io_si,capf) = hio_m10_si_capf(io_si,capf) + ccohort%asmort*ccohort%n
-                   
+                   ! hio_m10_si_capf(io_si,capf) = hio_m10_si_capf(io_si,capf) + ccohort%asmort*ccohort%n
+
+                    hio_m10_si_capf(io_si,capf) = 1.0_r8 ! 0.968 in bin1, 1.294 in bin 14?? 
+                   ! hio_m10_si_capf(io_si,capf) = capf ! as expected 
+                   ! hio_m10_si_capf(io_si,capf) = ccohort%asmort
+
 
                     hio_m1_si_scls(io_si,scls) = hio_m1_si_scls(io_si,scls) + ccohort%bmort*ccohort%n
                     hio_m2_si_scls(io_si,scls) = hio_m2_si_scls(io_si,scls) + ccohort%hmort*ccohort%n
@@ -2095,11 +2104,18 @@ end subroutine flush_hvars
                     hio_m8_si_scls(io_si,scls) = hio_m8_si_scls(io_si,scls) + &
                          ccohort%frmort*ccohort%n
                     hio_m9_si_scls(io_si,scls) = hio_m9_si_scls(io_si,scls) + ccohort%smort*ccohort%n
-                    hio_m10_si_scls(io_si,scls) = hio_m10_si_scls(io_si,scls) + ccohort%asmort*ccohort%n
-                   
-                    hio_m10_si_cacls(io_si,cacls) = hio_m10_si_cacls(io_si,cacls)+ccohort%asmort*ccohort%n
-                    
-                    
+                  
+                   ! hio_m10_si_scls(io_si,scls) = hio_m10_si_scls(io_si,scls) + ccohort%asmort*ccohort%n
+                     hio_m10_si_scls(io_si,scls) = 1.0_r8  ! returns 0.9680 bin 1
+                   ! hio_m10_si_scls(io_si,scls) = scls
+                   ! hio_m10_si_scls(io_si,scls) = ccohort%asmort
+
+                   ! hio_m10_si_cacls(io_si,cacls) = hio_m10_si_cacls(io_si,cacls)+ &
+                    !     ccohort%asmort*ccohort%n
+                     hio_m10_si_cacls(io_si,cacls) = 1.0_r8 ! returns 0.968 bin1, 1.09 in bin2 
+                     ! suggests something wrong with cacls iterator? 
+                   ! hio_m10_si_cacls(io_si,cacls) = cacls  !!! MESSED UP
+                    !hio_m10_si_cacls(io_si,cacls) = ccohort%asmort
 
                     !C13 discrimination
                     if(gpp_cached + ccohort%gpp_acc_hold > 0.0_r8)then
@@ -2110,10 +2126,17 @@ end subroutine flush_hvars
                     endif
 
                     ! number density [/ha]
-                  !  hio_nplant_si_scpf(io_si,scpf) = hio_nplant_si_scpf(io_si,scpf) + ccohort%n
+                   ! hio_nplant_si_scpf(io_si,scpf) = hio_nplant_si_scpf(io_si,scpf) + ccohort%n
+                   ! hio_nplant_si_scpf(io_si,scpf) = ccohort%n
+                   ! hio_nplant_si_scpf(io_si,scpf) = scpf
+                    hio_nplant_si_scpf(io_si,scpf) = 1.0_r8
                     ! number density along the cohort age dimension
-                  !  hio_nplant_si_capf(io_si,capf) = hio_nplant_si_capf(io_si,capf) + ccohort%n
-                   
+                   ! hio_nplant_si_capf(io_si,capf) = hio_nplant_si_capf(io_si,capf) + ccohort%n
+                   ! hio_nplant_si_capf(io_si,capf) = ccohort%n
+                   ! hio_nplant_si_capf(io_si,capf) = capf
+                    hio_nplant_si_capf(io_si,capf) = 1.0_r8
+                    
+                    
                     ! number density by size and biomass
                     hio_agb_si_scls(io_si,scls) = hio_agb_si_scls(io_si,scls) + &
                           total_c * ccohort%n * EDPftvarcon_inst%allom_agb_frac(ccohort%pft) * AREA_INV
@@ -2129,7 +2152,11 @@ end subroutine flush_hvars
 
                    ! hio_nplant_si_scls(io_si,scls) = hio_nplant_si_scls(io_si,scls) + ccohort%n
                    ! hio_nplant_si_cacls(io_si,cacls) = hio_nplant_si_cacls(io_si,cacls)+ccohort%n
-                   
+                   ! hio_nplant_si_scls(io_si,scls) = scls
+                   ! hio_nplant_si_cacls(io_si,cacls) = cacls
+                    hio_nplant_si_scls(io_si,scls) = 1.0_r8
+                    hio_nplant_si_cacls(io_si,cacls) = 1.0_r8
+
                     ! update size, age, and PFT - indexed quantities
 
                     iscagpft = get_sizeagepft_class_index(ccohort%dbh,cpatch%age,ccohort%pft)
