@@ -274,8 +274,8 @@ module FatesHistoryInterfaceMod
   integer, private :: ih_ddbh_si_scpf
   integer, private :: ih_growthflux_si_scpf
   integer, private :: ih_growthflux_fusion_si_scpf
-  integer, private :: ih_ageflux_si_capf
-  integer, private :: ih_ageflux_fusion_si_capf
+!  integer, private :: ih_ageflux_si_capf
+!  integer, private :: ih_ageflux_fusion_si_capf
   integer, private :: ih_ba_si_scpf
   integer, private :: ih_m1_si_scpf
   integer, private :: ih_m2_si_scpf
@@ -1610,8 +1610,8 @@ end subroutine flush_hvars
                hio_ddbh_si_scpf        => this%hvars(ih_ddbh_si_scpf)%r82d, &
                hio_growthflux_si_scpf        => this%hvars(ih_growthflux_si_scpf)%r82d, &
                hio_growthflux_fusion_si_scpf        => this%hvars(ih_growthflux_fusion_si_scpf)%r82d, &
-               hio_ageflux_si_capf           => this%hvars(ih_ageflux_si_capf)%r82d, &
-               hio_ageflux_fusion_si_capf           => this%hvars(ih_ageflux_fusion_si_capf)%r82d, &
+  !             hio_ageflux_si_capf           => this%hvars(ih_ageflux_si_capf)%r82d, &
+ !              hio_ageflux_fusion_si_capf           => this%hvars(ih_ageflux_fusion_si_capf)%r82d, &
                hio_ba_si_scpf          => this%hvars(ih_ba_si_scpf)%r82d, &
                hio_nplant_si_scpf      => this%hvars(ih_nplant_si_scpf)%r82d, &
                hio_nplant_si_capf      => this%hvars(ih_nplant_si_capf)%r82d, &
@@ -2084,16 +2084,8 @@ end subroutine flush_hvars
                     hio_m8_si_scpf(io_si,scpf) = hio_m8_si_scpf(io_si,scpf) + ccohort%frmort*ccohort%n
                     hio_m9_si_scpf(io_si,scpf) = hio_m9_si_scpf(io_si,scpf) + ccohort%smort*ccohort%n
                     hio_m10_si_scpf(io_si,scpf) = hio_m10_si_scpf(io_si,scpf) + ccohort%asmort*ccohort%n
-                  
-                   ! hio_m10_si_scpf(io_si,scpf) = 1.0_r8 ! 0.968 1 and 14 (smallest bins each pft)
-                   ! hio_m10_si_scpf(io_si,scpf) = scpf
-                   ! hio_m10_si_scpf(io_si,scpf) = ccohort%n
-                    
+                                      
                     hio_m10_si_capf(io_si,capf) = hio_m10_si_capf(io_si,capf) + ccohort%asmort*ccohort%n
-
-                   ! hio_m10_si_capf(io_si,capf) = 1.0_r8 ! 0.968 in bin1, 1.294 in bin 14?? 
-                   ! hio_m10_si_capf(io_si,capf) = capf ! as expected 
-                   ! hio_m10_si_capf(io_si,capf) = ccohort%asmort
 
 
                     hio_m1_si_scls(io_si,scls) = hio_m1_si_scls(io_si,scls) + ccohort%bmort*ccohort%n
@@ -2106,17 +2098,10 @@ end subroutine flush_hvars
                     hio_m9_si_scls(io_si,scls) = hio_m9_si_scls(io_si,scls) + ccohort%smort*ccohort%n
                   
                     hio_m10_si_scls(io_si,scls) = hio_m10_si_scls(io_si,scls) + ccohort%asmort*ccohort%n
-                   ! hio_m10_si_scls(io_si,scls) = 1.0_r8  ! returns 0.9680 bin 1
-                   ! hio_m10_si_scls(io_si,scls) = scls
-                   ! hio_m10_si_scls(io_si,scls) = ccohort%asmort
-
+      
                     hio_m10_si_cacls(io_si,cacls) = hio_m10_si_cacls(io_si,cacls)+ &
                          ccohort%asmort*ccohort%n
-                   !  hio_m10_si_cacls(io_si,cacls) = 1.0_r8 ! returns 0.968 bin1, 1.09 in bin2 
-                     ! suggests something wrong with cacls iterator? 
-                   ! hio_m10_si_cacls(io_si,cacls) = cacls  !!! MESSED UP
-                    !hio_m10_si_cacls(io_si,cacls) = ccohort%asmort
-
+                   
                     !C13 discrimination
                     if(gpp_cached + ccohort%gpp_acc_hold > 0.0_r8)then
                        hio_c13disc_si_scpf(io_si,scpf) = ((hio_c13disc_si_scpf(io_si,scpf) * gpp_cached) + &
@@ -2127,16 +2112,9 @@ end subroutine flush_hvars
 
                     ! number density [/ha]
                     hio_nplant_si_scpf(io_si,scpf) = hio_nplant_si_scpf(io_si,scpf) + ccohort%n
-                   ! hio_nplant_si_scpf(io_si,scpf) = ccohort%n
-                   ! hio_nplant_si_scpf(io_si,scpf) = scpf
-                   ! hio_nplant_si_scpf(io_si,scpf) = 1.0_r8
                     ! number density along the cohort age dimension
                     hio_nplant_si_capf(io_si,capf) = hio_nplant_si_capf(io_si,capf) + ccohort%n
-                   ! hio_nplant_si_capf(io_si,capf) = ccohort%n
-                   ! hio_nplant_si_capf(io_si,capf) = capf
-                   ! hio_nplant_si_capf(io_si,capf) = 1.0_r8
-                    
-                    
+                  
                     ! number density by size and biomass
                     hio_agb_si_scls(io_si,scls) = hio_agb_si_scls(io_si,scls) + &
                           total_c * ccohort%n * EDPftvarcon_inst%allom_agb_frac(ccohort%pft) * AREA_INV
@@ -2152,11 +2130,7 @@ end subroutine flush_hvars
 
                     hio_nplant_si_scls(io_si,scls) = hio_nplant_si_scls(io_si,scls) + ccohort%n
                     hio_nplant_si_cacls(io_si,cacls) = hio_nplant_si_cacls(io_si,cacls)+ccohort%n
-                   ! hio_nplant_si_scls(io_si,scls) = scls
-                   ! hio_nplant_si_cacls(io_si,cacls) = cacls
-                   ! hio_nplant_si_scls(io_si,scls) = 1.0_r8
-                   ! hio_nplant_si_cacls(io_si,cacls) = 1.0_r8
-
+                  
                     ! update size, age, and PFT - indexed quantities
 
                     iscagpft = get_sizeagepft_class_index(ccohort%dbh,cpatch%age,ccohort%pft)
@@ -2374,14 +2348,14 @@ end subroutine flush_hvars
                     end if
                     ccohort%size_class_lasttimestep = scls
 
-                    if ( (cacls - ccohort%coage_class_lasttimestep ) .gt. 0) then
-                       do i_cacls = ccohort%coage_class_lasttimestep + 1, cacls
-                          i_capf = (ccohort%pft-1)*nlevcoage + i_cacls
-                          hio_ageflux_si_capf(io_si,i_capf) = hio_ageflux_si_capf(io_si,i_capf) + &
-                               ccohort%n * days_per_year
-                       end do
-                    end if
-                    ccohort%coage_class_lasttimestep = cacls
+          !          if ( (cacls - ccohort%coage_class_lasttimestep ) .gt. 0) then
+         !              do i_cacls = ccohort%coage_class_lasttimestep + 1, cacls
+        !                  i_capf = (ccohort%pft-1)*nlevcoage + i_cacls
+       !                   hio_ageflux_si_capf(io_si,i_capf) = hio_ageflux_si_capf(io_si,i_capf) + &
+      !                         ccohort%n * days_per_year
+     !                  end do
+    !                end if
+   !                 ccohort%coage_class_lasttimestep = cacls
 
                     !
                   end associate
@@ -2393,9 +2367,11 @@ end subroutine flush_hvars
                   ccohort%size_class_lasttimestep = 1
                   !
 
-                  i_capf = (ccohort%pft-1)*nlevcoage+1
-                  hio_ageflux_si_capf(io_si,i_capf) = hio_ageflux_si_capf(io_si,i_capf) + ccohort%n * days_per_year
-                  ccohort%coage_class_lasttimestep = 1
+             !     i_capf = (ccohort%pft-1)*nlevcoage+1
+                 ! THis is giving errors! Come back and fix! 
+             !     i_capf = 1
+            !      hio_ageflux_si_capf(io_si,i_capf) = hio_ageflux_si_capf(io_si,i_capf) + ccohort%n * days_per_year
+           !       ccohort%coage_class_lasttimestep = 1
                   
                end if
 
@@ -2583,14 +2559,15 @@ end subroutine flush_hvars
          end do
          !
 
-         do i_pft = 1, numpft
-            do i_cacls = 1, nlevcoage
-               i_capf = (i_pft -1)*nlevcoage + i_cacls
-
-               hio_ageflux_fusion_si_capf(io_si,i_capf) = hio_ageflux_fusion_si_capf(io_si,i_capf) + &
-                    sites(s)%ageflux_fusion(i_capf, i_pft) * days_per_year
-            end do
-         end do
+        ! do i_pft = 1, numpft
+         !   do i_cacls = 1, nlevcoage
+!               i_capf = (i_pft -1)*nlevcoage + i_cacls
+! fix this! 
+        !       i_capf = 1
+       !        hio_ageflux_fusion_si_capf(io_si,i_capf) = hio_ageflux_fusion_si_capf(io_si,i_capf) + &
+      !              sites(s)%ageflux_fusion(i_capf, i_pft) * days_per_year
+     !       end do
+    !     end do
          
          
          
@@ -4366,15 +4343,15 @@ end subroutine flush_hvars
           avgflag='A', vtype=site_size_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,   &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_growthflux_fusion_si_scpf )
 
-    call this%set_history_var(vname='AGEFLUX_CAPF', units = 'n/yr/ha', &
-         long='flux of individuals into a given age bin via growth and recruitment', use_default='inactive', &
-         avgflag='A', vtype=site_coage_pft_r8, hlms='CLM:ALM', flushval=0.0_r8, &
-         upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_ageflux_si_capf )
+   ! call this%set_history_var(vname='AGEFLUX_CAPF', units = 'n/yr/ha', &
+    !     long='flux of individuals into a given age bin via growth and recruitment', use_default='inactive', &
+   !      avgflag='A', vtype=site_coage_pft_r8, hlms='CLM:ALM', flushval=0.0_r8, &
+  !       upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_ageflux_si_capf )
 
-    call this%set_history_var(vname='AGEFLUX_FUSION_CAPF', units = 'n/yr/ha', &
-         long='flux of individuals into a given age class bin via fusion', use_default='inactive',  &
-         avgflag='A', vtype=site_coage_pft_r8, hlms='CLM:ALM', flushval=0.0_r8, &
-         upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_ageflux_fusion_si_capf ) 
+  !  call this%set_history_var(vname='AGEFLUX_FUSION_CAPF', units = 'n/yr/ha', &
+   !      long='flux of individuals into a given age class bin via fusion', use_default='inactive',  &
+    !     avgflag='A', vtype=site_coage_pft_r8, hlms='CLM:ALM', flushval=0.0_r8, &
+     !    upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_ageflux_fusion_si_capf ) 
 
     call this%set_history_var(vname='DDBH_CANOPY_SCPF', units = 'cm/yr/ha',         &
           long='diameter growth increment by pft/size',use_default='inactive', &
@@ -4398,7 +4375,7 @@ end subroutine flush_hvars
 
     call this%set_history_var(vname='NPLANT_CAPF', units = 'N/ha',       &
          long='stem number density by pft/coage', use_default='inactive', &
-         avgflag='A', vtype=site_size_pft_r8, hlms='CLM:ALM',flushval=0.0_r8,     &
+         avgflag='A', vtype=site_coage_pft_r8, hlms='CLM:ALM',flushval=0.0_r8,     &
          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_si_capf )
 
     call this%set_history_var(vname='M1_SCPF', units = 'N/ha/yr',          &
@@ -4463,7 +4440,7 @@ end subroutine flush_hvars
     
     call this%set_history_var(vname='M10_CAPF',units='N/ha/yr',         &
          long='age senescence mortality by pft/cohort age',use_default='inactive', &
-         avgflag='A', vtype =site_size_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,         &
+         avgflag='A', vtype =site_coage_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,         &
          upfreq=1, ivar=ivar, initialize=initialize_variables, index =ih_m10_si_capf )
 
     call this%set_history_var(vname='MORTALITY_CANOPY_SCPF', units = 'N/ha/yr',          &
@@ -4667,7 +4644,7 @@ end subroutine flush_hvars
 
     call this%set_history_var(vname='NPLANT_CACLS', units = 'indiv/ha',          &
          long='number of plants by coage class', use_default='active',   &
-         avgflag='A', vtype=site_size_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
+         avgflag='A', vtype=site_coage_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_si_cacls )
 
     call this%set_history_var(vname='M1_SCLS', units = 'N/ha/yr',          &
@@ -4722,7 +4699,7 @@ end subroutine flush_hvars
 
     call this%set_history_var(vname='M10_CACLS', units = 'N/ha/yr',             &
           long='age senescence mortality by cohort age',use_default='active',      &
-          avgflag='A', vtype=site_size_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
+          avgflag='A', vtype=site_coage_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m10_si_cacls )
 
     call this%set_history_var(vname='CARBON_BALANCE_CANOPY_SCLS', units = 'kg C / ha / yr', &
