@@ -10,7 +10,6 @@
 # =======================================================================================
 
 import numpy as np
-from numpy import *
 import sys
 import getopt
 import code  # For development: code.interact(local=locals())
@@ -177,13 +176,13 @@ def main(argv):
         # Copy over the input data
         # Tedious, but I have to permute through all combinations of dimension position
         if( pft_dim_len == 0 ):
-            out_var = fp_out.createVariable(key,'d',(fp_in.variables.get(key).dimensions))
-            out_var.assignValue(double(fp_in.variables.get(key).data))
+            out_var = fp_out.createVariable(key,'f',(fp_in.variables.get(key).dimensions))
+            out_var.assignValue(float(fp_in.variables.get(key).data))
         elif( (pft_dim_found==-1) & (prt_dim_found==-1) ):
-            out_var = fp_out.createVariable(key,'d',(fp_in.variables.get(key).dimensions))
+            out_var = fp_out.createVariable(key,'f',(fp_in.variables.get(key).dimensions))
             out_var[:] = in_var[:]
         elif( (pft_dim_found==0) & (pft_dim_len==1) ):           # 1D fates_pft
-            out_var = fp_out.createVariable(key,'d',(fp_in.variables.get(key).dimensions))
+            out_var = fp_out.createVariable(key,'f',(fp_in.variables.get(key).dimensions))
             tmp_out  = np.zeros([num_pft_out])
             for id,ipft in enumerate(donor_pft_indices):
                 tmp_out[id] = fp_in.variables.get(key).data[ipft-1]
@@ -192,7 +191,7 @@ def main(argv):
         # 2D   hydro_organ - fates_pft
         # or.. prt_organ - fates_pft
         elif( (pft_dim_found==1) & (pft_dim_len==2) ):           
-            out_var = fp_out.createVariable(key,'d',(fp_in.variables.get(key).dimensions))
+            out_var = fp_out.createVariable(key,'f',(fp_in.variables.get(key).dimensions))
             dim2_len = fp_in.dimensions.get(fp_in.variables.get(key).dimensions[0])
             tmp_out  = np.zeros([dim2_len,num_pft_out])
             for id,ipft in enumerate(donor_pft_indices):
