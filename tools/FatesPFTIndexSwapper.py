@@ -26,13 +26,13 @@ pft_dim_name = 'fates_pft'
 prt_dim_name = 'fates_prt_organs'
 
 
-class timetype:   
-    
+class timetype:
+
     # This is time, like the thing that always goes forward and cant be seen
     # or touched, insert creative riddle here
 
     def __init__(self,ntimes):
-    
+
         self.year  = -9*np.ones((ntimes))
         self.month = -9*np.ones((ntimes))
         # This is a floating point decimal day
@@ -112,7 +112,7 @@ def interp_args(argv):
     if (output_fname == "none"):
         print("You must specify an output file:\n\n")
         usage()
-        sys.exit(2)    
+        sys.exit(2)
 
     if (donor_pft_indices_str == ''):
         print("You must specify at least one donor pft index!\n\n")
@@ -121,7 +121,7 @@ def interp_args(argv):
     else:
         donor_pft_indices = []
         for strpft in donor_pft_indices_str.split(','):
-            donor_pft_indices.append(int(strpft))        
+            donor_pft_indices.append(int(strpft))
 
 
     return (input_fname,output_fname,donor_pft_indices)
@@ -142,7 +142,7 @@ def main(argv):
 
     # Open the netcdf files
     fp_out = netcdf.netcdf_file(output_fname, 'w')
-    
+
     fp_in  = netcdf.netcdf_file(input_fname, 'r')
 
     for key, value in sorted(fp_in.dimensions.iteritems()):
@@ -156,10 +156,10 @@ def main(argv):
     for key, value in sorted(fp_in.variables.iteritems()):
         print('Creating Variable: ',key)
         #   code.interact(local=locals())
-        
-        
+
+
         in_var  = fp_in.variables.get(key)
-        
+
 
         # Idenfity if this variable has pft dimension
         pft_dim_found = -1
@@ -167,7 +167,7 @@ def main(argv):
         pft_dim_len   = len(fp_in.variables.get(key).dimensions)
 
         for idim, name in enumerate(fp_in.variables.get(key).dimensions):
-            # Manipulate data 
+            # Manipulate data
             if(name==pft_dim_name):
                 pft_dim_found = idim
             if(name==prt_dim_name):
@@ -178,7 +178,7 @@ def main(argv):
         # Tedious, but I have to permute through all combinations of dimension position
         if( pft_dim_len == 0 ):
             out_var = fp_out.createVariable(key,'d',(fp_in.variables.get(key).dimensions))
-            out_var.assignValue(double(fp_in.variables.get(key).data))
+            out_var.assignValue(float(fp_in.variables.get(key).data))
         elif( (pft_dim_found==-1) & (prt_dim_found==-1) ):
             out_var = fp_out.createVariable(key,'d',(fp_in.variables.get(key).dimensions))
             out_var[:] = in_var[:]
@@ -191,7 +191,7 @@ def main(argv):
 
         # 2D   hydro_organ - fates_pft
         # or.. prt_organ - fates_pft
-        elif( (pft_dim_found==1) & (pft_dim_len==2) ):           
+        elif( (pft_dim_found==1) & (pft_dim_len==2) ):
             out_var = fp_out.createVariable(key,'d',(fp_in.variables.get(key).dimensions))
             dim2_len = fp_in.dimensions.get(fp_in.variables.get(key).dimensions[0])
             tmp_out  = np.zeros([dim2_len,num_pft_out])
@@ -207,7 +207,7 @@ def main(argv):
             for id,ipft in enumerate(donor_pft_indices):
                 out_var[id] = fp_in.variables.get(key).data[ipft-1]
 
-        
+
         elif( (prt_dim_found==0) & (pft_dim_len==2) ):          # fates_prt_organs - string_length
             out_var = fp_out.createVariable(key,'c',(fp_in.variables.get(key).dimensions))
             out_var[:] = in_var[:]
@@ -241,14 +241,6 @@ def main(argv):
 
 # =======================================================================================
 # This is the actual call to main
-   
+
 if __name__ == "__main__":
     main(sys.argv)
-
-
-
-
-
-
-
-
