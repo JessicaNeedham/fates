@@ -1,4 +1,4 @@
-netcdf fates_params_13scls_2pfts {
+netcdf fates_params_onepft {
 dimensions:
 	fates_NCWD = 4 ;
 	fates_history_age_bins = 7 ;
@@ -595,7 +595,7 @@ variables:
 // global attributes:
 		:history = "This file was made from FatesPFTIndexSwapper.py \n",
 			" Input File = parameter_files/fates_params_default.nc \n",
-			" Indices = [1, 5]" ;
+			" Indices = [1, 1]" ;
 data:
 
  fates_history_sizeclass_bin_edges = 0, 5, 10, 15, 20, 30, 40, 50, 60, 70, 
@@ -620,7 +620,7 @@ data:
   _, _ ;
 
  fates_prt_nitr_stoich_p1 =
-  0.033, 0.04,
+  0.033, 0.033,
   0.024, 0.024,
   1e-08, 1e-08,
   1e-08, 1e-08,
@@ -753,7 +753,7 @@ data:
 
  fates_pftname =
   "broadleaf_evergreen_tropical_tree          ",
-  "broadleaf_hydrodecid_tropical_tree         " ;
+  "broadleaf_evergreen_tropical_tree          " ;
 
  fates_rootprof_beta =
   0.976, 0.976,
@@ -865,7 +865,7 @@ data:
 
  fates_leaf_slamax = 0.0954, 0.0954 ;
 
- fates_leaf_slatop = 0.012, 0.03 ;
+ fates_leaf_slatop = 0.012, 0.012 ;
 
  fates_leaf_stor_priority = 0.8, 0.8 ;
 
@@ -881,7 +881,7 @@ data:
 
  fates_leaf_vcmaxse = 485, 485 ;
 
- fates_leaf_xl = 0.1, 0.01 ;
+ fates_leaf_xl = 0.1, 0.1 ;
 
  fates_lf_fcel = 0.5, 0.5 ;
 
@@ -907,21 +907,21 @@ data:
 
  fates_mort_scalar_hydrfailure = 0.6, 0.6 ;
 
- fates_phen_evergreen = 1, 0 ;
+ fates_phen_evergreen = 1, 1 ;
 
  fates_phen_season_decid = 0, 0 ;
 
- fates_phen_stress_decid = 0, 1 ;
+ fates_phen_stress_decid = 0, 0 ;
 
- fates_phenflush_fraction = _, 0.5 ;
+ fates_phenflush_fraction = _, _ ;
 
  fates_prescribed_mortality_canopy = 0.0194, 0.0194 ;
 
  fates_prescribed_mortality_understory = 0.025, 0.025 ;
 
- fates_prescribed_npp_canopy = 0.4, 0.4 ;
+ fates_prescribed_npp_canopy = 1.2, 1.2 ;
 
- fates_prescribed_npp_understory = 0.03125, 0.03125 ;
+ fates_prescribed_npp_understory = 0.05, 0.05 ;
 
  fates_prescribed_recruitment = 0.02, 0.02 ;
 
@@ -939,15 +939,15 @@ data:
 
  fates_root_long = 1, 1 ;
 
- fates_roota_par = 7, 6 ;
+ fates_roota_par = 7, 7 ;
 
- fates_rootb_par = 1, 2 ;
+ fates_rootb_par = 1, 1 ;
 
  fates_seed_alloc = 0.1, 0.1 ;
 
  fates_seed_alloc_mature = 0, 0 ;
 
- fates_seed_dbh_repro_threshold = 150, 90 ;
+ fates_seed_dbh_repro_threshold = 150, 150 ;
 
  fates_seed_decay_turnover = 0.51, 0.51 ;
 
@@ -982,10 +982,10 @@ data:
  fates_z0mr = 0.055, 0.055 ;
 
  fates_leaf_long =
-  1.5, 1 ;
+  1.5, 1.5 ;
 
  fates_leaf_vcmax25top =
-  50, 41 ;
+  50, 50 ;
 
  fates_base_mr_20 = 2.52e-06 ;
 
