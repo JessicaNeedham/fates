@@ -113,7 +113,8 @@ module FatesRestartInterfaceMod
   integer :: ir_hmort_co
   integer :: ir_cmort_co
   integer :: ir_frmort_co
-
+  integer :: ir_smort_co
+  
    !Logging
   integer :: ir_lmort_direct_co
   integer :: ir_lmort_collateral_co

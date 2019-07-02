@@ -277,6 +277,7 @@ module FatesHistoryInterfaceMod
   integer :: ih_m6_si_scpf
   integer :: ih_m7_si_scpf  
   integer :: ih_m8_si_scpf
+  integer :: ih_m9_si_scpf
   integer :: ih_crownfiremort_si_scpf
   integer :: ih_cambialfiremort_si_scpf
 
@@ -323,7 +324,8 @@ module FatesHistoryInterfaceMod
   integer :: ih_m6_si_scls
   integer :: ih_m7_si_scls  
   integer :: ih_m8_si_scls
-
+  integer :: ih_m9_si_scls
+  
   ! lots of non-default diagnostics for understanding canopy versus understory carbon balances
   integer :: ih_rdark_canopy_si_scls
   integer :: ih_livestem_mr_canopy_si_scls
