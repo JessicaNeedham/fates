@@ -239,7 +239,7 @@ module EDTypesMod
                                                          ! performing size diagnostics at high-frequency calls
      integer  ::  coage_by_pft_class                     ! An index that indicates the cohorts position of the join cohort age class x PFT 
      integer ::  size_class_lasttimestep                 ! size class of the cohort at the end of the previous timestep (used for calculating growth flux)
-     integer :: coage_class_lasttimestep                 ! cohort age class last time step - JFNeedham  - not sure if this actually needs to be calculated
+!     integer :: coage_class_lasttimestep                 ! cohort age class last time step ! NOT NEEDED
 
      ! CARBON FLUXES 
      
@@ -709,7 +709,7 @@ module EDTypesMod
 
      real(r8), allocatable :: growthflux_fusion(:,:)             ! rate of individuals moving into a given size class bin
      ! due to fusion in a given day. on size x pft array 
-     real(r8), allocatable :: ageflux_fusion(:,:)                ! rate of individuals movign into a given age class bin due to fusion- age x pft
+!     real(r8), allocatable :: ageflux_fusion(:,:)                ! rate of individuals movign into a given age class bin due to fusion- age x pft
 
      ! some diagnostic-only (i.e. not resolved by ODE solver) flux of carbon to CWD and litter pools from termination and canopy mortality
      real(r8) :: CWD_AG_diagnostic_input_carbonflux(1:ncwd)       ! diagnostic flux to AG CWD [kg C / m2 / yr]

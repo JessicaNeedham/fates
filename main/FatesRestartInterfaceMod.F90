@@ -97,7 +97,7 @@ module FatesRestartInterfaceMod
   integer, private :: ir_canopy_layer_yesterday_co
   integer, private :: ir_canopy_trim_co
   integer, private :: ir_size_class_lasttimestep_co
-  integer, private :: ir_coage_class_lasttimestep_co
+!  integer, private :: ir_coage_class_lasttimestep_co
   integer, private :: ir_dbh_co
   integer, private :: ir_coage_co
   integer, private :: ir_g_sb_laweight_co
@@ -711,9 +711,9 @@ contains
          long_name='ed cohort - size-class last timestep', units='index', flushval = flushzero, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_size_class_lasttimestep_co )
 
-    call this%set_restart_var(vname='fates_coage_class_lasttimestep', vtype=cohort_int, &
-         long_name='ed cohort -age class last timestep', units='index',flushval = flushzero, &
-         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_coage_class_lasttimestep_co )
+  !  call this%set_restart_var(vname='fates_coage_class_lasttimestep', vtype=cohort_int, &
+  !       long_name='ed cohort -age class last timestep', units='index',flushval = flushzero, &
+ !        hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_coage_class_lasttimestep_co )
 
     call this%set_restart_var(vname='fates_dbh', vtype=cohort_r8, &
          long_name='ed cohort - diameter at breast height', units='cm', flushval = flushzero, &
@@ -1517,7 +1517,7 @@ contains
            rio_canopy_layer_yesterday_co    => this%rvars(ir_canopy_layer_yesterday_co)%r81d, &
            rio_canopy_trim_co          => this%rvars(ir_canopy_trim_co)%r81d, &
            rio_size_class_lasttimestep => this%rvars(ir_size_class_lasttimestep_co)%int1d, &
-           rio_coage_class_lasttimestep => this%rvars(ir_coage_class_lasttimestep_co)%int1d, &
+   !        rio_coage_class_lasttimestep => this%rvars(ir_coage_class_lasttimestep_co)%int1d, &
            rio_dbh_co                  => this%rvars(ir_dbh_co)%r81d, &
            rio_coage_co                => this%rvars(ir_coage_co)%r81d, &
            rio_g_sb_laweight_co        => this%rvars(ir_g_sb_laweight_co)%r81d, &
@@ -1710,7 +1710,7 @@ contains
                 rio_canopy_layer_yesterday_co(io_idx_co) = ccohort%canopy_layer_yesterday
                 rio_canopy_trim_co(io_idx_co)  = ccohort%canopy_trim
                 rio_size_class_lasttimestep(io_idx_co) = ccohort%size_class_lasttimestep
-                rio_coage_class_lasttimestep(io_idx_co) = ccohort%coage_class_lasttimestep
+    !            rio_coage_class_lasttimestep(io_idx_co) = ccohort%coage_class_lasttimestep
                 rio_dbh_co(io_idx_co)          = ccohort%dbh
                 rio_coage_co(io_idx_co)        = ccohort%coage
                 rio_height_co(io_idx_co)       = ccohort%hite
@@ -1852,13 +1852,13 @@ contains
           end do
 
           
-          do i_cacls = 1, nlevcoage
-             do i_pft = 1, numpft
-                rio_ageflx_fusion_sicapf(io_idx_si_capf) = sites(s)%ageflux_fusion(i_cacls, i_pft)
-                io_idx_si_capf = io_idx_si_capf + 1
-             end do
-             io_idx_si_cacls = io_idx_si_cacls + 1
-          end do
+!          do i_cacls = 1, nlevcoage
+ !            do i_pft = 1, numpft
+  !              rio_ageflx_fusion_sicapf(io_idx_si_capf) = sites(s)%ageflux_fusion(i_cacls, i_pft)
+   !             io_idx_si_capf = io_idx_si_capf + 1
+    !         end do
+     !        io_idx_si_cacls = io_idx_si_cacls + 1
+      !    end do
           
           rio_termcflux_cano_si(io_idx_si)  = sites(s)%term_carbonflux_canopy
           rio_termcflux_usto_si(io_idx_si)  = sites(s)%term_carbonflux_ustory
@@ -2244,7 +2244,7 @@ contains
           rio_canopy_layer_yesterday_co         => this%rvars(ir_canopy_layer_yesterday_co)%r81d, &
           rio_canopy_trim_co          => this%rvars(ir_canopy_trim_co)%r81d, &
           rio_size_class_lasttimestep => this%rvars(ir_size_class_lasttimestep_co)%int1d, &
-          rio_coage_class_lasttimestep=> this%rvars(ir_coage_class_lasttimestep_co)%int1d, &
+     !     rio_coage_class_lasttimestep=> this%rvars(ir_coage_class_lasttimestep_co)%int1d, &
           rio_dbh_co                  => this%rvars(ir_dbh_co)%r81d, &
           rio_coage_co                => this%rvars(ir_coage_co)%r81d, & 
           rio_g_sb_laweight_co        => this%rvars(ir_g_sb_laweight_co)%r81d, &
@@ -2401,7 +2401,7 @@ contains
                 ccohort%canopy_layer_yesterday = rio_canopy_layer_yesterday_co(io_idx_co)
                 ccohort%canopy_trim  = rio_canopy_trim_co(io_idx_co)
                 ccohort%size_class_lasttimestep = rio_size_class_lasttimestep(io_idx_co)
-                ccohort%coage_class_lasttimestep = rio_coage_class_lasttimestep(io_idx_co)
+      !          ccohort%coage_class_lasttimestep = rio_coage_class_lasttimestep(io_idx_co)
                 ccohort%dbh          = rio_dbh_co(io_idx_co)
                 ccohort%coage        = rio_coage_co(io_idx_co)
                 ccohort%g_sb_laweight= rio_g_sb_laweight_co(io_idx_co)
@@ -2615,13 +2615,13 @@ contains
              io_idx_si_sc = io_idx_si_sc + 1
           end do
 
-          do i_cacls = i,nlevcoage
-             do i_pft = 1, numpft
-                sites(s)%ageflux_fusion(i_cacls, i_pft) = rio_ageflx_fusion_sicapf(io_idx_si_capf)
-                io_idx_si_capf = io_idx_si_capf + 1
-             end do
-             io_idx_si_cacls = io_idx_si_cacls + 1
-          end do
+       !   do i_cacls = i,nlevcoage
+        !     do i_pft = 1, numpft
+         !       sites(s)%ageflux_fusion(i_cacls, i_pft) = rio_ageflx_fusion_sicapf(io_idx_si_capf)
+          !      io_idx_si_capf = io_idx_si_capf + 1
+          !   end do
+          !   io_idx_si_cacls = io_idx_si_cacls + 1
+         ! end do
           
          
           sites(s)%term_carbonflux_canopy   = rio_termcflux_cano_si(io_idx_si)
