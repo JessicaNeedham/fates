@@ -480,7 +480,6 @@ contains
     currentCohort%size_by_pft_class  = fates_unset_int  ! size by pft classification index
     currentCohort%coage_class        = fates_unset_int  ! cohort age class index
     currentCohort%coage_by_pft_class = fates_unset_int  ! cohort age by pft class index 
-!    currentCohort%coage_class_lasttimestep = fates_unset_int 
 
 
     currentCohort%n                  = nan ! number of individuals in cohort per 'area' (10000m2 default)     
@@ -600,7 +599,6 @@ contains
     currentCohort%size_class            = 1
     currentCohort%coage_class        = 1
     currentCohort%size_class_lasttimestep = 0
- !   currentCohort%coage_class_lasttimestep = 0
     currentcohort%npp_acc_hold       = 0._r8 
     currentcohort%gpp_acc_hold       = 0._r8  
     currentcohort%dmort              = 0._r8 
@@ -1172,34 +1170,6 @@ contains
                                    currentCohort%size_class_lasttimestep = currentCohort%size_class
                                 endif
 
-                                ! repeat but keep track of the age flux from cohort age fusion
-                             !   if (currentCohort%coage_class_lasttimestep .ne. nextc%coage_class_lasttimestep ) then
-                              !     if (currentCohort%coage_class_lasttimestep .gt. nextc%coage_class_lasttimestep) then
-                               !       oldercacls = currentCohort%coage_class_lasttimestep
-                                !      youngercacls = nextc%coage_class_lasttimestep
-                                 !     older_n = currentCohort%n
-                                  !    younger_n = nextc%n
-                                 !  else
-                                  !    oldercacls = nextc%coage_class_lasttimestep
-                                   !   youngercacls = currentCohort%coage_class_lasttimestep
-                                    !  older_n = nextc%n
-                                     ! younger_n = currentCohort%n
-                         !          end if
-
-                          !         do cacls_i = youngercacls + 1, currentCohort%coage_class
-                           !           currentSite%ageflux_fusion(cacls_i, currentCohort%pft) = &
-                            !               currentSite%ageflux_fusion(cacls_i, currentCohort%pft) + younger_n
-                             !      end do
-
-                              !     do cacls_i = currentCohort%coage_class + 1, oldercacls
-                               !       currentSite%ageflux_fusion(cacls_i, currentCohort%pft) = &
-                                !           currentSite%ageflux_fusion(cacls_i, currentCohort%pft) - older_n
-                                 !  end do
-
-!                                   currentCohort%coage_class_lasttimestep = currentCohort%coage_class
-                               ! end if
-                                
-                                
                                    
                                 ! Flux and biophysics variables have not been calculated for recruits we just default to 
                                 ! their initization values, which should be the same for each
@@ -1584,7 +1554,6 @@ contains
     n%size_class_lasttimestep = o%size_class_lasttimestep
     n%size_by_pft_class = o%size_by_pft_class
     n%coage_class     = o%coage_class
-  !  n%coage_class_lasttimestep = o%coage_class_lasttimestep
     n%coage_by_pft_class = o%coage_by_pft_class
     ! This transfers the PRT objects over.
     call n%prt%CopyPRTVartypes(o%prt)
@@ -1674,8 +1643,7 @@ contains
     n%size_by_pft_class   = o%size_by_pft_class
     n%coage_class     = o%coage_class
     n%coage_by_pft_class   = o%coage_by_pft_class
-   ! n%coage_class_lasttimestep  = o%coage_class_lasttimestep
-    
+       
     !Pointers
     n%taller          => NULL()     ! pointer to next tallest cohort     
     n%shorter         => NULL()     ! pointer to next shorter cohort     

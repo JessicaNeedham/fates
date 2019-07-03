@@ -50,7 +50,7 @@ module EDParamsMod
    real(r8),protected,allocatable,public :: ED_val_history_sizeclass_bin_edges(:)
    real(r8),protected,allocatable,public :: ED_val_history_ageclass_bin_edges(:)
    real(r8),protected,allocatable,public :: ED_val_history_height_bin_edges(:)
-   real(r8),protected allocatable,public :: ED_val_history_coageclass_bin_edges(:)
+   real(r8),protected,allocatable,public :: ED_val_history_coageclass_bin_edges(:)
    
    character(len=param_string_length),parameter,public :: ED_name_mort_disturb_frac = "fates_mort_disturb_frac"
    character(len=param_string_length),parameter,public :: ED_name_comp_excln = "fates_comp_excln"
@@ -72,7 +72,7 @@ module EDParamsMod
    character(len=param_string_length),parameter,public :: ED_name_phen_ncolddayslim= "fates_phen_ncolddayslim"   
    character(len=param_string_length),parameter,public :: ED_name_phen_coldtemp= "fates_phen_coldtemp"   
    character(len=param_string_length),parameter,public :: ED_name_cohort_fusion_tol= "fates_cohort_fusion_tol"
-   character(len-param_string_length),parameter,public :: ED_name_cohort_age_fusion_tol = 'fates_cohort_age_fusion_tol"
+   character(len-param_string_length),parameter,public :: ED_name_cohort_age_fusion_tol = "fates_cohort_age_fusion_tol"
    character(len=param_string_length),parameter,public :: ED_name_patch_fusion_tol= "fates_patch_fusion_tol"
    character(len=param_string_length),parameter,public :: ED_name_canopy_closure_thresh= "fates_canopy_closure_thresh"      
 
@@ -84,7 +84,7 @@ module EDParamsMod
    character(len=param_string_length),parameter,public :: ED_name_history_sizeclass_bin_edges= "fates_history_sizeclass_bin_edges"      
    character(len=param_string_length),parameter,public :: ED_name_history_ageclass_bin_edges= "fates_history_ageclass_bin_edges"      
    character(len=param_string_length),parameter,public :: ED_name_history_height_bin_edges= "fates_history_height_bin_edges"
-   character(len=param_string_length),parameter,public :: ED_name_history_coageclass_bin_edges = 'fates_history_coageclass_bin_edges"
+   character(len=param_string_length),parameter,public :: ED_name_history_coageclass_bin_edges = "fates_history_coageclass_bin_edges"
 
    ! Hydraulics Control Parameters (ONLY RELEVANT WHEN USE_FATES_HYDR = TRUE)
    ! ----------------------------------------------------------------------------------------------

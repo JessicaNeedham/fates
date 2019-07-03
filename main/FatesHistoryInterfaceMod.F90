@@ -2331,14 +2331,6 @@ end subroutine flush_hvars
                     end if
                     ccohort%size_class_lasttimestep = scls
 
-          !          if ( (cacls - ccohort%coage_class_lasttimestep ) .gt. 0) then
-         !              do i_cacls = ccohort%coage_class_lasttimestep + 1, cacls
-        !                  i_capf = (ccohort%pft-1)*nlevcoage + i_cacls
-       !                   hio_ageflux_si_capf(io_si,i_capf) = hio_ageflux_si_capf(io_si,i_capf) + &
-      !                         ccohort%n * days_per_year
-     !                  end do
-    !                end if
-   !                 ccohort%coage_class_lasttimestep = cacls
 
                     !
                   end associate
@@ -2348,14 +2340,7 @@ end subroutine flush_hvars
                   i_scpf = (ccohort%pft-1)*nlevsclass+1
                   hio_growthflux_si_scpf(io_si,i_scpf) = hio_growthflux_si_scpf(io_si,i_scpf) + ccohort%n * days_per_year
                   ccohort%size_class_lasttimestep = 1
-                  !
-
-             !     i_capf = (ccohort%pft-1)*nlevcoage+1
-                 ! THis is giving errors! Come back and fix! 
-             !     i_capf = 1
-            !      hio_ageflux_si_capf(io_si,i_capf) = hio_ageflux_si_capf(io_si,i_capf) + ccohort%n * days_per_year
-           !       ccohort%coage_class_lasttimestep = 1
-                  
+                                   
                end if
 
                ! resolve some canopy area profiles, both total and of occupied leaves
@@ -4358,7 +4343,7 @@ end subroutine flush_hvars
 
     call this%set_history_var(vname='NPLANT_CAPF', units = 'N/ha',       &
          long='stem number density by pft/coage', use_default='inactive', &
-         avgflag='A', vtype=site_size_pft_r8, hlms='CLM:ALM',flushval=0.0_r8,     &
+         avgflag='A', vtype=site_coage_pft_r8, hlms='CLM:ALM',flushval=0.0_r8,     &
          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_si_capf )
 
     call this%set_history_var(vname='M1_SCPF', units = 'N/ha/yr',          &
@@ -4423,7 +4408,7 @@ end subroutine flush_hvars
     
     call this%set_history_var(vname='M10_CAPF',units='N/ha/yr',         &
          long='age senescence mortality by pft/cohort age',use_default='inactive', &
-         avgflag='A', vtype =site_size_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,         &
+         avgflag='A', vtype =site_coage_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,         &
          upfreq=1, ivar=ivar, initialize=initialize_variables, index =ih_m10_si_capf )
 
     call this%set_history_var(vname='MORTALITY_CANOPY_SCPF', units = 'N/ha/yr',          &
@@ -4627,7 +4612,7 @@ end subroutine flush_hvars
 
     call this%set_history_var(vname='NPLANT_CACLS', units = 'indiv/ha',          &
          long='number of plants by coage class', use_default='active',   &
-         avgflag='A', vtype=site_size_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
+         avgflag='A', vtype=site_coage_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_si_cacls )
 
     call this%set_history_var(vname='M1_SCLS', units = 'N/ha/yr',          &
@@ -4682,7 +4667,7 @@ end subroutine flush_hvars
 
     call this%set_history_var(vname='M10_CACLS', units = 'N/ha/yr',             &
           long='age senescence mortality by cohort age',use_default='active',      &
-          avgflag='A', vtype=site_size_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
+          avgflag='A', vtype=site_coage_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m10_si_cacls )
 
     call this%set_history_var(vname='CARBON_BALANCE_CANOPY_SCLS', units = 'kg C / ha / yr', &
