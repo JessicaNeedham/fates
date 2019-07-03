@@ -99,6 +99,7 @@ module FatesRestartInterfaceMod
   integer :: ir_canopy_trim_co
   integer :: ir_size_class_lasttimestep_co
   integer :: ir_dbh_co
+  integer :: ir_coage_co
   integer :: ir_g_sb_laweight_co
   integer :: ir_height_co
   integer :: ir_laimemory_co
@@ -1052,11 +1053,6 @@ contains
          long_name='fates diag: rate of indivs moving via fusion', &
          units='indiv/ha/day', flushval = flushzero, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_growflx_fusion_siscpf)
-
-    call this%set_restart_var(vname='fates_ageflx_fusion', vtype=cohort_r8, &
-         long_name='fates diag: rate of indivs moving cohort age via fusion', &
-         units='indiv/ha/day', flushval = flushzero, &
-         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_ageflx_fusion_sicapf)
     
     call this%set_restart_var(vname='fates_demorate', vtype=cohort_r8, &
          long_name='fates diagnoatic rate of indivs demoted', &
@@ -1561,7 +1557,6 @@ contains
            rio_termnindiv_cano_siscpf  => this%rvars(ir_termnindiv_cano_siscpf)%r81d, &
            rio_termnindiv_usto_siscpf  => this%rvars(ir_termnindiv_usto_siscpf)%r81d, &
            rio_growflx_fusion_siscpf   => this%rvars(ir_growflx_fusion_siscpf)%r81d,  &
-           rio_ageflx_fusion_sicapf    => this%rvars(ir_ageflx_fusion_sicapf)%r81d, &
            rio_demorate_sisc           => this%rvars(ir_demorate_sisc)%r81d, &
            rio_promrate_sisc           => this%rvars(ir_promrate_sisc)%r81d, &
            rio_termcflux_cano_si       => this%rvars(ir_termcflux_cano_si)%r81d, &
@@ -2286,7 +2281,6 @@ contains
           rio_termnindiv_cano_siscpf  => this%rvars(ir_termnindiv_cano_siscpf)%r81d, &
           rio_termnindiv_usto_siscpf  => this%rvars(ir_termnindiv_usto_siscpf)%r81d, &
           rio_growflx_fusion_siscpf   => this%rvars(ir_growflx_fusion_siscpf)%r81d,  &
-          rio_ageflx_fusion_sicapf    => this%rvars(ir_ageflx_fusion_sicapf)%r81d, &
           rio_demorate_sisc           => this%rvars(ir_demorate_sisc)%r81d, &
           rio_promrate_sisc           => this%rvars(ir_promrate_sisc)%r81d, &
           rio_termcflux_cano_si       => this%rvars(ir_termcflux_cano_si)%r81d, &

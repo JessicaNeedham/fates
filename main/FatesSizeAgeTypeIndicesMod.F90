@@ -21,6 +21,8 @@ module FatesSizeAgeTypeIndicesMod
   public :: get_height_index
   public :: get_sizeagepft_class_index
   public :: get_agepft_class_index
+  public :: coagetype_class_index
+  public :: get_coage_class_index
 
 contains
 
