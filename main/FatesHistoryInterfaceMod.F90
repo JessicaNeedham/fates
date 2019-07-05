@@ -1605,8 +1605,6 @@ end subroutine flush_hvars
                hio_ddbh_si_scpf        => this%hvars(ih_ddbh_si_scpf)%r82d, &
                hio_growthflux_si_scpf        => this%hvars(ih_growthflux_si_scpf)%r82d, &
                hio_growthflux_fusion_si_scpf        => this%hvars(ih_growthflux_fusion_si_scpf)%r82d, &
-  !             hio_ageflux_si_capf           => this%hvars(ih_ageflux_si_capf)%r82d, &
- !              hio_ageflux_fusion_si_capf           => this%hvars(ih_ageflux_fusion_si_capf)%r82d, &
                hio_ba_si_scpf          => this%hvars(ih_ba_si_scpf)%r82d, &
                hio_nplant_si_scpf      => this%hvars(ih_nplant_si_scpf)%r82d, &
                hio_nplant_si_capf      => this%hvars(ih_nplant_si_capf)%r82d, &
@@ -4311,16 +4309,6 @@ end subroutine flush_hvars
           avgflag='A', vtype=site_size_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,   &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_growthflux_fusion_si_scpf )
 
-   ! call this%set_history_var(vname='AGEFLUX_CAPF', units = 'n/yr/ha', &
-    !     long='flux of individuals into a given age bin via growth and recruitment', use_default='inactive', &
-   !      avgflag='A', vtype=site_coage_pft_r8, hlms='CLM:ALM', flushval=0.0_r8, &
-  !       upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_ageflux_si_capf )
-
-  !  call this%set_history_var(vname='AGEFLUX_FUSION_CAPF', units = 'n/yr/ha', &
-   !      long='flux of individuals into a given age class bin via fusion', use_default='inactive',  &
-    !     avgflag='A', vtype=site_coage_pft_r8, hlms='CLM:ALM', flushval=0.0_r8, &
-     !    upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_ageflux_fusion_si_capf ) 
-
     call this%set_history_var(vname='DDBH_CANOPY_SCPF', units = 'cm/yr/ha',         &
           long='diameter growth increment by pft/size',use_default='inactive', &
           avgflag='A', vtype=site_size_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
@@ -4343,7 +4331,7 @@ end subroutine flush_hvars
 
     call this%set_history_var(vname='NPLANT_CAPF', units = 'N/ha',       &
          long='stem number density by pft/coage', use_default='inactive', &
-         avgflag='A', vtype=site_coage_pft_r8, hlms='CLM:ALM',flushval=0.0_r8,     &
+         avgflag='A', vtype=site_size_pft_r8, hlms='CLM:ALM',flushval=0.0_r8,     &
          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_si_capf )
 
     call this%set_history_var(vname='M1_SCPF', units = 'N/ha/yr',          &
@@ -4408,7 +4396,7 @@ end subroutine flush_hvars
     
     call this%set_history_var(vname='M10_CAPF',units='N/ha/yr',         &
          long='age senescence mortality by pft/cohort age',use_default='inactive', &
-         avgflag='A', vtype =site_coage_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,         &
+         avgflag='A', vtype =site_size_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,         &
          upfreq=1, ivar=ivar, initialize=initialize_variables, index =ih_m10_si_capf )
 
     call this%set_history_var(vname='MORTALITY_CANOPY_SCPF', units = 'N/ha/yr',          &
@@ -4612,7 +4600,7 @@ end subroutine flush_hvars
 
     call this%set_history_var(vname='NPLANT_CACLS', units = 'indiv/ha',          &
          long='number of plants by coage class', use_default='active',   &
-         avgflag='A', vtype=site_coage_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
+         avgflag='A', vtype=site_size_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_si_cacls )
 
     call this%set_history_var(vname='M1_SCLS', units = 'N/ha/yr',          &
@@ -4667,7 +4655,7 @@ end subroutine flush_hvars
 
     call this%set_history_var(vname='M10_CACLS', units = 'N/ha/yr',             &
           long='age senescence mortality by cohort age',use_default='active',      &
-          avgflag='A', vtype=site_coage_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
+          avgflag='A', vtype=site_size_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m10_si_cacls )
 
     call this%set_history_var(vname='CARBON_BALANCE_CANOPY_SCLS', units = 'kg C / ha / yr', &
