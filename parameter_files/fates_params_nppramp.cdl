@@ -306,12 +306,12 @@ variables:
 	double fates_prescribed_npp_understory(fates_pft) ;
 		fates_prescribed_npp_understory:units = "kgC / m^2 / yr" ;
 		fates_prescribed_npp_understory:long_name = "NPP per unit crown area of understory trees for prescribed physiology mode" ;
-	double fates_prescribed_npp_ramp(fates_pft) ;
-	        fates_prescribed_npp_ramp:units = "unitless" ; 
-		fates_prescribed_npp_ramp:long_name = "Increase in NPP per day for prescribed physiology mode" ;
 	double fates_prescribed_npp_max(fates_pft) ;
-	        fates_prescribed_npp_max:units = "unitless" ;
-		fates_prescribed_npp_max:long_name = "Asymptote of NPP increase through time - fraction of initial NPP";
+                fates_prescribed_npp_max:units = "unitless" ;
+                fates_prescribed_npp_max:long_name = "Asymptote of NPP increase through time - fraction of initial NPP" ;
+        double fates_prescribed_npp_ramp(fates_pft) ;
+                fates_prescribed_npp_ramp:units = "unitless" ;
+                fates_prescribed_npp_ramp:long_name = "Increase in NPP per day for prescribed physiology mode" ;
 	double fates_prescribed_recruitment(fates_pft) ;
 		fates_prescribed_recruitment:units = "n/yr" ;
 		fates_prescribed_recruitment:long_name = "recruitment rate for prescribed physiology mode" ;
@@ -924,11 +924,11 @@ data:
  fates_prescribed_npp_understory = 0.03125, 0.03125, 0.03125, 0.03125, 
     0.03125, 0.03125, 0.03125, 0.03125, 0.03125, 0.03125, 0.03125, 0.03125 ;
 
- fates_prescribed_npp_ramp = 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 
-    0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005 ; 
+ fates_prescribed_npp_max = 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0,5, 0.5, 
+    0.5, 0.5 ;
 
- fates_prescribed_npp_max = 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 
-     0.5, 0.5 ; 
+ fates_prescribed_npp_ramp = 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 
+    0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005 ;
 
  fates_prescribed_recruitment = 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 
     0.02, 0.02, 0.02, 0.02, 0.02 ;
