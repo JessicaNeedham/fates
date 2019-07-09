@@ -765,11 +765,21 @@ real(r8),intent(out) :: current_npp
 real(r8) :: prescribed_npp_ramp
 real(r8) :: prescribed_npp_max
 real(r8) :: prescribed_npp
+real(r8) :: npp_ramp_start_day
 
+npp_ramp_start_day = 730.0_r8
+
+if (hlm_current_day > npp_ramp_start_day) then 
 
 current_npp = prescribed_npp + &
 ((1.0_r8 - exp(-prescribed_npp_ramp * hlm_current_day)) * &
 prescribed_npp_max)
+
+else
+
+current_npp = prescribed_npp
+
+end if
 
 end subroutine prescribed_npp_fertilisation
 
