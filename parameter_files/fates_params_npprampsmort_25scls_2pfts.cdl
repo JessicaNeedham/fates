@@ -315,6 +315,12 @@ variables:
 	double fates_mort_bmort(fates_pft) ;
 		fates_mort_bmort:units = "1/yr" ;
 		fates_mort_bmort:long_name = "background mortality rate" ;
+	double fates_mort_ip_senescence(fates_pft);
+                fates_mort_ip_senescence:units = "dbh cm";
+                fates_mort_ip_senescence:long_name ="Mortality dbh senescence inflection point";
+        double fates_mort_r_senescence(fates_pft);
+                fates_mort_r_senescence:units = "mortality rate dbh^-1";
+                fates_mort_r_senescence:long_name = "Mortality dbh senescence rate of change";	
 	double fates_mort_freezetol(fates_pft) ;
 		fates_mort_freezetol:units = "NA" ;
 		fates_mort_freezetol:long_name = "minimum temperature tolerance (NOT USED)" ;
@@ -872,7 +878,7 @@ data:
 
  fates_leaf_slamax = 0.0954, 0.0954 ;
 
- fates_leaf_slatop = 0.012, 0.012 ;
+ fates_leaf_slatop = 0.015, 0.016 ;
 
  fates_leaf_stor_priority = 0.8, 0.8 ;
 
@@ -902,6 +908,10 @@ data:
 
  fates_mort_bmort = 0.014, 0.014 ;
 
+ fates_mort_ip_senescence = 150.0, 100.0 ;
+
+ fates_mort_r_senescence = 0.2, 0.2 ;
+
  fates_mort_freezetol = 2.5, 2.5 ;
 
  fates_mort_hf_flc_threshold = 0.5, 0.5 ;
@@ -922,13 +932,13 @@ data:
 
  fates_phenflush_fraction = _, _ ;
 
- fates_prescribed_mortality_canopy = 0.0194, 0.02 ;
+ fates_prescribed_mortality_canopy = 0.014, 0.035 ;
 
  fates_prescribed_mortality_understory = 0.025, 0.035 ;
 
  fates_prescribed_npp_canopy = 1.0, 1.05 ;
 
- fates_prescribed_npp_max = 0.25, 0.3 ;
+ fates_prescribed_npp_max = 0.1, 0.2 ;
 
  fates_prescribed_npp_ramp = 0.0005, 0.0005 ;
 
@@ -948,7 +958,7 @@ data:
 
  fates_rhosvis = 0.16, 0.16 ;
 
- fates_root_long = 1, 1 ;
+ fates_root_long = 2.6, 0.9 ;
 
  fates_roota_par = 7, 7 ;
 
@@ -986,17 +996,17 @@ data:
 
  fates_turnover_retrans_mode = 1, 1 ;
 
- fates_wood_density = 0.7, 0.7 ;
+ fates_wood_density = 0.9, 0.5 ;
 
  fates_woody = 1, 1 ;
 
  fates_z0mr = 0.055, 0.055 ;
 
  fates_leaf_long =
-  1.5, 1.5 ;
+  2.6, 0.9 ;
 
  fates_leaf_vcmax25top =
-  50, 50 ;
+  60, 68 ;
 
  fates_base_mr_20 = 2.52e-06 ;
 

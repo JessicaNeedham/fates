@@ -750,7 +750,7 @@ contains
    real(r8) :: npp_ramp_start_day
 
 
-   npp_ramp_start_day = 7300.0_r8
+   npp_ramp_start_day = 10950.0_r8  ! 30 years
 
    ft = currentCohort%pft
 
