@@ -91,6 +91,7 @@ module EDMainMod
   private :: ed_integrate_state_variables
   private :: ed_total_balance_check
   private :: bypass_dynamics
+  private :: prescribed_npp_fertilisation
   
   logical :: debug  = .false.
   
@@ -278,6 +279,7 @@ contains
     real(r8) :: delta_dbh             ! correction for dbh
     real(r8) :: delta_hite            ! correction for hite
 
+    real(r8) :: current_npp           ! place holder for calculating npp each year in prescribed physiology mode
     !-----------------------------------------------------------------------
 
     small_no = 0.0000000000_r8  ! Obviously, this is arbitrary.  RF - changed to zero
@@ -336,17 +338,9 @@ contains
           ! -----------------------------------------------------------------------------
           
           if (hlm_use_ed_prescribed_phys .eq. itrue) then
-             if (currentCohort%canopy_layer .eq. 1) then
-                currentCohort%npp_acc_hold = EDPftvarcon_inst%prescribed_npp_canopy(ft) &
-                     * currentCohort%c_area / currentCohort%n
-                ! add these for balance checking purposes
-                currentCohort%npp_acc = currentCohort%npp_acc_hold / hlm_days_per_year 
-             else
-                currentCohort%npp_acc_hold = EDPftvarcon_inst%prescribed_npp_understory(ft) &
-                     * currentCohort%c_area / currentCohort%n
-                ! add these for balance checking purposes
-                currentCohort%npp_acc = currentCohort%npp_acc_hold / hlm_days_per_year
-             endif
+
+             ! set npp for the current day - adds a % to prescribed NPP based on day of simulation
+             call  prescribed_npp_fertilisation(currentCohort)
           else
              currentCohort%npp_acc_hold  = currentCohort%npp_acc  * real(hlm_days_per_year,r8)
              currentCohort%gpp_acc_hold  = currentCohort%gpp_acc  * real(hlm_days_per_year,r8)
@@ -756,4 +750,77 @@ contains
  end subroutine bypass_dynamics
 
 
+
+ subroutine prescribed_npp_fertilisation(currentCohort)
+
+   ! This subroutine calculates the current day npp - assumes it ramps up to a max - some multiplier of the start,
+   !  with slope 'ramp'
+
+   use FatesInterfaceMod, only : hlm_model_day
+   use FatesInterfaceMod, only : hlm_days_per_year 
+
+   type(ed_cohort_type) , pointer :: currentCohort
+   integer :: ft
+   real(r8) :: npp_ramp_start_day
+
+
+   npp_ramp_start_day = 7300.0_r8
+
+   ft = currentCohort%pft
+
+   ! if it is time to start increasing NPP (simulated elevated CO2)
+   if (hlm_model_day > npp_ramp_start_day) then 
+
+      ! if the cohort is in the canopy
+      if(currentCohort%canopy_layer .eq. 1) then 
+
+         ! calculate increase in npp from eCO2
+
+         currentCohort%npp_acc_hold = EDPftvarcon_inst%prescribed_npp_canopy(ft) + &
+              ((1.0_r8 - exp(-1.0_r8*EDPftvarcon_inst%prescribed_npp_ramp(ft) * &
+              (hlm_model_day-npp_ramp_start_day))) * EDPftvarcon_inst%prescribed_npp_max(ft))
+
+         
+      else
+         ! calculate increase in npp from eCO2 for understory cohort
+         currentCohort%npp_acc_hold = EDPftvarcon_inst%prescribed_npp_understory(ft) + &
+              ((1.0_r8 - exp(-1.0_r8*EDPftvarcon_inst%prescribed_npp_ramp(ft) * &
+              (hlm_model_day-npp_ramp_start_day))) * EDPftvarcon_inst%prescribed_npp_max(ft))
+        
+
+      end if  ! end canopy layer if
+
+            currentCohort%npp_acc_hold = currentCohort%npp_acc_hold * currentCohort%c_area / &
+                 currentCohort%n
+
+   else  ! if it is not yet time to increase NPP from eCO2
+
+      if (currentCohort%canopy_layer .eq. 1) then
+         
+         currentCohort%npp_acc_hold = EDPftvarcon_inst%prescribed_npp_canopy(ft) &
+                * currentCohort%c_area / currentCohort%n
+         
+      else
+
+           currentCohort%npp_acc_hold = EDPftvarcon_inst%prescribed_npp_understory(ft) &
+               * currentCohort%c_area / currentCohort%n
+         
+      end if ! end canopy if
+
+
+   end if  ! end NPP ramp if
+
+     currentCohort%npp_acc = currentCohort%npp_acc_hold/hlm_days_per_year
+
+
+ end subroutine prescribed_npp_fertilisation
+
+
+
+
+
 end module EDMainMod
+
+
+
+
