@@ -908,9 +908,9 @@ data:
 
  fates_mort_bmort = 0.014, 0.014 ;
 
- fates_mort_ip_senescence = 120.0, 120.0 ;
+ fates_mort_ip_senescence = 150.0, 150.0 ;
 
- fates_mort_r_senescence = 0.2, 0.2 ;
+ fates_mort_r_senescence = 0.075, 0.075 ;
 
  fates_mort_freezetol = 2.5, 2.5 ;
 
@@ -932,17 +932,17 @@ data:
 
  fates_phenflush_fraction = _, _ ;
 
- fates_prescribed_mortality_canopy = 0.0194, 0.0194 ;
+ fates_prescribed_mortality_canopy = 0.0097, 0.0097 ;
 
- fates_prescribed_mortality_understory = 0.025, 0.025 ;
+ fates_prescribed_mortality_understory = 0.0198, 0.0198 ;
 
- fates_prescribed_npp_canopy = 1.0, 1.0 ;
+ fates_prescribed_npp_canopy = 0.725, 0.725 ;
 
- fates_prescribed_npp_max = 0.5, 0.5 ;
+ fates_prescribed_npp_max = 0.25, 0.25 ;
 
  fates_prescribed_npp_ramp = 0.0005, 0.0005 ;
 
- fates_prescribed_npp_understory = 0.05, 0.05 ;
+ fates_prescribed_npp_understory = 0.07, 0.07 ;
 
  fates_prescribed_recruitment = 0.02, 0.02 ;
 

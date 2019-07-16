@@ -1600,6 +1600,7 @@ contains
     currentPatch%fract_ldist_not_harvested  = 0._r8
 
     ! LITTER
+    currentPatch%litter_moisture(:)         = 0.0_r8
     currentPatch%cwd_ag(:)                  = 0.0_r8 ! above ground coarse woody debris gc/m2. 
     currentPatch%cwd_bg(:)                  = 0.0_r8 ! below ground coarse woody debris
     currentPatch%root_litter(:)             = 0.0_r8 ! In new disturbed patches, loops over donors to increment total, needs zero here
