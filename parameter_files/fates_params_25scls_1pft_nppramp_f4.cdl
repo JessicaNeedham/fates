@@ -1,4 +1,4 @@
-netcdf fates_params_nppramp_25scls_1pft {
+netcdf fates_params_25scls_1pft_master_f3 {
 dimensions:
 	fates_NCWD = 4 ;
 	fates_history_age_bins = 7 ;
@@ -315,6 +315,9 @@ variables:
 	double fates_mort_bmort(fates_pft) ;
 		fates_mort_bmort:units = "1/yr" ;
 		fates_mort_bmort:long_name = "background mortality rate" ;
+	double fates_max_dbh(fates_pft);
+	        fates_max_dbh:units = "maximum dbh cm ";
+		fates_max_dbh:long_name = "Maximum dbh of a PFT, once reached npp goes to zero - only in prescribed physiology" ;	
 	double fates_mort_freezetol(fates_pft) ;
 		fates_mort_freezetol:units = "NA" ;
 		fates_mort_freezetol:long_name = "minimum temperature tolerance (NOT USED)" ;
@@ -354,15 +357,15 @@ variables:
 	double fates_prescribed_npp_canopy(fates_pft) ;
 		fates_prescribed_npp_canopy:units = "kgC / m^2 / yr" ;
 		fates_prescribed_npp_canopy:long_name = "NPP per unit crown area of canopy trees for prescribed physiology mode" ;
-	double fates_prescribed_npp_max(fates_pft) ;
-		fates_prescribed_npp_max:units = "unitless" ;
-		fates_prescribed_npp_max:long_name = "Asymptote of NPP increase through time - fraction of initial NPP" ;
-	double fates_prescribed_npp_ramp(fates_pft) ;
-		fates_prescribed_npp_ramp:units = "unitless" ;
-		fates_prescribed_npp_ramp:long_name = "Increase in NPP per day for prescribed physiology mode" ;
 	double fates_prescribed_npp_understory(fates_pft) ;
 		fates_prescribed_npp_understory:units = "kgC / m^2 / yr" ;
 		fates_prescribed_npp_understory:long_name = "NPP per unit crown area of understory trees for prescribed physiology mode" ;
+	double fates_prescribed_npp_max(fates_pft) ;
+	        fates_prescribed_npp_max:units = "unitless" ;
+	        fates_prescribed_npp_max:long_name = "Asymptote of NPP increase through time - fraction of initial NPP" ;
+	double fates_prescribed_npp_ramp(fates_pft) ;
+	        fates_prescribed_npp_ramp:units = "unitless" ;
+	        fates_prescribed_npp_ramp:long_name = "Increase in NPP per day for prescribed physiology mode" ;
 	double fates_prescribed_recruitment(fates_pft) ;
 		fates_prescribed_recruitment:units = "n/yr" ;
 		fates_prescribed_recruitment:long_name = "recruitment rate for prescribed physiology mode" ;
@@ -600,9 +603,9 @@ variables:
 
 // global attributes:
 		:history = "This file was made from FatesPFTIndexSwapper.py \n",
-			" Input File = parameter_files/fates_params_nppramp.nc \n",
+			" Input File = parameter_files/fates_params_default.nc \n",
 			" Indices = [1, 1]\n",
-			" Fri Jul 05 2019, 13:53:04: modify_fates_paramfile.py --fin=parameter_files/fates_params_nppramp_1pft.nc --fout=parameter_files/fates_params_nppramp_25scls_1pft.nc --var=fates_history_sizeclass_bin_edges --val=0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120 --changeshape" ;
+			" Fri Jul 05 2019, 13:39:09: modify_fates_paramfile.py --fin=parameter_files/fates_params_13scls_1pft_master.nc --fout=parameter_files/fates_params_25scls_1pft_master.nc --var=fates_history_sizeclass_bin_edges --val=0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120 --changeshape" ;
 data:
 
  fates_history_sizeclass_bin_edges = 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 
@@ -786,7 +789,7 @@ data:
 
  fates_allom_d2bl1 = 0.07, 0.07 ;
 
- fates_allom_d2bl2 = 1.3, 1.3 ;
+ fates_allom_d2bl2 = 1.28, 1.28 ;
 
  fates_allom_d2bl3 = 0.55, 0.55 ;
 
@@ -902,6 +905,8 @@ data:
 
  fates_mort_bmort = 0.014, 0.014 ;
 
+ fates_max_dbh = 10.0, 10.0 ;
+
  fates_mort_freezetol = 2.5, 2.5 ;
 
  fates_mort_hf_flc_threshold = 0.5, 0.5 ;
@@ -922,23 +927,23 @@ data:
 
  fates_phenflush_fraction = _, _ ;
 
- fates_prescribed_mortality_canopy = 0.0194, 0.0194 ;
+ fates_prescribed_mortality_canopy = 0.0097, 0.0097 ;
 
- fates_prescribed_mortality_understory = 0.025, 0.025 ;
+ fates_prescribed_mortality_understory = 0.0198, 0.0198 ;
 
- fates_prescribed_npp_canopy = 1.0, 1.0 ;
+ fates_prescribed_npp_canopy = 0.725, 0.725 ;
 
- fates_prescribed_npp_max = 0.5, 0.5 ;
+ fates_prescribed_npp_understory = 0.07, 0.07 ;
+
+ fates_prescribed_npp_max = 0.25, 0.25 ;
 
  fates_prescribed_npp_ramp = 0.0005, 0.0005 ;
-
- fates_prescribed_npp_understory = 0.05, 0.05 ;
 
  fates_prescribed_recruitment = 0.02, 0.02 ;
 
  fates_recruit_hgt_min = 1.3, 1.3 ;
 
- fates_recruit_initd = 0.2, 0.2 ;
+ fates_recruit_initd = 0.02, 0.02 ;
 
  fates_rholnir = 0.45, 0.45 ;
 
@@ -948,7 +953,7 @@ data:
 
  fates_rhosvis = 0.16, 0.16 ;
 
- fates_root_long = 1, 1 ;
+ fates_root_long = 10000, 10000 ;
 
  fates_roota_par = 7, 7 ;
 
@@ -993,7 +998,7 @@ data:
  fates_z0mr = 0.055, 0.055 ;
 
  fates_leaf_long =
-  1.5, 1.5 ;
+  10000, 10000 ;
 
  fates_leaf_vcmax25top =
   50, 50 ;
