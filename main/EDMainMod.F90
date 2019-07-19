@@ -278,6 +278,7 @@ contains
     real(r8) :: delta_hite            ! correction for hite
 
     real(r8) :: current_npp           ! place holder for calculating npp each year in prescribed physiology mode
+    real(r8) :: max_dbh               ! max dbh beyond which plants don't grow in prescribed physiology mode
     !-----------------------------------------------------------------------
 
     small_no = 0.0000000000_r8  ! Obviously, this is arbitrary.  RF - changed to zero
@@ -369,6 +370,15 @@ contains
           ! Conduct Growth (parteh)
           call currentCohort%prt%DailyPRT()
           call currentCohort%prt%CheckMassConservation(ft,5)
+
+          ! if we are in prescribed physiology with a max dbh then reset dbh if it exceeds this
+          if (hlm_use_ed_prescribed_phys .eq. itrue) then 
+             max_dbh = EDPftvarcon_inst%max_dbh(currentCohort%pft)
+             if (currentCohort%dbh .GE. max_dbh) then
+                currentCohort%dbh = max_dbh
+             end if
+          end if
+
 
           ! Update the leaf biophysical rates based on proportion of leaf
           ! mass in the different leaf age classes. Following growth

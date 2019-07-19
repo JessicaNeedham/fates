@@ -315,6 +315,9 @@ variables:
 	double fates_mort_bmort(fates_pft) ;
 		fates_mort_bmort:units = "1/yr" ;
 		fates_mort_bmort:long_name = "background mortality rate" ;
+	double fates_max_dbh(fates_pft);
+	        fates_max_dbh:units = "maximum dbh cm ";
+		fates_max_dbh:long_name = "Maximum dbh of a PFT, once reached npp goes to zero - only in prescribed physiology" ;	
 	double fates_mort_freezetol(fates_pft) ;
 		fates_mort_freezetol:units = "NA" ;
 		fates_mort_freezetol:long_name = "minimum temperature tolerance (NOT USED)" ;
@@ -901,6 +904,8 @@ data:
  fates_maintresp_reduction_intercept = 1, 1 ;
 
  fates_mort_bmort = 0.014, 0.014 ;
+
+ fates_max_dbh = 10.0, 10.0 ;
 
  fates_mort_freezetol = 2.5, 2.5 ;
 
