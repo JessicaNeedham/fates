@@ -331,6 +331,9 @@ variables:
         double fates_mort_r_age_senescence(fates_pft);
                 fates_mort_r_age_senescence:units = "mortality rate year^-1";
                 fates_mort_r_age_senescence:long_name = "Mortality age senescence rate of change";
+	double fates_max_dbh(fates_pft);
+	        fates_max_dbh:units = "maximum dbh cm ";
+		fates_max_dbh:long_name = "Maximum dbh of a PFT, once reached npp goes to zero - only in prescribed physiology" ;	
 	double fates_mort_freezetol(fates_pft) ;
 		fates_mort_freezetol:units = "NA" ;
 		fates_mort_freezetol:long_name = "minimum temperature tolerance (NOT USED)" ;
@@ -931,6 +934,8 @@ data:
  fates_mort_ip_age_senescence = 224.0, 224.0 ;
 
  fates_mort_r_age_senescence = 0.075, 0.075 ;
+
+ fates_max_dbh = 100.0, 100.0 ;
 
  fates_mort_freezetol = 2.5, 2.5 ;
 
