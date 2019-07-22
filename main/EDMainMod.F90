@@ -378,6 +378,7 @@ contains
              max_dbh = EDPftvarcon_inst%max_dbh(currentCohort%pft)
              if (currentCohort%dbh .GE. max_dbh) then
                 currentCohort%dbh = max_dbh
+                dbh_old = currentCohort%dbh 
              end if
           end if
 
