@@ -911,11 +911,11 @@ data:
 
  fates_mort_bmort = 0.014, 0.014 ;
 
- fates_mort_ip_senescence = 150.0, 150.0 ;
+ fates_mort_ip_senescence = 75.0, 75.0 ;
 
  fates_mort_r_senescence = 0.075, 0.075 ;
 
- fates_max_dbh = 100.0, 100.0 ;
+ fates_max_dbh = 50.0, 50.0 ;
 
  fates_mort_freezetol = 2.5, 2.5 ;
 
