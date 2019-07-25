@@ -935,7 +935,7 @@ data:
 
  fates_mort_r_age_senescence = 0.075, 0.075 ;
 
- fates_max_dbh = 100.0, 100.0 ;
+ fates_max_dbh = 10000.0, 10000.0 ;
 
  fates_mort_freezetol = 2.5, 2.5 ;
 
@@ -983,7 +983,7 @@ data:
 
  fates_rhosvis = 0.16, 0.16 ;
 
- fates_root_long = 1, 1 ;
+ fates_root_long = 10000, 10000 ;
 
  fates_roota_par = 7, 7 ;
 
@@ -1028,7 +1028,7 @@ data:
  fates_z0mr = 0.055, 0.055 ;
 
  fates_leaf_long =
-  1.5, 1.5 ;
+  10000, 10000 ;
 
  fates_leaf_vcmax25top =
   50, 50 ;
