@@ -2070,8 +2070,7 @@ end subroutine flush_hvars
                     hio_m10_si_scpf(io_si,scpf) = hio_m10_si_scpf(io_si,scpf) + ccohort%asmort*ccohort%n
                                       
                     hio_m10_si_capf(io_si,capf) = hio_m10_si_capf(io_si,capf) + ccohort%asmort*ccohort%n
-
-
+ 
                     hio_m1_si_scls(io_si,scls) = hio_m1_si_scls(io_si,scls) + ccohort%bmort*ccohort%n
                     hio_m2_si_scls(io_si,scls) = hio_m2_si_scls(io_si,scls) + ccohort%hmort*ccohort%n
                     hio_m3_si_scls(io_si,scls) = hio_m3_si_scls(io_si,scls) + ccohort%cmort*ccohort%n
@@ -4333,7 +4332,7 @@ end subroutine flush_hvars
 
     call this%set_history_var(vname='NPLANT_CAPF', units = 'N/ha',       &
          long='stem number density by pft/coage', use_default='inactive', &
-         avgflag='A', vtype=site_size_pft_r8, hlms='CLM:ALM',flushval=0.0_r8,     &
+         avgflag='A', vtype=site_coage_pft_r8, hlms='CLM:ALM',flushval=0.0_r8,     &
          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_si_capf )
 
     call this%set_history_var(vname='M1_SCPF', units = 'N/ha/yr',          &
@@ -4398,7 +4397,7 @@ end subroutine flush_hvars
     
     call this%set_history_var(vname='M10_CAPF',units='N/ha/yr',         &
          long='age senescence mortality by pft/cohort age',use_default='inactive', &
-         avgflag='A', vtype =site_size_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,         &
+         avgflag='A', vtype =site_coage_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,         &
          upfreq=1, ivar=ivar, initialize=initialize_variables, index =ih_m10_si_capf )
 
     call this%set_history_var(vname='MORTALITY_CANOPY_SCPF', units = 'N/ha/yr',          &
@@ -4602,7 +4601,7 @@ end subroutine flush_hvars
 
     call this%set_history_var(vname='NPLANT_CACLS', units = 'indiv/ha',          &
          long='number of plants by coage class', use_default='active',   &
-         avgflag='A', vtype=site_size_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
+         avgflag='A', vtype=site_coage_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_si_cacls )
 
     call this%set_history_var(vname='M1_SCLS', units = 'N/ha/yr',          &
@@ -4652,7 +4651,7 @@ end subroutine flush_hvars
 
     call this%set_history_var(vname='M10_SCLS', units = 'N/ha/yr',              &
           long='age senescence mortality by size',use_default='active',         &
-          avgflag='A', vtype=site_size_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
+          avgflag='A', vtype=site_coage_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m10_si_scls ) 
 
     call this%set_history_var(vname='M10_CACLS', units = 'N/ha/yr',             &
