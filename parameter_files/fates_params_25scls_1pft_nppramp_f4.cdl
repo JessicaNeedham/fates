@@ -905,7 +905,7 @@ data:
 
  fates_mort_bmort = 0.014, 0.014 ;
 
- fates_max_dbh = 10.0, 10.0 ;
+ fates_max_dbh = 100000.0, 100000.0 ;
 
  fates_mort_freezetol = 2.5, 2.5 ;
 
