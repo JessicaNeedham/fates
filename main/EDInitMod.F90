@@ -462,7 +462,7 @@ contains
 
        if ( debug ) write(fates_log(),*) 'EDInitMod.F90 call create_cohort '
 
-       temp_cohort%coage = 0.000000000001_r8
+       temp_cohort%coage = 0.0_r8
        
        call create_cohort(site_in, patch_in, pft, temp_cohort%n, temp_cohort%hite, & 
             temp_cohort%coage, temp_cohort%dbh, &

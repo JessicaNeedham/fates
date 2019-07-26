@@ -2070,7 +2070,6 @@ end subroutine flush_hvars
                     hio_m10_si_scpf(io_si,scpf) = hio_m10_si_scpf(io_si,scpf) + ccohort%asmort*ccohort%n
                                       
                     hio_m10_si_capf(io_si,capf) = hio_m10_si_capf(io_si,capf) + ccohort%asmort*ccohort%n
-                    write(fates_log(),*) 'hio_m10_si_capf = ', hio_m10_si_capf 
  
                     hio_m1_si_scls(io_si,scls) = hio_m1_si_scls(io_si,scls) + ccohort%bmort*ccohort%n
                     hio_m2_si_scls(io_si,scls) = hio_m2_si_scls(io_si,scls) + ccohort%hmort*ccohort%n
@@ -2085,8 +2084,6 @@ end subroutine flush_hvars
       
                     hio_m10_si_cacls(io_si,cacls) = hio_m10_si_cacls(io_si,cacls)+ &
                          ccohort%asmort*ccohort%n
-                    write(fates_log(),*) 'hio_m10_si_cacls = ', hio_m10_si_cacls
-
                    
                     !C13 discrimination
                     if(gpp_cached + ccohort%gpp_acc_hold > 0.0_r8)then

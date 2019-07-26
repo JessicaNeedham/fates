@@ -920,8 +920,14 @@ contains
                  if (diff < dynamic_fusion_tolerance) then
 
                     ! Only fuse if the cohorts are within x years of each other 
+                    ! if they are the same age we make diff - to avoid errors divding by zero
+                   if (currentCohort%coage .eq. nextc%coage) then
+                      coage_diff = 0.0_r8
+                      else
                     coage_diff = abs((currentCohort%coage - nextc%coage)/ &
                          (0.5*(currentCohort%coage + nextc%coage)))
+                   end if
+
                     if (coage_diff < dynamic_age_fusion_tolerance ) then 
 
                     ! Don't fuse a cohort with itself!
