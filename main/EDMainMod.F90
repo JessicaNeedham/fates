@@ -775,7 +775,7 @@ contains
    real(r8) :: npp_ramp_start_day
 
 
-   npp_ramp_start_day = 7300.0_r8
+   npp_ramp_start_day = 73000.0_r8
 
    ft = currentCohort%pft
 

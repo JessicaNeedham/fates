@@ -935,7 +935,7 @@ data:
 
  fates_mort_r_senescence = 0.2, 0.2 ;
 
- fates_mort_ip_age_senescence = 393.0, 393.0 ;
+ fates_mort_ip_age_senescence = 177.0, 177.0 ;
 
  fates_mort_r_age_senescence = 0.075, 0.075 ;
 
