@@ -912,7 +912,7 @@ data:
 
  fates_mort_bmort = 0.014, 0.014 ;
 
- fates_mort_ip_senescence = 250.0, 250.0 ;
+ fates_mort_ip_senescence = 150.0, 150.0 ;
 
  fates_mort_r_senescence = 0.075, 0.075 ;
 
