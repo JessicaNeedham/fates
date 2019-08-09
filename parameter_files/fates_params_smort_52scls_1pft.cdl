@@ -945,7 +945,7 @@ data:
 
  fates_prescribed_npp_canopy = 0.75, 0.75 ;
 
- fates_prescribed_npp_max = 0.25, 0.25 ;
+ fates_prescribed_npp_max = 0.0, 0.0 ;
 
  fates_prescribed_npp_ramp = 0.0005, 0.0005 ;
 
