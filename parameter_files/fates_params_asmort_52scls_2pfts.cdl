@@ -1,4 +1,4 @@
-netcdf fates_params_asmort_maxdbh_52scls_1pft {
+netcdf fates_params_asmort_52scls_1pft {
 dimensions:
 	fates_NCWD = 4 ;
 	fates_history_age_bins = 7 ;
@@ -935,11 +935,11 @@ data:
 
  fates_mort_r_senescence = 0.2, 0.2 ;
 
- fates_mort_ip_age_senescence = 200.0, 200.0 ;
+ fates_mort_ip_age_senescence = 200.0, 180.0 ;
 
  fates_mort_r_age_senescence = 0.075, 0.075 ;
 
- fates_max_dbh = 150.0, 150.0 ;
+ fates_max_dbh = 10000.0, 10000.0 ;
 
  fates_mort_freezetol = 2.5, 2.5 ;
 
@@ -961,19 +961,19 @@ data:
 
  fates_phenflush_fraction = _, _ ;
 
- fates_prescribed_mortality_canopy = 0.0194, 0.0194 ;
+ fates_prescribed_mortality_canopy = 0.0194, 0.02134 ;
 
- fates_prescribed_mortality_understory = 0.025, 0.025 ;
+ fates_prescribed_mortality_understory = 0.025, 0.0275 ;
 
- fates_prescribed_npp_canopy = 0.75, 0.75 ;
+ fates_prescribed_npp_canopy = 0.75, 0.825 ;
 
  fates_prescribed_npp_max = 0.0, 0.0 ;
 
  fates_prescribed_npp_ramp = 0.0005, 0.0005 ;
 
- fates_prescribed_npp_understory = 0.075, 0.075 ;
+ fates_prescribed_npp_understory = 0.075, 0.0825 ;
 
- fates_prescribed_recruitment = 0.02, 0.02 ;
+ fates_prescribed_recruitment = 0.02, 0.022 ;
 
  fates_recruit_hgt_min = 1.3, 1.3 ;
 
