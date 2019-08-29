@@ -1,4 +1,4 @@
-netcdf fates_params_smort_1pft_V12 {
+netcdf fates_params_maxdbh_1pft_V12 {
 dimensions:
 	fates_NCWD = 4 ;
 	fates_history_age_bins = 7 ;
@@ -907,7 +907,7 @@ data:
 
  fates_mort_bmort = 0.014, 0.014 ;
 
- fates_max_dbh = 200, 200 ;
+ fates_max_dbh = 180, 180 ;
 
  fates_mort_freezetol = 2.5, 2.5 ;
 
