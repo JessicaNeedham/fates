@@ -273,6 +273,7 @@ module FatesHistoryInterfaceMod
   integer :: ih_growthflux_si_scpf
   integer :: ih_growthflux_fusion_si_scpf
   integer :: ih_ba_si_scpf
+  integer :: ih_agb_si_scpf
   integer :: ih_m1_si_scpf
   integer :: ih_m2_si_scpf
   integer :: ih_m3_si_scpf
@@ -1606,6 +1607,7 @@ end subroutine flush_hvars
                hio_growthflux_si_scpf        => this%hvars(ih_growthflux_si_scpf)%r82d, &
                hio_growthflux_fusion_si_scpf        => this%hvars(ih_growthflux_fusion_si_scpf)%r82d, &
                hio_ba_si_scpf          => this%hvars(ih_ba_si_scpf)%r82d, &
+               hio_agb_si_scpf         => this%hvars(ih_agb_si_scpf)%r82d, &
                hio_nplant_si_scpf      => this%hvars(ih_nplant_si_scpf)%r82d, &
                hio_nplant_si_capf      => this%hvars(ih_nplant_si_capf)%r82d, &
                
@@ -2100,7 +2102,10 @@ end subroutine flush_hvars
                   
                     ! number density by size and biomass
                     hio_agb_si_scls(io_si,scls) = hio_agb_si_scls(io_si,scls) + &
-                          total_c * ccohort%n * EDPftvarcon_inst%allom_agb_frac(ccohort%pft) * AREA_INV
+                         total_c * ccohort%n * EDPftvarcon_inst%allom_agb_frac(ccohort%pft) * AREA_INV
+
+                    hio_agb_si_scpf(io_si,scpf) = hio_agb_si_scpf(io_si,scpf) + &
+                         total_c * ccohort%n * EDPftvarcon_inst%allom_agb_frac(ccohort%pft) * AREA_INV
 
                     hio_biomass_si_scls(io_si,scls) = hio_biomass_si_scls(io_si,scls) + &
                           total_c * ccohort%n * AREA_INV
@@ -4324,6 +4329,11 @@ end subroutine flush_hvars
           long='basal area by pft/size', use_default='inactive',   &
           avgflag='A', vtype=site_size_pft_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_ba_si_scpf )
+
+    call this%set_history_var(vname='AGB_SCPF', units = 'kgC/m2', &
+         long='Aboveground biomass by pft/size', use_default='inactive', &
+         avgflag='A', vtype=site_size_pft_r8, hlms='CLM:ALM', flushval=0.0_r8, &
+         upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_agb_si_scpf ) 
 
     call this%set_history_var(vname='NPLANT_SCPF', units = 'N/ha',         &
           long='stem number density by pft/size', use_default='inactive', &
