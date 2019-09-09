@@ -1992,7 +1992,7 @@ end subroutine flush_hvars
                     ! number density [/ha]
                     hio_nplant_si_scpf(io_si,scpf) = hio_nplant_si_scpf(io_si,scpf) + ccohort%n
 
-                    hio_agb_si_scpf(io_si,scpf) = hio_agb_si_scpf(io_si,scpf) +
+                    hio_agb_si_scpf(io_si,scpf) = hio_agb_si_scpf(io_si,scpf) +  &
                     total_c * ccohort%n * EDPftvarcon_inst%allom_agb_frac(ccohort%pft) * AREA_INV
 
                     hio_agb_si_scls(io_si,scls) = hio_agb_si_scls(io_si,scls) + &
