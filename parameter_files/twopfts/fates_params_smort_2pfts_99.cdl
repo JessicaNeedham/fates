@@ -1,9 +1,9 @@
-netcdf fates_params_npprampsmort_52scls_1pft {
+netcdf fates_params_smort_2pfts_99 {
 dimensions:
 	fates_NCWD = 4 ;
 	fates_history_age_bins = 7 ;
 	fates_history_height_bins = 6 ;
-	fates_history_size_bins = 67 ;
+	fates_history_size_bins = 53 ;
 	fates_hydr_organs = 4 ;
 	fates_leafage_class = 1 ;
 	fates_litterclass = 6 ;
@@ -315,15 +315,15 @@ variables:
 	double fates_mort_bmort(fates_pft) ;
 		fates_mort_bmort:units = "1/yr" ;
 		fates_mort_bmort:long_name = "background mortality rate" ;
-	double fates_mort_ip_senescence(fates_pft);
-                fates_mort_ip_senescence:units = "dbh cm";
-                fates_mort_ip_senescence:long_name ="Mortality dbh senescence inflection point";
-        double fates_mort_r_senescence(fates_pft);
-                fates_mort_r_senescence:units = "mortality rate dbh^-1";
-                fates_mort_r_senescence:long_name = "Mortality dbh senescence rate of change";	
-	double fates_max_dbh(fates_pft);
-	        fates_max_dbh:units = "maximum dbh cm ";
-		fates_max_dbh:long_name = "Maximum dbh of a PFT, once reached npp goes to zero - only in prescribed physiology" ;	
+	double fates_mort_ip_senescence(fates_pft) ;
+		fates_mort_ip_senescence:units = "dbh cm" ;
+		fates_mort_ip_senescence:long_name = "Mortality dbh senescence inflection point" ;
+	double fates_mort_r_senescence(fates_pft) ;
+		fates_mort_r_senescence:units = "mortality rate dbh^-1" ;
+		fates_mort_r_senescence:long_name = "Mortality dbh senescence rate of change" ;
+	double fates_max_dbh(fates_pft) ;
+		fates_max_dbh:units = "maximum dbh cm " ;
+		fates_max_dbh:long_name = "Maximum dbh of a PFT, once reached npp goes to zero - only in prescribed physiology" ;
 	double fates_mort_freezetol(fates_pft) ;
 		fates_mort_freezetol:units = "NA" ;
 		fates_mort_freezetol:long_name = "minimum temperature tolerance (NOT USED)" ;
@@ -615,9 +615,9 @@ variables:
 data:
 
  fates_history_sizeclass_bin_edges = 0, 1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 
-    50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140,
-    145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200, 205, 210, 215, 220, 225,
-    230, 235, 240,245, 250,255,260,265,270, 275,280,285,290,295, 300,305,310,315,320,325;
+    50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 
+    130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 
+    200, 205, 210, 215, 220, 225, 230, 235, 240, 250, 275, 300 ;
 
  fates_history_ageclass_bin_edges = 0, 1, 2, 5, 10, 20, 50 ;
 
@@ -913,11 +913,11 @@ data:
 
  fates_mort_bmort = 0.014, 0.014 ;
 
- fates_mort_ip_senescence = 250.0, 200.0 ;
+ fates_mort_ip_senescence = 126.448191366559, 253.720294640065 ;
 
  fates_mort_r_senescence = 0.075, 0.075 ;
 
- fates_max_dbh = 1000000.0, 1000000.0 ;
+ fates_max_dbh = 1000000, 1000000 ;
 
  fates_mort_freezetol = 2.5, 2.5 ;
 
@@ -939,19 +939,20 @@ data:
 
  fates_phenflush_fraction = _, _ ;
 
- fates_prescribed_mortality_canopy = 0.017, 0.0204 ;
+ fates_prescribed_mortality_canopy = 0.0317874631711974, 0.0475912793104371 ;
 
- fates_prescribed_mortality_understory = 0.025, 0.03 ;
+ fates_prescribed_mortality_understory = 0.0297468096887483, 
+    0.0449974726444588 ;
 
- fates_prescribed_npp_canopy = 0.75, 0.9 ;
+ fates_prescribed_npp_canopy = 0.868918756230689, 1.53235182457169 ;
 
- fates_prescribed_npp_max = 0.25, 0.25 ;
+ fates_prescribed_npp_max = 0, 0 ;
 
  fates_prescribed_npp_ramp = 0.0005, 0.0005 ;
 
- fates_prescribed_npp_understory = 0.075, 0.09 ;
+ fates_prescribed_npp_understory = 0.056663102211579, 0.106389725845657 ;
 
- fates_prescribed_recruitment = 0.2, 0.24 ;
+ fates_prescribed_recruitment = 0.314497121505949, 0.471594939291052 ;
 
  fates_recruit_hgt_min = 1.3, 1.3 ;
 
