@@ -91,7 +91,7 @@ for i in range(0,param_mat1.shape[0]) :
     
     # The first call to main we generate a new file
     var = 'fates_prescribed_mortality_canopy'
-    modp.main(var = var, pft = pft, fin = 'fates_params_asmort_2pfts_V13.nc', 
+    modp.main(var = var, pft = pft, fin = 'fates_params_asmort_2pfts.nc', 
               val = param_mat1[i,0],  fout = fileout, O = 0)  
     # subsequent calls we overwrite that file
     var = 'fates_prescribed_mortality_understory'
