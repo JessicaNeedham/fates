@@ -2,9 +2,9 @@ netcdf fates_params_asmort_2pfts {
 dimensions:
 	fates_NCWD = 4 ;
 	fates_history_age_bins = 7 ;
+	fates_history_coage_bins = 34 ;
 	fates_history_height_bins = 6 ;
 	fates_history_size_bins = 34 ;
-	fates_history_coage_bins = 34 ;
 	fates_hydr_organs = 4 ;
 	fates_leafage_class = 1 ;
 	fates_litterclass = 6 ;
@@ -13,12 +13,12 @@ dimensions:
 	fates_string_length = 60 ;
 	fates_variants = 2 ;
 variables:
+	double fates_history_coageclass_bin_edges(fates_history_coage_bins) ;
+		fates_history_coageclass_bin_edges:units = "years" ;
+		fates_history_coageclass_bin_edges:long_name = "Lower edges for cohort age class bins used in cohort age resolved history output" ;
 	double fates_history_sizeclass_bin_edges(fates_history_size_bins) ;
 		fates_history_sizeclass_bin_edges:units = "cm" ;
 		fates_history_sizeclass_bin_edges:long_name = "Lower edges for DBH size class bins used in size-resolved cohort history output" ;
-	double fates_history_coageclass_bin_edges(fates_history_coage_bins) ;
-	        fates_history_coageclass_bin_edges:units = "years" ;
-		fates_history_coageclass_bin_edges:long_name = "Lower edges for cohort age class bins used in cohort age resolved history output" ;
 	double fates_history_ageclass_bin_edges(fates_history_age_bins) ;
 		fates_history_ageclass_bin_edges:units = "yr" ;
 		fates_history_ageclass_bin_edges:long_name = "Lower edges for age class bins used in age-resolved patch history output" ;
@@ -316,24 +316,12 @@ variables:
 	double fates_maintresp_reduction_intercept(fates_pft) ;
 		fates_maintresp_reduction_intercept:units = "unitless (0-1)" ;
 		fates_maintresp_reduction_intercept:long_name = "intercept of MR reduction as f(carbon storage), 0=no throttling, 1=max throttling" ;
+	double fates_max_dbh(fates_pft) ;
+		fates_max_dbh:units = "maximum dbh cm " ;
+		fates_max_dbh:long_name = "Maximum dbh of a PFT, once reached npp goes to zero - only in prescribed physiology" ;
 	double fates_mort_bmort(fates_pft) ;
 		fates_mort_bmort:units = "1/yr" ;
 		fates_mort_bmort:long_name = "background mortality rate" ;
-	double fates_mort_ip_senescence(fates_pft);
-                fates_mort_ip_senescence:units = "dbh cm";
-                fates_mort_ip_senescence:long_name ="Mortality dbh senescence inflection point";
-        double fates_mort_r_senescence(fates_pft);
-                fates_mort_r_senescence:units = "mortality rate dbh^-1";
-                fates_mort_r_senescence:long_name = "Mortality dbh senescence rate of change";
-	double fates_mort_ip_age_senescence(fates_pft);
-                fates_mort_ip_age_senescence:units = "years";
-                fates_mort_ip_age_senescence:long_name ="Mortality cohort age senescence inflection point";
-        double fates_mort_r_age_senescence(fates_pft);
-                fates_mort_r_age_senescence:units = "mortality rate year^-1";
-                fates_mort_r_age_senescence:long_name = "Mortality age senescence rate of change";
-	double fates_max_dbh(fates_pft);
-	        fates_max_dbh:units = "maximum dbh cm ";
-		fates_max_dbh:long_name = "Maximum dbh of a PFT, once reached npp goes to zero - only in prescribed physiology" ;	
 	double fates_mort_freezetol(fates_pft) ;
 		fates_mort_freezetol:units = "NA" ;
 		fates_mort_freezetol:long_name = "minimum temperature tolerance (NOT USED)" ;
@@ -343,6 +331,18 @@ variables:
 	double fates_mort_hf_sm_threshold(fates_pft) ;
 		fates_mort_hf_sm_threshold:units = "unitless" ;
 		fates_mort_hf_sm_threshold:long_name = "soil moisture (btran units) at which drought mortality begins for non-hydraulic model" ;
+	double fates_mort_ip_age_senescence(fates_pft) ;
+		fates_mort_ip_age_senescence:units = "years" ;
+		fates_mort_ip_age_senescence:long_name = "Mortality cohort age senescence inflection point" ;
+	double fates_mort_ip_senescence(fates_pft) ;
+		fates_mort_ip_senescence:units = "dbh cm" ;
+		fates_mort_ip_senescence:long_name = "Mortality dbh senescence inflection point" ;
+	double fates_mort_r_age_senescence(fates_pft) ;
+		fates_mort_r_age_senescence:units = "mortality rate year^-1" ;
+		fates_mort_r_age_senescence:long_name = "Mortality age senescence rate of change" ;
+	double fates_mort_r_senescence(fates_pft) ;
+		fates_mort_r_senescence:units = "mortality rate dbh^-1" ;
+		fates_mort_r_senescence:long_name = "Mortality dbh senescence rate of change" ;
 	double fates_mort_scalar_coldstress(fates_pft) ;
 		fates_mort_scalar_coldstress:units = "1/yr" ;
 		fates_mort_scalar_coldstress:long_name = "maximum mortality rate from cold stress" ;
@@ -490,9 +490,6 @@ variables:
 	double fates_cohort_fusion_tol ;
 		fates_cohort_fusion_tol:units = "unitless" ;
 		fates_cohort_fusion_tol:long_name = "minimum fraction in difference in dbh between cohorts" ;
-	double fates_cohort_age_fusion_tol ;
-	        fates_cohort_age_fusion_tol:units = "unitless" ;
-		fates_cohort_age_fusion_tol:long_name = "minimum fraction in differece in cohort age between cohorts" ;
 	double fates_comp_excln ;
 		fates_comp_excln:units = "none" ;
 		fates_comp_excln:long_name = "weighting factor (exponent on dbh) for canopy layer exclusion and promotion" ;
@@ -530,8 +527,8 @@ variables:
 		fates_fire_miner_total:units = "fraction" ;
 		fates_fire_miner_total:long_name = "spitfire parameter, total mineral content, Table A1 Thonicke et al 2010" ;
 	double fates_fire_nignitions ;
-		fates_fire_nignitions:units = "ignitions per day" ;
-		fates_fire_nignitions:long_name = "number of daily ignitions" ;
+		fates_fire_nignitions:units = "ignitions per year per km2" ;
+		fates_fire_nignitions:long_name = "number of annual ignitions per square km" ;
 	double fates_fire_part_dens ;
 		fates_fire_part_dens:units = "kg/m2" ;
 		fates_fire_part_dens:long_name = "spitfire parameter, oven dry particle density, Table A1 Thonicke et al 2010" ;
@@ -622,16 +619,17 @@ variables:
 
 // global attributes:
 		:history = "This file was made from FatesPFTIndexSwapper.py \n",
-			" Input File = parameter_files/fates_params_nppramp.nc \n",
-			" Indices = [1, 1]\n",
-			" Fri Jul 05 2019, 13:53:04: modify_fates_paramfile.py --fin=parameter_files/fates_params_nppramp_1pft.nc --fout=parameter_files/fates_params_nppramp_25scls_1pft.nc --var=fates_history_sizeclass_bin_edges --val=0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120 --changeshape" ;
+			" Input File = parameter_files/fates_params_asmort_1pft.nc \n",
+			" Indices = [1, 1]" ;
 data:
 
- fates_history_sizeclass_bin_edges = 0,1,10,20,30,40,50,60,70,80,90,100,110,120,130,140,
- 150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300,310,320;
+ fates_history_coageclass_bin_edges = 0, 1, 10, 20, 30, 40, 50, 60, 70, 80, 
+    90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 
+    240, 250, 260, 270, 280, 290, 300, 310, 320 ;
 
- fates_history_coageclass_bin_edges = 0,1,10,20,30,40,50,60,70,80,90,100,110,120,130,140,
- 150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300,310,320;  
+ fates_history_sizeclass_bin_edges = 0, 1, 10, 20, 30, 40, 50, 60, 70.8, 90, 
+    100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 
+    240, 250, 260, 270, 280, 290, 300, 310, 320, _ ;
 
  fates_history_ageclass_bin_edges = 0, 1, 2, 5, 10, 20, 50 ;
 
@@ -925,23 +923,23 @@ data:
 
  fates_maintresp_reduction_intercept = 1, 1 ;
 
+ fates_max_dbh = 10000, 10000 ;
+
  fates_mort_bmort = 0.014, 0.014 ;
-
- fates_mort_ip_senescence = 120.0, 120.0 ;
-
- fates_mort_r_senescence = 0.2, 0.2 ;
-
- fates_mort_ip_age_senescence = 215.0, 172.0 ;
-
- fates_mort_r_age_senescence = 0.075, 0.075 ;
-
- fates_max_dbh = 10000.0, 10000.0 ;
 
  fates_mort_freezetol = 2.5, 2.5 ;
 
  fates_mort_hf_flc_threshold = 0.5, 0.5 ;
 
  fates_mort_hf_sm_threshold = 1e-06, 1e-06 ;
+
+ fates_mort_ip_age_senescence = 215, 172 ;
+
+ fates_mort_ip_senescence = 120, 120 ;
+
+ fates_mort_r_age_senescence = 0.075, 0.075 ;
+
+ fates_mort_r_senescence = 0.2, 0.2 ;
 
  fates_mort_scalar_coldstress = 3, 3 ;
 
@@ -963,7 +961,7 @@ data:
 
  fates_prescribed_npp_canopy = 0.75, 0.9 ;
 
- fates_prescribed_npp_max = 0.0, 0.0 ;
+ fates_prescribed_npp_max = 0, 0 ;
 
  fates_prescribed_npp_ramp = 0.0005, 0.0005 ;
 
@@ -983,7 +981,7 @@ data:
 
  fates_rhosvis = 0.16, 0.16 ;
 
- fates_root_long = 10000, 10000 ;
+ fates_root_long = 1, 1 ;
 
  fates_roota_par = 7, 7 ;
 
@@ -1028,7 +1026,7 @@ data:
  fates_z0mr = 0.055, 0.055 ;
 
  fates_leaf_long =
-  10000, 10000 ;
+  1.5, 1.5 ;
 
  fates_leaf_vcmax25top =
   50, 50 ;
@@ -1043,15 +1041,13 @@ data:
 
  fates_cohort_fusion_tol = 0.08 ;
 
- fates_cohort_age_fusion_tol = 0.08 ;
-
  fates_comp_excln = 3 ;
 
  fates_cwd_fcel = 0.76 ;
 
  fates_cwd_flig = 0.24 ;
 
- fates_fire_drying_ratio = 13000 ;
+ fates_fire_drying_ratio = 66000 ;
 
  fates_fire_durat_slope = -11.06 ;
 
