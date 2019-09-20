@@ -822,7 +822,9 @@ contains
    end if  ! end NPP ramp if
 
      currentCohort%npp_acc = currentCohort%npp_acc_hold/hlm_days_per_year
-
+     ! for mass balancing
+     currentCohort%gpp_acc  = currentCohort%npp_acc
+     currentCohort%resp_acc = 0._r8
 
  end subroutine prescribed_npp_fertilisation
 
