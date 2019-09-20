@@ -201,12 +201,14 @@ module FatesInterfaceMod
    ! well.
    ! -------------------------------------------------------------------------------------
    
-   real(r8), public, allocatable :: fates_hdim_levsclass(:)        ! plant size class lower bound dimension
    real(r8), public, allocatable :: fates_hdim_levcoage(:)         ! cohort age class lower bound dimension
-   integer , public, allocatable :: fates_hdim_pfmap_levscpf(:)    ! map of pfts into size-class x pft dimension
-   integer , public, allocatable :: fates_hdim_scmap_levscpf(:)    ! map of size-class into size-class x pft dimension
    integer , public, allocatable :: fates_hdim_pfmap_levcapf(:)    ! map of pfts into cohort age class x pft dimension
    integer , public, allocatable :: fates_hdim_camap_levcapf(:)    ! map of cohort age class into cohort age x pft dimension
+  
+
+   real(r8), public, allocatable :: fates_hdim_levsclass(:)        ! plant size class lower bound dimension
+   integer , public, allocatable :: fates_hdim_pfmap_levscpf(:)    ! map of pfts into size-class x pft dimension
+   integer , public, allocatable :: fates_hdim_scmap_levscpf(:)    ! map of size-class into size-class x pft dimension
    real(r8), public, allocatable :: fates_hdim_levage(:)           ! patch age lower bound dimension
    real(r8), public, allocatable :: fates_hdim_levheight(:)        ! height lower bound dimension
    integer , public, allocatable :: fates_hdim_levpft(:)           ! plant pft dimension
@@ -227,6 +229,12 @@ module FatesInterfaceMod
    integer , public, allocatable :: fates_hdim_agmap_levagepft(:)      ! map of patch-age into patch age x pft dimension
    integer , public, allocatable :: fates_hdim_pftmap_levagepft(:)     ! map of pft into patch age x pft dimension
    
+   integer , public, allocatable :: fates_hdim_elmap_levelpft(:)       ! map of elements in the element x pft dimension
+   integer , public, allocatable :: fates_hdim_elmap_levelcwd(:)       ! map of elements in the element x cwd dimension
+   integer , public, allocatable :: fates_hdim_elmap_levelage(:)       ! map of elements in the element x age dimension
+   integer , public, allocatable :: fates_hdim_pftmap_levelpft(:)       ! map of pfts in the element x pft dimension
+   integer , public, allocatable :: fates_hdim_cwdmap_levelcwd(:)       ! map of cwds in the element x cwd dimension
+   integer , public, allocatable :: fates_hdim_agemap_levelage(:)       ! map of ages in the element x age dimension
 
    ! ------------------------------------------------------------------------------------
    !                              DYNAMIC BOUNDARY CONDITIONS

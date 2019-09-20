@@ -1032,8 +1032,8 @@ contains
 
 
          ! Since spread is a canopy level calculation, we need to provide an initial guess here.
-call create_cohort(csite, cpatch, temp_cohort%pft, temp_cohort%n, temp_cohort%hite,
-                   temp_cohort%coate, temp_cohort%dbh, &
+call create_cohort(csite, cpatch, temp_cohort%pft, temp_cohort%n, temp_cohort%hite, &
+                   temp_cohort%coage, temp_cohort%dbh, &
                prt_obj, temp_cohort%laimemory, cstatus, rstatus, temp_cohort%canopy_trim, &
                1, csite%spread, bc_in)
 

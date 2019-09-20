@@ -550,17 +550,19 @@ module FatesHistoryInterfaceMod
      
      type(iovar_map_type), pointer :: iovar_map(:)
 
+   
      !! THESE WERE EXPLICITLY PRIVATE WHEN TYPE WAS PUBLIC
      integer, private :: patch_index_, column_index_, levgrnd_index_, levscpf_index_
-     integer, private :: levscls_index_, levcacls_index_
-     integer, private :: levfuel_index_, levscag_index_
+     integer, private :: levscls_index_, levpft_index_, levage_index_
+     integer, private :: levfuel_index_, levcwdsc_index_, levscag_index_
      integer, private :: levcan_index_, levcnlf_index_, levcnlfpft_index_
      integer, private :: levscagpft_index_, levagepft_index_
      integer, private :: levheight_index_
-     integer, private :: levcapf_index_
      integer, private :: levelem_index_, levelpft_index_
      integer, private :: levelcwd_index_, levelage_index_
+     integer, private :: levcacls_index_, levcapf_index_
 
+     
    contains
      
      procedure :: Init
