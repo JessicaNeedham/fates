@@ -1725,7 +1725,6 @@ end subroutine flush_hvars
                hio_m8_si_scls          => this%hvars(ih_m8_si_scls)%r82d, &
                hio_m9_si_scls          => this%hvars(ih_m9_si_scls)%r82d, &
 
-               hio_m8_si_scls          => this%hvars(ih_m8_si_scls)%r82d, &    
                hio_c13disc_si_scpf     => this%hvars(ih_c13disc_si_scpf)%r82d, &
                hio_cwd_elcwd           => this%hvars(ih_cwd_elcwd)%r82d, &
                hio_cwd_ag_elem         => this%hvars(ih_cwd_ag_elem)%r82d, &
