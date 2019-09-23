@@ -34,7 +34,7 @@ n = 0
 param_mat1 = []
 param_mat2 = []
 
-while (n < 100):
+while (n < 101):
     canopy_mort = np.random.uniform(0.005, 0.06)
     under_mort = np.random.uniform(0.01, 0.1)
     canopy_npp = np.random.uniform(0.5, 2.0)
@@ -88,7 +88,7 @@ np.save(paramMatPFT2, param_mat2)
 
 print(param_mat1.shape[0])
 
-for i in range(0,param_mat1.shape[0]) :
+for i in range(1,101) :
     
     fileout = os.path.join('twopfts', 'fates_params_smort_2pfts_%d.nc'  % (i))
     
