@@ -775,7 +775,7 @@ data:
   "broadleaf_evergreen_tropical_tree          " ;
 
  fates_leaf_long =
-  1.5 ;
+  10000 ;
 
  fates_leaf_vcmax25top =
   50 ;
@@ -968,7 +968,7 @@ data:
 
  fates_rhosvis = 0.16 ;
 
- fates_root_long = 1 ;
+ fates_root_long = 10000 ;
 
  fates_roota_par = 7 ;
 

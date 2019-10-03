@@ -963,7 +963,7 @@ data:
 
  fates_rhosvis = 0.16, 0.16 ;
 
- fates_root_long = 1, 1 ;
+ fates_root_long = 10000, 10000 ;
 
  fates_roota_par = 7, 7 ;
 
@@ -1008,7 +1008,7 @@ data:
  fates_z0mr = 0.055, 0.055 ;
 
  fates_leaf_long =
-  1.5, 1.5 ;
+  10000, 10000 ;
 
  fates_leaf_vcmax25top =
   50, 50 ;
