@@ -942,7 +942,7 @@ data:
 
  fates_phenflush_fraction = _ ;
 
-  fates_prescribed_mortality_canopy = 0.017 ;
+ fates_prescribed_mortality_canopy = 0.017 ;
 
  fates_prescribed_mortality_understory = 0.025 ;
 
@@ -950,7 +950,7 @@ data:
 
  fates_prescribed_npp_max = 0.25 ;
 
- fates_prescribed_npp_ramp = 0.0005 ;
+ fates_prescribed_npp_ramp = 0.00008 ;
 
  fates_prescribed_npp_understory = 0.075 ;
 
