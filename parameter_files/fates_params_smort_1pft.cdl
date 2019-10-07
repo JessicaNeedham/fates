@@ -942,7 +942,7 @@ data:
 
  fates_phenflush_fraction = _ ;
 
-  fates_prescribed_mortality_canopy = 0.017 ;
+ fates_prescribed_mortality_canopy = 0.017 ;
 
  fates_prescribed_mortality_understory = 0.025 ;
 
