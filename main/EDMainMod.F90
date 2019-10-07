@@ -793,14 +793,16 @@ contains
 
          currentCohort%npp_acc_hold = EDPftvarcon_inst%prescribed_npp_canopy(ft) + &
               ((1.0_r8 - exp(-1.0_r8*EDPftvarcon_inst%prescribed_npp_ramp(ft) * &
-              (hlm_model_day-npp_ramp_start_day))) * EDPftvarcon_inst%prescribed_npp_max(ft))
+              (hlm_model_day-npp_ramp_start_day))) * EDPftvarcon_inst%prescribed_npp_max(ft) * &
+              EDPftvarcon_inst%prescribed_npp_canopy(ft))
 
          
       else
          ! calculate increase in npp from eCO2 for understory cohort
          currentCohort%npp_acc_hold = EDPftvarcon_inst%prescribed_npp_understory(ft) + &
               ((1.0_r8 - exp(-1.0_r8*EDPftvarcon_inst%prescribed_npp_ramp(ft) * &
-              (hlm_model_day-npp_ramp_start_day))) * EDPftvarcon_inst%prescribed_npp_max(ft))
+              (hlm_model_day-npp_ramp_start_day))) * EDPftvarcon_inst%prescribed_npp_max(ft) * &
+              EDPftvarcon_inst%prescribed_npp_understory(ft))
         
 
       end if  ! end canopy layer if
