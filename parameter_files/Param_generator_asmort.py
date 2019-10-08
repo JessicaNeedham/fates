@@ -6,7 +6,7 @@ Created on Wed Sep 11 16:08:44 2019
 @author: JFNeedham
 """
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from tempfile import TemporaryFile
 import modp
 import os
@@ -61,15 +61,15 @@ param_mat1 = np.array(param_mat1)
 param_mat2 = np.array(param_mat2)
 
 # plot them - make sure they look good
-fig, ax = plt.subplots()
-ax.scatter(param_mat1[:,1], param_mat1[:,3], label = 'PFT 1')
-ax.scatter(param_mat2[:,1], param_mat2[:,3], color = 'red', label = 'PFT 2')
-ax.set_xlabel('Canopy mortality', fontsize=15)
-ax.set_ylabel('Canopy NPP', fontsize=15)
-ax.set_title('Parameter space')
-ax.plot([param_mat1[:,1], param_mat2[:,1]], [param_mat1[:,3], param_mat2[:,3]], 'lightgrey')
-ax.legend()
-plt.savefig("Param_space.png")
+#fig, ax = plt.subplots()
+#ax.scatter(param_mat1[:,1], param_mat1[:,3], label = 'PFT 1')
+#ax.scatter(param_mat2[:,1], param_mat2[:,3], color = 'red', label = 'PFT 2')
+#ax.set_xlabel('Canopy mortality', fontsize=15)
+#ax.set_ylabel('Canopy NPP', fontsize=15)
+#ax.set_title('Parameter space')
+#ax.plot([param_mat1[:,1], param_mat2[:,1]], [param_mat1[:,3], param_mat2[:,3]], 'lightgrey')
+#ax.legend()
+#plt.savefig("Param_space.png")
 
 
 # save them 

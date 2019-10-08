@@ -940,7 +940,7 @@ data:
 
  fates_mort_ip_senescence = 120, 120 ;
 
- fates_mort_r_age_senescence = 0.075, 0.075 ;
+ fates_mort_r_age_senescence = 0.05, 0.05 ;
 
  fates_mort_r_senescence = 0.2, 0.2 ;
 
@@ -966,7 +966,7 @@ data:
 
  fates_prescribed_npp_max = 0, 0 ;
 
- fates_prescribed_npp_ramp = 0.0005, 0.0005 ;
+ fates_prescribed_npp_ramp = 0.00008, 0.00008 ;
 
  fates_prescribed_npp_understory = 0.075, 0.09 ;
 
