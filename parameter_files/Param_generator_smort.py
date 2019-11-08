@@ -80,7 +80,7 @@ param_mat2 = np.array(param_mat2)
 #plt.savefig("Param_space_smort.png")
 
 
-# save them 
+# save them - didn't add a file extension so they didnt' actually save 
 paramMatPFT1 = TemporaryFile()
 paramMatPFT2 = TemporaryFile()
 np.save(paramMatPFT1, param_mat1)
