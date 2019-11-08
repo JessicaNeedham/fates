@@ -779,7 +779,7 @@ contains
    real(r8) :: npp_ramp_start_day
 
 
-   npp_ramp_start_day = 146000.0_r8  ! date that npp ramp up begins
+   npp_ramp_start_day = 109500.0_r8  ! date that npp ramp up begins
 
    ft = currentCohort%pft
 
