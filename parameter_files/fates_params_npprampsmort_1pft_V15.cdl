@@ -814,7 +814,7 @@ data:
 
  fates_allom_d2h3 = -999.9 ;
 
- fates_allom_dbh_maxheight = 90 ;
+ fates_allom_dbh_maxheight = 1000 ;
 
  fates_allom_fmode = 1 ;
 
