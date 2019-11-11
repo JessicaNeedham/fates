@@ -43,7 +43,7 @@ for i in range(0,10) :
    
         var = 'fates_mort_ip_senescence'
         modp.main(var = var, pft = pft, fin = fin,
-              val = canopy_mort[j], fout = fileout, O = 1)
+              val = ip[j], fout = fileout, O = 1)
     
         n = n+1
         print(n)
