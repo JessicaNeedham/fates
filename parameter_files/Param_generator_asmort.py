@@ -28,27 +28,17 @@ param_mat2 = []
 
 while (n < 101):
     canopy_mort = np.random.uniform(0.005, 0.06)
-    under_mort = np.random.uniform(0.01, 0.1)
     canopy_npp = np.random.uniform(0.5, 2.0)
-    under_npp = np.random.uniform(0.05, 0.2)
-    recrt = np.random.uniform(0.125, 0.6)
-    ip = np.random.uniform(100,300)
     
     canopy_mort2 = np.random.uniform(0.005, 0.06)
-    under_mort2 = np.random.uniform(0.01, 0.1)
     canopy_npp2 = np.random.uniform(0.5, 2.0)
-    under_npp2 = np.random.uniform(0.05, 0.2)
-    recrt2 = np.random.uniform(0.125, 0.6)
-    ip2 = np.random.uniform(100,300)
+    
     
     if canopy_mort < canopy_mort2 :
-        if under_mort < under_mort2 :
-            if canopy_npp < canopy_npp2 :
-                if under_npp < under_npp2 :
-                    if recrt < recrt2 : 
-                        
-                        p1 = [canopy_mort,under_mort,canopy_npp,under_npp,recrt,ip]
-                        p2 = [canopy_mort2,under_mort2,canopy_npp2,under_npp2,recrt2,ip2]
+         if canopy_npp < canopy_npp2 :
+            
+                        p1 = [canopy_mort,canopy_npp]
+                        p2 = [canopy_mort2,canopy_npp2]
                         
                         param_mat1.append(p1)
                         param_mat2.append(p2)
@@ -73,10 +63,9 @@ param_mat2 = np.array(param_mat2)
 
 
 # save them 
-paramMatPFT1 = TemporaryFile()
-paramMatPFT2 = TemporaryFile()
-np.save(paramMatPFT1, param_mat1)
-np.save(paramMatPFT2, param_mat2)
+
+np.save('asmort_paramMatPFT1', param_mat1)
+np.save('asmort_paramMatPFT2', param_mat2)
 
 
 
@@ -94,51 +83,20 @@ for i in range(1,101) :
     modp.main(var = var, pft = pft, fin = 'fates_params_asmort_2pfts.nc', 
               val = param_mat1[i,0],  fout = fileout, O = 0)  
     # subsequent calls we overwrite that file
-    var = 'fates_prescribed_mortality_understory'
-    modp.main(var = var, pft = pft, fin = fin,
-              val = param_mat1[i,1], fout = fileout, O = 1)  
-    
     var = 'fates_prescribed_npp_canopy'
     modp.main(var = var, pft = pft, fin = fin,
-              val = param_mat1[i,2], fout = fileout, O = 1)
-    
-    var = 'fates_prescribed_npp_understory'
-    modp.main(var = var, pft = pft, fin = fin, 
-              val = param_mat1[i,3], fout = fileout, O = 1) 
-    
-    var = 'fates_prescribed_recruitment'
-    modp.main(var = var, pft = pft, fin = fin,  
-              val = param_mat1[i,4], fout = fileout, O = 1)  
-   
-    var = 'fates_mort_ip_age_senescence'
-    modp.main(var = var, pft = pft, fin = fin, 
-              val = param_mat1[i,5], fout = fileout, O = 1)
+              val = param_mat1[i,1], fout = fileout, O = 1)
     
     # overwrite pft2 variables
     pft = 2
     var = 'fates_prescribed_mortality_canopy'
     modp.main(var = var, pft = pft, fin = fin, 
               val = param_mat2[i,0], fout = fileout, O = 1)  
-    
-    var = 'fates_prescribed_mortality_understory'
-    modp.main(var = var, pft = pft, fin = fin, 
-              val = param_mat2[i,1], fout = fileout, O = 1)  
-    
+      
     var = 'fates_prescribed_npp_canopy'
     modp.main(var = var, pft = pft, fin = fin, 
-              val = param_mat2[i,2], fout = fileout, O = 1)
+              val = param_mat2[i,1], fout = fileout, O = 1)
     
-    var = 'fates_prescribed_npp_understory'
-    modp.main(var = var, pft = pft, fin = fin, 
-              val = param_mat2[i,3], fout = fileout, O = 1) 
-    
-    var = 'fates_prescribed_recruitment'
-    modp.main(var = var, pft = pft, fin = fin, 
-              val = param_mat2[i,4], fout = fileout, O = 1)  
-   
-    var = 'fates_mort_ip_age_senescence'
-    modp.main(var = var, pft = pft, fin = fin, 
-              val = param_mat2[i,5], fout = fileout, O = 1)
   
     
     
