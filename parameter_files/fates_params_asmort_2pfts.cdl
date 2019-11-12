@@ -960,7 +960,7 @@ data:
 
  fates_prescribed_mortality_canopy = 0.017, 0.017 ;
 
- fates_prescribed_mortality_understory = 0.1, 0.05 ;
+ fates_prescribed_mortality_understory = 0.05, 0.1 ;
 
  fates_prescribed_npp_canopy = 0.75, 0.75 ;
 
