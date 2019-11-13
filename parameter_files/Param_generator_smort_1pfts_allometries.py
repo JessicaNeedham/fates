@@ -38,7 +38,7 @@ import time
 n = 1
 
 d2h2 = np.linspace(0.05, 0.5, num=10)
-d2bl_p2 = np.linspace(1.1,1.35, num=10)
+d2bl_p2 = np.linspace(1.1,1.4, num=10)
 
 
 for i in range(0,10) :
