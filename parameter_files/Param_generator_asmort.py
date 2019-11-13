@@ -28,10 +28,10 @@ param_mat2 = []
 
 while (n < 101):
     canopy_mort = np.random.uniform(0.005, 0.06)
-    canopy_npp = np.random.uniform(0.5, 2.0)
+    canopy_npp = np.random.uniform(0.4, 2.0)
     
     canopy_mort2 = np.random.uniform(0.005, 0.06)
-    canopy_npp2 = np.random.uniform(0.5, 2.0)
+    canopy_npp2 = np.random.uniform(0.4, 2.0)
     
     
     if canopy_mort < canopy_mort2 :
