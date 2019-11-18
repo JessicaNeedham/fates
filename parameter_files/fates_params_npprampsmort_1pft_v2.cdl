@@ -916,9 +916,9 @@ data:
 
  fates_mort_bmort = 0.014 ;
 
- fates_mort_ip_senescence = 195 ;
+ fates_mort_ip_senescence = 170 ;
 
- fates_mort_r_senescence = 0.055 ;
+ fates_mort_r_senescence = 0.056 ;
 
  fates_max_dbh = 1000000 ;
 
