@@ -491,7 +491,7 @@ contains
           call carea_2pwr(dbh_eff,site_spread,d2bl_p2,d2bl_ediff,d2ca_min,d2ca_max,c_area,do_inverse)
           capped_allom = .true.
        case(2)   ! "2par_pwr")
-          call carea_2pwr(dbh,site_spread,d2bl_p2,d2bl_ediff,d2ca_min,d2ca_max,c_area,do_inverse)
+          call carea_2pw(dbh,site_spread,d2bl_p2,d2bl_ediff,d2ca_min,d2ca_max,c_area,do_inverse)
           capped_allom = .false.
        case(3)
           dbh_eff = min(dbh,dbh_maxh)
