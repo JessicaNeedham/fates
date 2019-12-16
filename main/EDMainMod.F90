@@ -300,6 +300,7 @@ contains
     real(r8) :: delta_dbh             ! correction for dbh
     real(r8) :: delta_hite            ! correction for hite
 
+    real(r8) :: max_dbh               ! max dbh beyond which plants can't grow - prescribed phys mode
     !-----------------------------------------------------------------------
 
     ! Set a pointer to this sites carbon12 mass balance
@@ -407,6 +408,15 @@ contains
                 currentCohort%resp_acc * currentCohort%n
 
           call currentCohort%prt%CheckMassConservation(ft,5)
+
+          ! if we are in prescribed physiology with a max dbh then reset dbh if it exceeds this
+          if (hlm_use_ed_prescribed_phys .eq. itrue) then 
+             max_dbh = EDPftvarcon_inst%max_dbh(currentCohort%pft)
+             if (currentCohort%dbh .GE. max_dbh) then
+                currentCohort%dbh = max_dbh
+                dbh_old = currentCohort%dbh
+             end if
+          end if
 
           ! Update the leaf biophysical rates based on proportion of leaf
           ! mass in the different leaf age classes. Following growth
