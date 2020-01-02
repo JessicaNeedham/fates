@@ -29,14 +29,14 @@ for i in range(0,10) :
     
     for j in range(0,10) :
 
-        fileout = os.path.join('onepft_ensembles', 'fates_params_asmort_1pft_allom_%d.nc'  % (n))                                                                                                                                                          
+        fileout = os.path.join('onepft_ensembles', 'fates_params_asmort_1pft_allom_v1_%d.nc'  % (n))                                                                                                                                                          
         pft = 1
         fin = fileout
 
 
         # The first call to main we generate a new file                                                                                                                                         
         var = 'fates_allom_d2h2'
-        modp.main(var = var, pft = pft, fin = 'onepft_ensembles/fates_params_asmort_1pft_allom_1.nc',
+        modp.main(var = var, pft = pft, fin = 'onepft_ensembles/fates_params_asmort_1pft_allom_v1_1.nc',
               val = d2h[i],  fout = fileout, O = 0)
    
         var = 'fates_allom_d2bl2'
