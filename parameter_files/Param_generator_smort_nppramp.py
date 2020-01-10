@@ -23,8 +23,8 @@ import time
 
 for i in range(1,101) :
     
-    fin = os.path.join('twopfts', 'fates_params_smort_2pfts_%d.nc' % (i))
-    fileout = os.path.join('twopfts', 'fates_params_nppramp_smort_2pfts_%d.nc'  % (i))
+    fin = os.path.join('twopfts', 'fates_params_smort_2pfts_%d_recr2.nc' % (i))
+    fileout = os.path.join('twopfts', 'fates_params_nppramp_smort_2pfts_%d_recr2.nc'  % (i))
     
 
     # The first call to main we generate a new file
