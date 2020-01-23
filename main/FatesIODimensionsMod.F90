@@ -25,6 +25,7 @@ module FatesIODimensionsMod
     character(*), parameter, public  :: levcan = 'fates_levcan'        ! matches histFileMod
     character(*), parameter, public  :: levcnlf = 'fates_levcnlf'      ! matches histFileMod
     character(*), parameter, public  :: levcnlfpft = 'fates_levcnlfpf' ! matches histFileMod
+    character(*), parameter, public  :: levcdam = 'fates_levcdam' ! matches histFileMod
     
     character(*), parameter, public  :: levelem =  'fates_levelem'
     character(*), parameter, public  :: levelpft = 'fates_levelpft'
@@ -71,6 +72,9 @@ module FatesIODimensionsMod
 
     ! levcnlfpft = This is a structure that records the boundaries for the
     ! number of canopy layer x leaf layer x pft dimension
+
+    ! levcdam = This is a structure that records the boundaries for the
+    ! number of crown damage classes dimension
 
     ! levscag = This is a strcture that records the boundaries for the 
     ! number of size-classes x patch age
@@ -123,6 +127,8 @@ module FatesIODimensionsMod
        integer :: cnlf_end
        integer :: cnlfpft_begin
        integer :: cnlfpft_end
+       integer :: cdamage_begin
+       integer :: cdamage_end
        integer :: elem_begin
        integer :: elem_end
        integer :: elpft_begin

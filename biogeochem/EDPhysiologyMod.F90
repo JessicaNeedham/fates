@@ -1330,6 +1330,7 @@ contains
     integer :: el          ! loop counter for element
     integer :: element_id  ! element index consistent with definitions in PRTGenericMod
     integer :: iage        ! age loop counter for leaf age bins
+    integer :: crowndamage
     integer,parameter :: recruitstatus = 1 !weather it the new created cohorts is recruited or initialized
     real(r8) :: c_leaf      ! target leaf biomass [kgC]
     real(r8) :: c_fnrt      ! target fine root biomass [kgC]
@@ -1359,6 +1360,7 @@ contains
     do ft = 1,numpft
 
        temp_cohort%canopy_trim = 0.8_r8  !starting with the canopy not fully expanded 
+       temp_cohort%crowndamage = 1       ! new recruits are undamaged
        temp_cohort%pft         = ft
        temp_cohort%hite        = EDPftvarcon_inst%hgt_min(ft)
        call h2d_allom(temp_cohort%hite,ft,temp_cohort%dbh)
@@ -1562,7 +1564,7 @@ contains
            call create_cohort(currentSite,currentPatch, temp_cohort%pft, temp_cohort%n, & 
                 temp_cohort%hite, temp_cohort%dbh, prt, & 
                 temp_cohort%laimemory, cohortstatus, recruitstatus, &
-                temp_cohort%canopy_trim, currentPatch%NCL_p, currentSite%spread, bc_in)
+                temp_cohort%canopy_trim, currentPatch%NCL_p, temp_cohort%crowndamage,  currentSite%spread, bc_in)
            
            ! Note that if hydraulics is on, the number of cohorts may had
            ! changed due to hydraulic constraints.

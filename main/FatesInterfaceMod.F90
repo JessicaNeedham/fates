@@ -16,6 +16,7 @@ module FatesInterfaceMod
    use EDTypesMod          , only : ivis
    use EDTypesMod          , only : inir
    use EDTypesMod          , only : nclmax
+   use EDTypesMod          , only : ncrowndamagemax
    use EDTypesMod          , only : nlevleaf
    use EDTypesMod          , only : maxpft
    use EDTypesMod          , only : do_fates_salinity
@@ -209,7 +210,8 @@ module FatesInterfaceMod
    integer , public, allocatable :: fates_hdim_levpft(:)           ! plant pft dimension
    integer , public, allocatable :: fates_hdim_levfuel(:)          ! fire fuel class dimension
    integer , public, allocatable :: fates_hdim_levcwdsc(:)         ! cwd class dimension
-   integer , public, allocatable :: fates_hdim_levcan(:)           ! canopy-layer dimension 
+   integer , public, allocatable :: fates_hdim_levcan(:)           ! canopy-layer dimension
+   integer , public, allocatable :: fates_hdim_levcdam(:)   ! crown damage dimension
    integer , public, allocatable :: fates_hdim_levelem(:)              ! element dimension
    integer , public, allocatable :: fates_hdim_canmap_levcnlf(:)   ! canopy-layer map into the canopy-layer x leaf-layer dim
    integer , public, allocatable :: fates_hdim_lfmap_levcnlf(:)    ! leaf-layer map into the can-layer x leaf-layer dimension
@@ -1159,6 +1161,7 @@ contains
        
        use EDTypesMod, only : NFSC
        use EDTypesMod, only : nclmax
+       use EDTypesMod, only : ncrowndamagemax
        use EDTypesMod, only : nlevleaf
        use EDParamsMod, only : ED_val_history_sizeclass_bin_edges
        use EDParamsMod, only : ED_val_history_ageclass_bin_edges
@@ -1178,6 +1181,7 @@ contains
        integer :: icwd
        integer :: ifuel
        integer :: ican
+       integer :: icdamage
        integer :: ileaf
        integer :: iage
        integer :: iheight
@@ -1192,6 +1196,8 @@ contains
        allocate( fates_hdim_levage(1:nlevage   ))
        allocate( fates_hdim_levheight(1:nlevheight   ))
 
+       allocate( fates_hdim_levcdam(ncrowndamagemax ))
+       
        allocate( fates_hdim_levcan(nclmax))
        allocate( fates_hdim_levelem(num_elements))
        allocate( fates_hdim_canmap_levcnlf(nlevleaf*nclmax))
@@ -1239,6 +1245,12 @@ contains
        do ican = 1,nclmax
           fates_hdim_levcan(ican) = ican
        end do
+
+       ! make damage array
+       do icdamage = 1,ncrowndamagemax
+          fates_hdim_levcdam(icdamage) = icdamage
+       end do
+       
 
        ! Make an element array, each index is the PARTEH global identifier index
 

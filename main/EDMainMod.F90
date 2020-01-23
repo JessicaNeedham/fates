@@ -269,7 +269,7 @@ contains
     end if
    
     call TotalBalanceCheck(currentSite,5)
-
+    
   end subroutine ed_ecosystem_dynamics
 
   !-------------------------------------------------------------------------------!
@@ -333,6 +333,7 @@ contains
 
           ft = currentCohort%pft
 
+          
           ! Calculate the mortality derivatives
           call Mortality_Derivative( currentSite, currentCohort, bc_in )
 
@@ -437,9 +438,10 @@ contains
              call updateSizeDepTreeHydProps(currentSite,currentCohort, bc_in)
              call updateSizeDepTreeHydStates(currentSite,currentCohort)
           end if
-          
+
           currentCohort => currentCohort%taller
-      end do
+          
+       end do
 
        currentPatch => currentPatch%older
    end do

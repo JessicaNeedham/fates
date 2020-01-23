@@ -83,7 +83,7 @@ module EDCohortDynamicsMod
   use PRTAllometricCarbonMod, only : ac_bc_in_id_ctrim
   use PRTAllometricCarbonMod, only : ac_bc_inout_id_dbh
   use PRTAllometricCarbonMod, only : ac_bc_in_id_lstat
-
+  
   !  use PRTAllometricCNPMod,    only : cnp_allom_prt_vartypes
   
   use shr_infnan_mod, only : nan => shr_infnan_nan, assignment(=)  
@@ -130,7 +130,7 @@ contains
 
   subroutine create_cohort(currentSite, patchptr, pft, nn, hite, dbh,   &
                            prt, laimemory, status, recruitstatus,ctrim, &
-                           clayer, spread, bc_in)
+                           clayer, crowndamage, spread, bc_in)
 
     !
     ! !DESCRIPTION:
@@ -150,7 +150,7 @@ contains
     type(ed_site_type), intent(inout),   target :: currentSite
     type(ed_patch_type), intent(inout), pointer :: patchptr
     integer,  intent(in)      :: pft              ! Cohort Plant Functional Type
-    integer,  intent(in)      :: crowndamage           ! Cohort damage class
+    integer,  intent(in)      :: crowndamage      ! Cohort damage class
     integer,  intent(in)      :: clayer           ! canopy status of cohort 
                                                   ! (1 = canopy, 2 = understorey, etc.)
     integer,  intent(in)      :: status           ! growth status of plant  
@@ -237,8 +237,7 @@ contains
     endif
 
     ! Assign canopy extent and depth
-    call carea_allom(new_cohort%dbh,new_cohort%n,spread,new_cohort%pft,new_cohort%c_area, &
-                     new_cohort%crowndamage)
+    call carea_allom(new_cohort%dbh,new_cohort%n,spread,new_cohort%pft,new_cohort%c_area )
 
     ! Query PARTEH for the leaf carbon [kg]
     leaf_c = new_cohort%prt%GetState(leaf_organ,carbon12_element)
@@ -246,13 +245,12 @@ contains
 
     new_cohort%treelai = tree_lai(leaf_c, new_cohort%pft, new_cohort%c_area,    &
                                   new_cohort%n, new_cohort%canopy_layer,               &
-                                  patchptr%canopy_layer_tlai,new_cohort%vcmax25top,    &
-                                  new_cohort%crowndamage)    
+                                  patchptr%canopy_layer_tlai,new_cohort%vcmax25top)    
 
     new_cohort%treesai = tree_sai(new_cohort%pft, new_cohort%dbh, new_cohort%canopy_trim,   &
                                   new_cohort%c_area, new_cohort%n, new_cohort%canopy_layer, &
                                   patchptr%canopy_layer_tlai, new_cohort%treelai,           &
-                                  new_cohort%vcmax25top, new_cohort%crowndamage,2 )  
+                                  new_cohort%vcmax25top, 2 )  
 
     new_cohort%lai     = new_cohort%treelai * new_cohort%c_area/patchptr%area
 
@@ -361,7 +359,6 @@ contains
        call new_cohort%prt%RegisterBCIn(ac_bc_in_id_pft,bc_ival = new_cohort%pft)
        call new_cohort%prt%RegisterBCIn(ac_bc_in_id_ctrim,bc_rval = new_cohort%canopy_trim)
        call new_cohort%prt%RegisterBCIn(ac_bc_in_id_lstat,bc_ival = new_cohort%status_coh)
-       call new_cohort%prt%RegisterBCIn(ac_bc_in_id_canopydamage,bc_ival = new_cohort%canopydamage)
        
     case (prt_cnp_flex_allom_hyp)
 
@@ -470,7 +467,7 @@ contains
 
     ! VEGETATION STRUCTURE
     currentCohort%pft                = fates_unset_int  ! pft number
-    currentCohort%canopydamage       = fates_unset_int  ! Canopy damage class
+    currentCohort%crowndamage       = fates_unset_int  ! Crown damage class
     currentCohort%indexnumber        = fates_unset_int  ! unique number for each cohort. (within clump?)
     currentCohort%canopy_layer       = fates_unset_int  ! canopy status of cohort (1 = canopy, 2 = understorey, etc.)   
     currentCohort%canopy_layer_yesterday       = nan  ! recent canopy status of cohort (1 = canopy, 2 = understorey, etc.)   
@@ -1114,7 +1111,7 @@ contains
 
                                       !
                                       call carea_allom(dbh,newn,currentSite%spread,currentCohort%pft,&
-                                           currentCohort%c_area,currentCohort%crowndamage, inverse=.true.)
+                                           currentCohort%c_area, inverse=.true.)
                                       !
                                       if (abs(dbh-fates_unset_r8)<nearzero) then
                                          currentCohort%dbh = (currentCohort%n*currentCohort%dbh         &
@@ -1129,7 +1126,7 @@ contains
                                          end if
                                          !
                                          call carea_allom(currentCohort%dbh,newn,currentSite%spread,currentCohort%pft,&
-                                              currentCohort%c_area,currentCohort%crowndamage, inverse=.false.)
+                                              currentCohort%c_area, inverse=.false.)
 
                                       else
                                          currentCohort%dbh = dbh
@@ -1166,7 +1163,7 @@ contains
                                       end if
                                       !
                                       call carea_allom(currentCohort%dbh,newn,currentSite%spread,currentCohort%pft,&
-                                           currentCohort%c_area,currentCohort%crowndamage, inverse=.false.)
+                                           currentCohort%c_area, inverse=.false.)
                                       !
                                    case default
                                       write(fates_log(),*) 'FATES: Invalid choice for cohort_fusion_conservation_method'
@@ -1177,11 +1174,10 @@ contains
 
                                    currentCohort%treelai = tree_lai(leaf_c, currentCohort%pft, currentCohort%c_area, newn, &
                                         currentCohort%canopy_layer, currentPatch%canopy_layer_tlai, &
-                                        currentCohort%vcmax25top, currentCohort%crowndamage)
+                                        currentCohort%vcmax25top)
                                    currentCohort%treesai = tree_sai(currentCohort%pft, currentCohort%dbh, currentCohort%canopy_trim, &
                                         currentCohort%c_area, newn, currentCohort%canopy_layer, &
-                                        currentPatch%canopy_layer_tlai, currentCohort%treelai,currentCohort%vcmax25top, &
-                                        currentCohort%crowndamage, 1 ) 
+                                        currentPatch%canopy_layer_tlai, currentCohort%treelai,currentCohort%vcmax25top, 1 ) 
 
                                    call sizetype_class_index(currentCohort%dbh,currentCohort%pft, &
                                         currentCohort%size_class,currentCohort%size_by_pft_class)
@@ -1317,12 +1313,12 @@ contains
                                    ! deallocate the hydro structure of nextc
                                    if (hlm_use_planthydro.eq.itrue) then				    
                                       call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread, &
-                                           currentCohort%pft,currentCohort%c_area, currentCohort%crowndamage)
+                                           currentCohort%pft,currentCohort%c_area)
                                       leaf_c   = currentCohort%prt%GetState(leaf_organ, carbon12_element)
                                       currentCohort%treelai = tree_lai(leaf_c,             &
                                            currentCohort%pft, currentCohort%c_area, currentCohort%n, &
                                            currentCohort%canopy_layer, currentPatch%canopy_layer_tlai, &
-                                           currentCohort%vcmax25top, currentCohort%crowndamage  )			    
+                                           currentCohort%vcmax25top )			    
                                       call updateSizeDepTreeHydProps(currentSite,currentCohort, bc_in)  				   
                                    endif
 
@@ -1587,6 +1583,7 @@ contains
     
     ! VEGETATION STRUCTURE
     n%pft             = o%pft
+    n%crowndamage     = o%crowndamage
     n%n               = o%n                         
     n%dbh             = o%dbh                                        
     n%hite            = o%hite

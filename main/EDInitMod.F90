@@ -11,6 +11,7 @@ module EDInitMod
   use FatesConstantsMod         , only : primaryforest
   use FatesGlobals              , only : endrun => fates_endrun
   use EDTypesMod                , only : nclmax
+  use EDTypesMod                , only : ncrowndamagemax
   use FatesGlobals              , only : fates_log
   use FatesInterfaceMod         , only : hlm_is_restart
   use EDPftvarcon               , only : EDPftvarcon_inst
@@ -171,7 +172,7 @@ contains
     site_in%water_memory(:)  = nan
     site_in%vegtemp_memory(:) = nan              ! record of last 10 days temperature for senescence model.
 
-
+    
     ! FIRE 
     site_in%acc_ni           = 0.0_r8     ! daily nesterov index accumulating over time. time unlimited theoretically.
     site_in%frac_burnt       = 0.0_r8     ! burn area read in from external file
@@ -434,6 +435,7 @@ contains
     class(prt_vartypes),pointer  :: prt_obj
     integer  :: cstatus
     integer  :: pft
+    integer  :: crowndamage ! which crown damage class
     integer  :: iage       ! index for leaf age loop
     integer  :: el         ! index for element loop
     integer  :: element_id ! element index consistent with defs in PRTGeneric
@@ -469,6 +471,9 @@ contains
        temp_cohort%n           = EDPftvarcon_inst%initd(pft) * patch_in%area
        temp_cohort%hite        = EDPftvarcon_inst%hgt_min(pft)
 
+       ! Assume no damage to begin with
+       temp_cohort%crowndamage = 1
+       
        ! Calculate the plant diameter from height
        call h2d_allom(temp_cohort%hite,pft,temp_cohort%dbh)
 
@@ -582,7 +587,7 @@ contains
 
        call create_cohort(site_in, patch_in, pft, temp_cohort%n, temp_cohort%hite, &
              temp_cohort%dbh, prt_obj, temp_cohort%laimemory, cstatus, rstatus,        &
-             temp_cohort%canopy_trim, 1, site_in%spread, bc_in)
+             temp_cohort%canopy_trim, 1, temp_cohort%crowndamage, site_in%spread, bc_in)
 
        deallocate(temp_cohort) ! get rid of temporary cohort
 

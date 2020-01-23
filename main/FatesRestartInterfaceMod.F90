@@ -87,6 +87,7 @@ module FatesRestartInterfaceMod
   integer :: ir_ncohort_pa
   integer :: ir_canopy_layer_co
   integer :: ir_canopy_layer_yesterday_co
+  integer :: ir_crowndamage_co
   integer :: ir_canopy_trim_co
   integer :: ir_size_class_lasttimestep_co
   integer :: ir_dbh_co
@@ -628,7 +629,6 @@ contains
          long_name='fates cohort - seed production', units='kgC/plant', flushval = flushinvalid, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_seed_prod_co )
 
-
     call this%set_restart_var(vname='fates_canopy_layer', vtype=cohort_int, &
          long_name='ed cohort - canopy_layer', units='unitless', flushval = flushinvalid, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_canopy_layer_co )
@@ -637,6 +637,10 @@ contains
          long_name='ed cohort - canopy_layer_yesterday', units='unitless', flushval = flushzero, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_canopy_layer_yesterday_co )
 
+    call this%set_restart_var(vname='fates_crowndamage', vtype=cohort_int, &
+         long_name='ed cohort - crowndamage class', units='unitless', flushval = flushinvalid, &
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_crowndamage_co )
+    
     call this%set_restart_var(vname='fates_canopy_trim', vtype=cohort_r8, &
          long_name='ed cohort - canopy_trim', units='fraction', flushval = flushzero, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_canopy_trim_co )
@@ -1456,6 +1460,7 @@ contains
            rio_solar_zenith_angle_pa   => this%rvars(ir_solar_zenith_angle_pa)%r81d, &
            rio_canopy_layer_co         => this%rvars(ir_canopy_layer_co)%int1d, &
            rio_canopy_layer_yesterday_co    => this%rvars(ir_canopy_layer_yesterday_co)%r81d, &
+           rio_crowndamage_co          => this%rvars(ir_crowndamage_co)%int1d, &
            rio_canopy_trim_co          => this%rvars(ir_canopy_trim_co)%r81d, &
            rio_seed_prod_co            => this%rvars(ir_seed_prod_co)%r81d, &
            rio_size_class_lasttimestep => this%rvars(ir_size_class_lasttimestep_co)%int1d, &
@@ -1657,6 +1662,7 @@ contains
 
                 rio_canopy_layer_co(io_idx_co) = ccohort%canopy_layer
                 rio_canopy_layer_yesterday_co(io_idx_co) = ccohort%canopy_layer_yesterday
+                rio_crowndamage_co(io_idx_co) = ccohort%crowndamage
                 rio_canopy_trim_co(io_idx_co)  = ccohort%canopy_trim
                 rio_seed_prod_co(io_idx_co)    = ccohort%seed_prod
                 rio_size_class_lasttimestep(io_idx_co) = ccohort%size_class_lasttimestep
@@ -2181,6 +2187,7 @@ contains
           rio_solar_zenith_angle_pa   => this%rvars(ir_solar_zenith_angle_pa)%r81d, &
           rio_canopy_layer_co         => this%rvars(ir_canopy_layer_co)%int1d, &
           rio_canopy_layer_yesterday_co         => this%rvars(ir_canopy_layer_yesterday_co)%r81d, &
+          rio_crowndamage_co          => this%rvars(ir_crowndamage_co)%int1d, &
           rio_canopy_trim_co          => this%rvars(ir_canopy_trim_co)%r81d, &
           rio_seed_prod_co            => this%rvars(ir_seed_prod_co)%r81d, &
           rio_size_class_lasttimestep => this%rvars(ir_size_class_lasttimestep_co)%int1d, &
@@ -2344,6 +2351,7 @@ contains
 
                 ccohort%canopy_layer = rio_canopy_layer_co(io_idx_co)
                 ccohort%canopy_layer_yesterday = rio_canopy_layer_yesterday_co(io_idx_co)
+                ccohort%crowndamage  = rio_crowndamage_co(io_idx_co)
                 ccohort%canopy_trim  = rio_canopy_trim_co(io_idx_co)
                 ccohort%seed_prod    = rio_seed_prod_co(io_idx_co)
                 ccohort%size_class_lasttimestep = rio_size_class_lasttimestep(io_idx_co)

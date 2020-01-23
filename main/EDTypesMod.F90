@@ -30,6 +30,8 @@ module EDTypesMod
                                                           ! to understory layers (all layers that
                                                           ! are not the top canopy layer)
 
+  integer, parameter, public :: ncrowndamagemax = 5       ! Maximum number of crown damage classes
+  
   integer, parameter, public :: nlevleaf = 30             ! number of leaf layers in canopy layer
   integer, parameter, public :: maxpft = 15               ! maximum number of PFTs allowed
                                                           ! the parameter file may determine that fewer
@@ -217,6 +219,7 @@ module EDTypesMod
      integer  ::  indexnumber                            ! unique number for each cohort. (within clump?)
      real(r8) ::  laimemory                              ! target leaf biomass- set from previous year: kGC per indiv
      integer  ::  canopy_layer                           ! canopy status of cohort (1 = canopy, 2 = understorey, etc.)
+     integer  ::  crowndamage                            ! crown damage class of the cohort
      real(r8) ::  canopy_layer_yesterday                 ! recent canopy status of cohort
                                                          ! (1 = canopy, 2 = understorey, etc.)  
                                                          ! real to be conservative during fusion
@@ -958,6 +961,7 @@ module EDTypesMod
      write(fates_log(),*) 'co%n                      = ', ccohort%n                         
      write(fates_log(),*) 'co%dbh                    = ', ccohort%dbh                                        
      write(fates_log(),*) 'co%hite                   = ', ccohort%hite
+     write(fates_log(),*) 'co%crowndamage            = ', ccohort%crowndamage
      write(fates_log(),*) 'co%laimemory              = ', ccohort%laimemory
      
      write(fates_log(),*) 'leaf carbon               = ', ccohort%prt%GetState(leaf_organ,all_carbon_elements) 
