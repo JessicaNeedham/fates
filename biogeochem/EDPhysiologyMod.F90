@@ -402,7 +402,8 @@ contains
 
           trimmed = .false.
           ipft = currentCohort%pft
-          call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread,currentCohort%pft,currentCohort%c_area)
+          call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread,currentCohort%pft,&
+               currentCohort%crowndamage, currentCohort%c_area)
 
           leaf_c   = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
 
@@ -410,8 +411,9 @@ contains
                                            currentCohort%n, currentCohort%canopy_layer,               &
                                            currentPatch%canopy_layer_tlai,currentCohort%vcmax25top )    
 
-          currentCohort%treesai = tree_sai(currentCohort%pft, currentCohort%dbh, currentCohort%canopy_trim, &
-                                           currentCohort%c_area, currentCohort%n, currentCohort%canopy_layer, &
+          currentCohort%treesai = tree_sai(currentCohort%pft, currentCohort%dbh, &
+                                           currentCohort%canopy_trim, &
+                                           currentCohort%n,currentCohort%canopy_layer,currentSite%spread,& 
                                            currentPatch%canopy_layer_tlai, currentCohort%treelai, &
                                            currentCohort%vcmax25top,0 )  
 
@@ -424,7 +426,8 @@ contains
              call endrun(msg=errMsg(sourcefile, __LINE__))
           endif
 
-          call bleaf(currentcohort%dbh,ipft,currentcohort%canopy_trim,tar_bl)
+          call bleaf(currentcohort%dbh,ipft,currentcohort%crowndamage,&
+               currentcohort%canopy_trim,tar_bl)
 
           if ( int(EDPftvarcon_inst%allom_fmode(ipft)) .eq. 1 ) then
              ! only query fine root biomass if using a fine root allometric model that takes leaf trim into account
@@ -1366,13 +1369,16 @@ contains
        call h2d_allom(temp_cohort%hite,ft,temp_cohort%dbh)
 
        ! Initialize live pools
-       call bleaf(temp_cohort%dbh,ft,temp_cohort%canopy_trim,c_leaf)
+       call bleaf(temp_cohort%dbh,ft,temp_cohort%crowndamage,&
+            temp_cohort%canopy_trim,c_leaf)
        call bfineroot(temp_cohort%dbh,ft,temp_cohort%canopy_trim,c_fnrt)
-       call bsap_allom(temp_cohort%dbh,ft,temp_cohort%canopy_trim,a_sapw, c_sapw)
-       call bagw_allom(temp_cohort%dbh,ft,c_agw)
-       call bbgw_allom(temp_cohort%dbh,ft,c_bgw)
+       call bsap_allom(temp_cohort%dbh,ft,temp_cohort%crowndamage,&
+            temp_cohort%canopy_trim,a_sapw, c_sapw)
+       call bagw_allom(temp_cohort%dbh,ft,temp_cohort%crowndamage,c_agw)
+       call bbgw_allom(temp_cohort%dbh, ft, temp_cohort%crowndamage,c_bgw)
        call bdead_allom(c_agw,c_bgw,c_sapw,ft,c_struct)
-       call bstore_allom(temp_cohort%dbh,ft,temp_cohort%canopy_trim,c_store)
+       call bstore_allom(temp_cohort%dbh,ft,temp_cohort%crowndamage,&
+            temp_cohort%canopy_trim,c_store)
 
        ! Default assumption is that leaves are on
        cohortstatus = leaves_on

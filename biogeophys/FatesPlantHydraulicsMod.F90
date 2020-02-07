@@ -712,7 +712,8 @@ contains
          v_stem       = b_stem_biom / (EDPftvarcon_inst%wood_density(ft)*1.e3_r8  ) 
 
          ! calculate the sapwood cross-sectional area
-         call bsap_allom(ccohort%dbh,ccohort%pft,ccohort%canopy_trim,a_sapwood_target,bsw_target)
+         call bsap_allom(ccohort%dbh,ccohort%pft,ccohort%crowndamage,&
+              ccohort%canopy_trim,a_sapwood_target,bsw_target)
          a_sapwood = a_sapwood_target
          
          ! Alternative ways to calculate sapwood cross section

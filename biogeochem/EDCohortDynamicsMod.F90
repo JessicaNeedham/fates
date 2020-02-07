@@ -80,6 +80,7 @@ module EDCohortDynamicsMod
   use PRTAllometricCarbonMod, only : callom_prt_vartypes
   use PRTAllometricCarbonMod, only : ac_bc_inout_id_netdc
   use PRTAllometricCarbonMod, only : ac_bc_in_id_pft
+  use PRTAllometricCarbonMod, only : ac_bc_in_id_cdamage
   use PRTAllometricCarbonMod, only : ac_bc_in_id_ctrim
   use PRTAllometricCarbonMod, only : ac_bc_inout_id_dbh
   use PRTAllometricCarbonMod, only : ac_bc_in_id_lstat
@@ -237,23 +238,23 @@ contains
     endif
 
     ! Assign canopy extent and depth
-    call carea_allom(new_cohort%dbh,new_cohort%n,spread,new_cohort%pft,new_cohort%c_area )
+    call carea_allom(new_cohort%dbh,new_cohort%n,spread,new_cohort%pft, &
+         new_cohort%crowndamage, new_cohort%c_area )
 
     ! Query PARTEH for the leaf carbon [kg]
     leaf_c = new_cohort%prt%GetState(leaf_organ,carbon12_element)
 
-
     new_cohort%treelai = tree_lai(leaf_c, new_cohort%pft, new_cohort%c_area,    &
-                                  new_cohort%n, new_cohort%canopy_layer,               &
-                                  patchptr%canopy_layer_tlai,new_cohort%vcmax25top)    
+         new_cohort%n, new_cohort%canopy_layer,               &
+         patchptr%canopy_layer_tlai,new_cohort%vcmax25top)    
 
-    new_cohort%treesai = tree_sai(new_cohort%pft, new_cohort%dbh, new_cohort%canopy_trim,   &
-                                  new_cohort%c_area, new_cohort%n, new_cohort%canopy_layer, &
-                                  patchptr%canopy_layer_tlai, new_cohort%treelai,           &
-                                  new_cohort%vcmax25top, 2 )  
-
+    new_cohort%treesai = tree_sai(new_cohort%pft, new_cohort%dbh,  &
+         new_cohort%canopy_trim,   &
+         new_cohort%n, new_cohort%canopy_layer, &
+         spread, patchptr%canopy_layer_tlai, new_cohort%treelai,           &
+         new_cohort%vcmax25top, 2 )  
+  
     new_cohort%lai     = new_cohort%treelai * new_cohort%c_area/patchptr%area
-
 
     ! Put cohort at the right place in the linked list
     storebigcohort   => patchptr%tallest
@@ -357,6 +358,7 @@ contains
        call new_cohort%prt%RegisterBCInOut(ac_bc_inout_id_dbh,bc_rval = new_cohort%dbh)
        call new_cohort%prt%RegisterBCInOut(ac_bc_inout_id_netdc,bc_rval = new_cohort%npp_acc)
        call new_cohort%prt%RegisterBCIn(ac_bc_in_id_pft,bc_ival = new_cohort%pft)
+       call new_cohort%prt%RegisterBCIn(ac_bc_in_id_cdamage,bc_ival = new_cohort%crowndamage)
        call new_cohort%prt%RegisterBCIn(ac_bc_in_id_ctrim,bc_rval = new_cohort%canopy_trim)
        call new_cohort%prt%RegisterBCIn(ac_bc_in_id_lstat,bc_ival = new_cohort%status_coh)
        
@@ -1098,20 +1100,19 @@ contains
                                       ! cohorts' dbh
                                       ! -----------------------------------------------------------------
                                       !
-
                                       call carea_allom(currentCohort%dbh,currentCohort%n, &
                                            currentSite%spread,currentCohort%pft,&
+                                           currentCohort%crowndamage,&
                                            currentCohort%c_area,inverse=.false.)
-
                                       call carea_allom(nextc%dbh,nextc%n, &
                                            currentSite%spread,nextc%pft,&
+                                           nextc%crowndamage,&
                                            nextc%c_area,inverse=.false.)
 
                                       currentCohort%c_area = currentCohort%c_area + nextc%c_area
 
-                                      !
                                       call carea_allom(dbh,newn,currentSite%spread,currentCohort%pft,&
-                                           currentCohort%c_area, inverse=.true.)
+                                           currentCohort%crowndamage, currentCohort%c_area, inverse=.true.)
                                       !
                                       if (abs(dbh-fates_unset_r8)<nearzero) then
                                          currentCohort%dbh = (currentCohort%n*currentCohort%dbh         &
@@ -1119,14 +1120,14 @@ contains
 
                                          if( EDPftvarcon_inst%woody(currentCohort%pft) == itrue ) then
 
-                                            call ForceDBH( currentCohort%pft, currentCohort%canopy_trim, &
+                                            call ForceDBH( currentCohort%pft, currentCohort%crowndamage,&
+                                            currentCohort%canopy_trim, &
                                                  currentCohort%dbh, currentCohort%hite, &
                                                  bdead = currentCohort%prt%GetState(struct_organ,all_carbon_elements))
 
                                          end if
-                                         !
                                          call carea_allom(currentCohort%dbh,newn,currentSite%spread,currentCohort%pft,&
-                                              currentCohort%c_area, inverse=.false.)
+                                              currentCohort%crowndamage, currentCohort%c_area, inverse=.false.)
 
                                       else
                                          currentCohort%dbh = dbh
@@ -1156,29 +1157,32 @@ contains
                                       ! -----------------------------------------------------------------
                                       !
                                       if( EDPftvarcon_inst%woody(currentCohort%pft) == itrue ) then
-                                         call ForceDBH( currentCohort%pft, currentCohort%canopy_trim, &
+                                         call ForceDBH( currentCohort%pft,currentCohort%crowndamage,&
+                                              currentCohort%canopy_trim, &
                                               currentCohort%dbh, currentCohort%hite, &
                                               bdead = currentCohort%prt%GetState(struct_organ,all_carbon_elements))
 
                                       end if
-                                      !
                                       call carea_allom(currentCohort%dbh,newn,currentSite%spread,currentCohort%pft,&
-                                           currentCohort%c_area, inverse=.false.)
+                                           currentCohort%crowndamage, currentCohort%c_area, inverse=.false.)
                                       !
                                    case default
                                       write(fates_log(),*) 'FATES: Invalid choice for cohort_fusion_conservation_method'
                                       call endrun(msg=errMsg(sourcefile, __LINE__))
                                    end select
-
+                                   
                                    leaf_c = currentCohort%prt%GetState(leaf_organ,all_carbon_elements)
 
                                    currentCohort%treelai = tree_lai(leaf_c, currentCohort%pft, currentCohort%c_area, newn, &
                                         currentCohort%canopy_layer, currentPatch%canopy_layer_tlai, &
                                         currentCohort%vcmax25top)
-                                   currentCohort%treesai = tree_sai(currentCohort%pft, currentCohort%dbh, currentCohort%canopy_trim, &
-                                        currentCohort%c_area, newn, currentCohort%canopy_layer, &
+                                   currentCohort%treesai = tree_sai(currentCohort%pft, currentCohort%dbh,&
+                                        currentCohort%canopy_trim, &
+                                        newn, currentCohort%canopy_layer, currentSite%spread, &
                                         currentPatch%canopy_layer_tlai, currentCohort%treelai,currentCohort%vcmax25top, 1 ) 
+                                   
 
+                                   
                                    call sizetype_class_index(currentCohort%dbh,currentCohort%pft, &
                                         currentCohort%size_class,currentCohort%size_by_pft_class)
 
@@ -1311,9 +1315,10 @@ contains
                                    ! At this point, nothing should be pointing to current Cohort
                                    ! update hydraulics quantities that are functions of hite & biomasses
                                    ! deallocate the hydro structure of nextc
+                                     
                                    if (hlm_use_planthydro.eq.itrue) then				    
                                       call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread, &
-                                           currentCohort%pft,currentCohort%c_area)
+                                           currentCohort%pft,currentCohort%crowndamage, currentCohort%c_area)
                                       leaf_c   = currentCohort%prt%GetState(leaf_organ, carbon12_element)
                                       currentCohort%treelai = tree_lai(leaf_c,             &
                                            currentCohort%pft, currentCohort%c_area, currentCohort%n, &
@@ -1817,6 +1822,7 @@ contains
     real(r8) :: dbh
     real(r8) :: canopy_trim
     integer  :: ipft
+    integer  :: icrowndamage
     real(r8) :: sapw_area
     real(r8) :: target_sapw_c
     real(r8) :: target_agw_c
@@ -1829,6 +1835,7 @@ contains
     
     dbh  = currentCohort%dbh
     ipft = currentCohort%pft
+    icrowndamage = currentCohort%crowndamage
     canopy_trim = currentCohort%canopy_trim
 
     delta_dbh   = 0._r8
@@ -1839,13 +1846,13 @@ contains
        struct_c = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
     
        ! Target sapwood biomass according to allometry and trimming [kgC]
-       call bsap_allom(dbh,ipft,canopy_trim,sapw_area,target_sapw_c)
+       call bsap_allom(dbh,ipft,icrowndamage,canopy_trim,sapw_area,target_sapw_c)
        
        ! Target total above ground biomass in woody/fibrous tissues  [kgC]
-       call bagw_allom(dbh,ipft,target_agw_c)
+       call bagw_allom(dbh,ipft,icrowndamage,target_agw_c)
        
        ! Target total below ground biomass in woody/fibrous tissues [kgC] 
-       call bbgw_allom(dbh,ipft,target_bgw_c)
+       call bbgw_allom(dbh,ipft,icrowndamage,target_bgw_c)
        
        ! Target total dead (structrual) biomass [kgC]
        call bdead_allom( target_agw_c, target_bgw_c, target_sapw_c, ipft, target_struct_c)
@@ -1857,7 +1864,7 @@ contains
        ! -----------------------------------------------------------------------------------
        
        if( (struct_c - target_struct_c ) > calloc_abs_error ) then
-          call ForceDBH( ipft, canopy_trim, dbh, hite_out, bdead=struct_c )
+          call ForceDBH( ipft, icrowndamage, canopy_trim, dbh, hite_out, bdead=struct_c )
           delta_dbh = dbh - currentCohort%dbh 
           delta_hite = hite_out - currentCohort%hite
           currentCohort%dbh  = dbh
@@ -1870,10 +1877,10 @@ contains
        leaf_c  = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
 
        ! Target leaf biomass according to allometry and trimming
-       call bleaf(dbh,ipft,canopy_trim,target_leaf_c)
+       call bleaf(dbh,ipft,icrowndamage,canopy_trim,target_leaf_c)
 
        if( ( leaf_c - target_leaf_c ) > calloc_abs_error ) then
-          call ForceDBH( ipft, canopy_trim, dbh, hite_out, bl=leaf_c )
+          call ForceDBH( ipft, icrowndamage, canopy_trim, dbh, hite_out, bl=leaf_c )
           delta_dbh = dbh - currentCohort%dbh 
           delta_hite = hite_out - currentCohort%hite
           currentCohort%dbh = dbh

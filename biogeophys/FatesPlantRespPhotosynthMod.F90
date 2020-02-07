@@ -195,6 +195,7 @@ contains
     real(r8) :: maintresp_reduction_factor  ! factor by which to reduce maintenance 
                                             ! respiration when storage pools are low
     real(r8) :: b_leaf             ! leaf biomass kgC
+    real(r8) :: b_leaf_damage       ! leaf biomass after damage kgC
     real(r8) :: frac               ! storage pool as a fraction of target leaf biomass
     real(r8) :: check_elai         ! This is a check on the effective LAI that is calculated
                                    ! over each cohort x layer.
@@ -363,8 +364,9 @@ contains
                      ft = currentCohort%pft
                      cl = currentCohort%canopy_layer
                      
-                     call bleaf(currentCohort%dbh,currentCohort%pft,currentCohort%canopy_trim,b_leaf)
-                     call storage_fraction_of_target(b_leaf, &
+                     call bleaf(currentCohort%dbh,currentCohort%pft,currentCohort%crowndamage,&
+                          currentCohort%canopy_trim,b_leaf,b_leaf_damage)
+                     call storage_fraction_of_target(b_leaf_damage, &
                            currentCohort%prt%GetState(store_organ, all_carbon_elements), &
                            frac)
                      call lowstorage_maintresp_reduction(frac,currentCohort%pft, &

@@ -174,8 +174,9 @@ module PRTGenericMod
                                           ! over the control period
 
      real(r8),allocatable :: burned(:)    ! Losses due to burn                     [kg]
+     real(r8),allocatable :: damaged(:)   ! Losses due to damage                   [kg]
 
-!     real(r8),allocatable :: herbiv(:)    ! Losses due to herbivory                [kg]
+     !     real(r8),allocatable :: herbiv(:)    ! Losses due to herbivory                [kg]
 
      ! Placeholder
      ! To save on memory, keep this commented out, or simply
@@ -512,7 +513,8 @@ contains
         allocate(this%variables(i_var)%turnover(num_pos))
         allocate(this%variables(i_var)%net_alloc(num_pos))
         allocate(this%variables(i_var)%burned(num_pos))
-
+        allocate(this%variables(i_var)%damaged(num_pos))
+        
      end do
 
      
@@ -537,6 +539,7 @@ contains
        this%variables(i_var)%val0(:)      = un_initialized
        this%variables(i_var)%turnover(:)  = un_initialized
        this%variables(i_var)%burned(:)    = un_initialized
+       this%variables(i_var)%damaged(:)   = un_initialized
        this%variables(i_var)%net_alloc(:) = un_initialized
     end do
 
@@ -758,6 +761,7 @@ contains
        this%variables(i_var)%net_alloc(:)   = donor_prt_obj%variables(i_var)%net_alloc(:)
        this%variables(i_var)%turnover(:)  = donor_prt_obj%variables(i_var)%turnover(:)
        this%variables(i_var)%burned(:)    = donor_prt_obj%variables(i_var)%burned(:)
+       this%variables(i_var)%damaged(:)   = donor_prt_obj%variables(i_var)%damaged(:)
     end do
 
     this%ode_opt_step = donor_prt_obj%ode_opt_step
@@ -805,6 +809,9 @@ contains
           this%variables(i_var)%burned(pos_id)    = recipient_fuse_weight * this%variables(i_var)%burned(pos_id) + &
                 (1.0_r8-recipient_fuse_weight) * donor_prt_obj%variables(i_var)%burned(pos_id)
           
+          this%variables(i_var)%damaged(pos_id)    = recipient_fuse_weight * this%variables(i_var)%damaged(pos_id) + &
+                (1.0_r8-recipient_fuse_weight) * donor_prt_obj%variables(i_var)%damaged(pos_id)
+          
        end do
     end do
 
@@ -843,6 +850,7 @@ contains
        deallocate(this%variables(i_var)%net_alloc)
        deallocate(this%variables(i_var)%turnover)
        deallocate(this%variables(i_var)%burned)
+       deallocate(this%variables(i_var)%damaged)
     end do
 
     deallocate(this%variables)
@@ -885,6 +893,7 @@ contains
          this%variables(i_var)%net_alloc(:) = 0.0_r8
          this%variables(i_var)%turnover(:)  = 0.0_r8
          this%variables(i_var)%burned(:)    = 0.0_r8
+         this%variables(i_var)%damaged(:)   = 0.0_r8
       end do
       
     end subroutine ZeroRates
@@ -920,7 +929,8 @@ contains
            err = abs((this%variables(i_var)%val(i_pos) - this%variables(i_var)%val0(i_pos)) - &
                   (this%variables(i_var)%net_alloc(i_pos) &
                    -this%variables(i_var)%turnover(i_pos) & 
-                   -this%variables(i_var)%burned(i_pos) ))
+                   -this%variables(i_var)%burned(i_pos) &
+                   -this%variables(i_var)%damaged(i_pos) ))
            
            if(this%variables(i_var)%val(i_pos) > nearzero ) then
               rel_err = err / this%variables(i_var)%val(i_pos)
@@ -944,7 +954,8 @@ contains
                                                this%variables(i_var)%val0(i_pos), &
                                                this%variables(i_var)%net_alloc(i_pos), &
                                                this%variables(i_var)%turnover(i_pos), &
-                                               this%variables(i_var)%burned(i_pos)
+                                               this%variables(i_var)%burned(i_pos), &
+                                               this%variables(i_var)%damaged(i_pos)
               write(fates_log(),*) ' Exiting.'
               call endrun(msg=errMsg(__FILE__, __LINE__))
            end if

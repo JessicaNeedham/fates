@@ -377,9 +377,9 @@ contains
          sumweights  = 0.0_r8
          currentCohort => currentPatch%shortest
          do while (associated(currentCohort))
-            
+
             call carea_allom(currentCohort%dbh,currentCohort%n, &
-                 currentSite%spread,currentCohort%pft,currentCohort%c_area)
+                 currentSite%spread,currentCohort%pft,currentCohort%crowndamage,currentCohort%c_area)
 
             if(debug) then
                if(currentCohort%c_area<0._r8)then
@@ -683,10 +683,10 @@ contains
                        currentSite%demotion_rate(currentCohort%size_class) + currentCohort%n
                   currentSite%demotion_carbonflux = currentSite%demotion_carbonflux + &
                        (leaf_c + store_c + fnrt_c + sapw_c + struct_c) * currentCohort%n
-                  
-                  call carea_allom(copyc%dbh,copyc%n,currentSite%spread,copyc%pft,copyc%c_area)
+
+                  call carea_allom(copyc%dbh,copyc%n,currentSite%spread,copyc%pft,copyc%crowndamage,copyc%c_area)
                   call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread, &
-                       currentCohort%pft,currentCohort%c_area)
+                       currentCohort%pft,currentCohort%crowndamage,currentCohort%c_area)
                   
                   !----------- Insert copy into linked list ------------------------!                         
                   copyc%shorter => currentCohort
@@ -723,9 +723,8 @@ contains
                   currentCohort%canopy_layer = i_lyr
                   
                end if
-               
                call carea_allom(currentCohort%dbh,currentCohort%n, &
-                    currentSite%spread,currentCohort%pft,currentCohort%c_area)
+                    currentSite%spread,currentCohort%pft,currentCohort%crowndamage,currentCohort%c_area)
                
             endif !canopy layer = i_ly
             
@@ -829,9 +828,9 @@ contains
                   sapw_c          = currentCohort%prt%GetState(sapw_organ,all_carbon_elements)
                   struct_c        = currentCohort%prt%GetState(struct_organ,all_carbon_elements)
                   
-                  currentCohort%canopy_layer = i_lyr   
+                  currentCohort%canopy_layer = i_lyr
                   call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread, &
-                        currentCohort%pft,currentCohort%c_area)
+                        currentCohort%pft,currentCohort%crowndamage,currentCohort%c_area)
                   ! keep track of number and biomass of promoted cohort
                   currentSite%promotion_rate(currentCohort%size_class) = &
                        currentSite%promotion_rate(currentCohort%size_class) + currentCohort%n
@@ -857,7 +856,7 @@ contains
             currentCohort => currentPatch%tallest 
             do while (associated(currentCohort))
                call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread, &
-                    currentCohort%pft,currentCohort%c_area)
+                    currentCohort%pft,currentCohort%crowndamage,currentCohort%c_area)
                if(currentCohort%canopy_layer == i_lyr+1)then !look at the cohorts in the canopy layer below... 
 
                   if (ED_val_comp_excln .ge. 0.0_r8 ) then
@@ -1124,7 +1123,7 @@ contains
                      newarea = currentCohort%c_area - cc_gain !new area of existing cohort
 
                      call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread, &
-                          currentCohort%pft,currentCohort%c_area)
+                          currentCohort%pft,currentCohort%crowndamage,currentCohort%c_area)
                      
                      ! number of individuals in promoted cohort. 
                      copyc%n = currentCohort%n*cc_gain/currentCohort%c_area   
@@ -1141,10 +1140,9 @@ contains
 
                      currentSite%promotion_carbonflux = currentSite%promotion_carbonflux + &
                           (leaf_c + fnrt_c + store_c + sapw_c + struct_c) * copyc%n
-                     
                      call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread, &
-                          currentCohort%pft,currentCohort%c_area)
-                     call carea_allom(copyc%dbh,copyc%n,currentSite%spread,copyc%pft,copyc%c_area)
+                          currentCohort%pft,currentCohort%crowndamage,currentCohort%c_area)
+                     call carea_allom(copyc%dbh,copyc%n,currentSite%spread,copyc%pft,copyc%crowndamage,copyc%c_area)
 
                      !----------- Insert copy into linked list ------------------------!                         
                      copyc%shorter => currentCohort
@@ -1221,7 +1219,7 @@ contains
        currentCohort => currentPatch%tallest
        do while (associated(currentCohort))
           call carea_allom(currentCohort%dbh,currentCohort%n, &
-                currentSite%spread,currentCohort%pft,currentCohort%c_area)
+                currentSite%spread,currentCohort%pft,currentCohort%crowndamage,currentCohort%c_area)
           if( (EDPftvarcon_inst%woody(currentCohort%pft) .eq. 1 ) .and. &
               (currentCohort%canopy_layer .eq. 1 ) ) then
              sitelevel_canopyarea = sitelevel_canopyarea + currentCohort%c_area
@@ -1320,9 +1318,8 @@ contains
              ! Update the cohort's index within the SCPF classification system
              call sizetype_class_index(currentCohort%dbh,currentCohort%pft, &
                                        currentCohort%size_class,currentCohort%size_by_pft_class)
-
              call carea_allom(currentCohort%dbh,currentCohort%n,sites(s)%spread,&
-                  currentCohort%pft,currentCohort%c_area)
+                  currentCohort%pft,currentCohort%crowndamage,currentCohort%c_area)
 
              currentCohort%treelai = tree_lai(leaf_c,             &
                   currentCohort%pft, currentCohort%c_area, currentCohort%n, &
@@ -1503,8 +1500,10 @@ contains
                                            currentCohort%n, currentCohort%canopy_layer,               &
                                            currentPatch%canopy_layer_tlai,currentCohort%vcmax25top )    
 
-          currentCohort%treesai = tree_sai(currentCohort%pft, currentCohort%dbh, currentCohort%canopy_trim, &
-                                           currentCohort%c_area, currentCohort%n, currentCohort%canopy_layer, &
+          currentCohort%treesai = tree_sai(currentCohort%pft, currentCohort%dbh, &
+                                           currentCohort%canopy_trim, &
+                                           currentCohort%n, currentCohort%canopy_layer, &
+                                           currentSite%spread,                          & 
                                            currentPatch%canopy_layer_tlai, currentCohort%treelai , &
                                            currentCohort%vcmax25top,4)  
 
@@ -2101,7 +2100,7 @@ contains
      currentCohort => currentPatch%tallest
      do while (associated(currentCohort))
         call carea_allom(currentCohort%dbh,currentCohort%n,site_spread, &
-              currentCohort%pft,currentCohort%c_area)
+              currentCohort%pft,currentCohort%crowndamage,currentCohort%c_area)
         if (currentCohort%canopy_layer .eq. layer_index) then
            layer_area = layer_area + currentCohort%c_area
         end if
@@ -2145,7 +2144,8 @@ contains
         currentCohort => currentPatch%tallest
         do while (associated(currentCohort))  
            if(currentCohort%canopy_layer == z) then
-              call carea_allom(currentCohort%dbh,currentCohort%n,site_spread,currentCohort%pft,c_area)
+              call carea_allom(currentCohort%dbh,currentCohort%n,site_spread,currentCohort%pft,&
+                   currentCohort%crowndamage,c_area)
               arealayer = arealayer + c_area
            end if
            currentCohort => currentCohort%shorter

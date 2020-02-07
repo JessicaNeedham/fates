@@ -1016,23 +1016,27 @@ contains
          temp_cohort%canopy_trim = 1.0_r8
 
 
-         call bagw_allom(temp_cohort%dbh,temp_cohort%pft,b_agw)
+         call bagw_allom(temp_cohort%dbh,temp_cohort%pft, temp_cohort%crowndamage,b_agw)
          ! Calculate coarse root biomass from allometry
-         call bbgw_allom(temp_cohort%dbh,temp_cohort%pft,b_bgw)
+         call bbgw_allom(temp_cohort%dbh,temp_cohort%pft, temp_cohort%crowndamage, b_bgw)
          
          ! Calculate the leaf biomass (calculates a maximum first, then applies canopy trim
          ! and sla scaling factors)
-         call bleaf(temp_cohort%dbh,temp_cohort%pft,temp_cohort%canopy_trim,b_leaf)
+         ! JN: assume no damage - could potentially read in damage data down the line
+         call bleaf(temp_cohort%dbh,temp_cohort%pft,temp_cohort%crowndamage,&
+              temp_cohort%canopy_trim,b_leaf)
          
          ! Calculate fine root biomass
          call bfineroot(temp_cohort%dbh,temp_cohort%pft,temp_cohort%canopy_trim,b_fnrt)
          
          ! Calculate sapwood biomass
-         call bsap_allom(temp_cohort%dbh,temp_cohort%pft,temp_cohort%canopy_trim, a_sapw, b_sapw)
+         call bsap_allom(temp_cohort%dbh,temp_cohort%pft,temp_cohort%crowndamage,&
+              temp_cohort%canopy_trim, a_sapw, b_sapw)
          
          call bdead_allom( b_agw, b_bgw, b_sapw, temp_cohort%pft, b_struct )
          
-         call bstore_allom(temp_cohort%dbh, temp_cohort%pft, temp_cohort%canopy_trim, b_store)
+         call bstore_allom(temp_cohort%dbh, temp_cohort%pft, temp_cohort%crowndamage, &
+              temp_cohort%canopy_trim, b_store)
       
          temp_cohort%laimemory = 0._r8
          cstatus = leaves_on

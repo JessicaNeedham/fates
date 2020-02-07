@@ -164,6 +164,8 @@ module EDPftvarcon
      
      real(r8), allocatable :: allom_frbstor_repro(:) ! fraction of bstrore for reproduction after mortality
 
+     real(r8), allocatable :: allom_branch_frac(:)   ! fraction of biomass that is in branches 
+     
      ! Prescribed Physiology Mode Parameters
      real(r8), allocatable :: prescribed_npp_canopy(:)           ! this is only for the special 
                                                                  ! prescribed_physiology_mode
@@ -681,6 +683,10 @@ contains
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
 
+    name = 'fates_allom_branch_frac'
+    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
+         dimension_names=dim_names, lower_bounds=dim_lower_bound)
+    
     name = 'fates_hydr_p_taper'
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
           dimension_names=dim_names, lower_bounds=dim_lower_bound)
@@ -1181,6 +1187,10 @@ contains
     call fates_params%RetreiveParameterAllocate(name=name, &
          data=this%allom_frbstor_repro) 
 
+    name = 'fates_allom_branch_frac'
+    call fates_params%RetreiveParameterAllocate(name=name, &
+         data=this%allom_branch_frac) 
+    
     name = 'fates_hydr_p_taper'
     call fates_params%RetreiveParameterAllocate(name=name, &
           data=this%hydr_p_taper)
@@ -1991,6 +2001,7 @@ contains
         write(fates_log(),fmt0) 'allom_agb3 = ',EDPftvarcon_inst%allom_agb3
         write(fates_log(),fmt0) 'allom_agb4 = ',EDPftvarcon_inst%allom_agb4
 	write(fates_log(),fmt0) 'allom_frbstor_repro = ',EDPftvarcon_inst%allom_frbstor_repro
+	write(fates_log(),fmt0) 'allom_branch_frac = ',EDPftvarcon_inst%allom_branch_frac
         write(fates_log(),fmt0) 'hydr_p_taper = ',EDPftvarcon_inst%hydr_p_taper
         write(fates_log(),fmt0) 'hydr_rs2 = ',EDPftvarcon_inst%hydr_rs2
         write(fates_log(),fmt0) 'hydr_srl = ',EDPftvarcon_inst%hydr_srl
@@ -2239,6 +2250,22 @@ contains
            write(fates_log(),*) ' 0 and 1'
            write(fates_log(),*) ' PFT#: ',ipft
            write(fates_log(),*) ' allom_frbstor_repro: ',EDPftvarcon_inst%allom_frbstor_repro(ipft)
+           write(fates_log(),*) ' Aborting'
+           call endrun(msg=errMsg(sourcefile, __LINE__))
+
+        end if
+
+         ! Check if fraction of biomass in branches is between 0-1
+        ! ----------------------------------------------------------------------------------
+        
+        if ( ( EDPftvarcon_inst%allom_branch_frac(ipft) < 0.0_r8 ) .or. &
+             ( EDPftvarcon_inst%allom_branch_frac(ipft) > 1.0_r8 ) ) then
+
+           write(fates_log(),*) 'fraction of biomass in branches'
+           write(fates_log(),*) ' must be between '
+           write(fates_log(),*) ' 0 and 1'
+           write(fates_log(),*) ' PFT#: ',ipft
+           write(fates_log(),*) ' allom_branch_frac: ',EDPftvarcon_inst%allom_branch_frac(ipft)
            write(fates_log(),*) ' Aborting'
            call endrun(msg=errMsg(sourcefile, __LINE__))
 

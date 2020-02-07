@@ -126,7 +126,6 @@ contains
     ! !LOCAL VARIABLES:
     type(ed_patch_type), pointer :: currentPatch
     integer :: el              ! Loop counter for elements
-
     !-----------------------------------------------------------------------
 
     if ( hlm_masterproc==itrue ) write(fates_log(),'(A,I4,A,I2.2,A,I2.2)') 'FATES Dynamics: ',&
@@ -279,7 +278,12 @@ contains
     ! FIX(SPM,032414) refactor so everything goes through interface
     !
     ! !USES:
-    !
+    use EDTypesMod           , only : ncrowndamagemax
+    use FatesAllometryMod    , only : bleaf
+    use FatesAllometryMod    , only : carea_allom
+    use FatesAllometryMod    , only : get_crown_reduction
+    use PRTLossFluxesMod     , only : PRTDamageLosses
+    use PRTGenericMod        , only : leaf_organ
     ! !ARGUMENTS:
     type(ed_site_type)     , intent(inout) :: currentSite
     type(bc_in_type)        , intent(in)   :: bc_in
@@ -299,8 +303,18 @@ contains
     logical  :: is_drought            ! logical for if the plant (site) is in a drought state
     real(r8) :: delta_dbh             ! correction for dbh
     real(r8) :: delta_hite            ! correction for hite
-
+    real(r8) :: leaf_loss
+    real(r8) :: leaf_c_damage
+    real(r8) :: leaf_c_target
+    real(r8) :: mass_frac
+    real(r8) :: leaf_m_pre
+    real(r8) :: leaf_m_post
+    real(r8) :: leaf_loss_prt
+    
+    
     !-----------------------------------------------------------------------
+    leaf_loss = 0.0_r8
+    leaf_loss_prt = 0.0_r8
 
     ! Set a pointer to this sites carbon12 mass balance
     site_cmass => currentSite%mass_balance(element_pos(carbon12_element))
@@ -326,6 +340,7 @@ contains
        ! check to see if the patch has moved to the next age class
        currentPatch%age_class = get_age_class_index(currentPatch%age)
 
+       
        ! Update Canopy Biomass Pools
        currentCohort => currentPatch%shortest
        do while(associated(currentCohort)) 
@@ -333,7 +348,6 @@ contains
 
           ft = currentCohort%pft
 
-          
           ! Calculate the mortality derivatives
           call Mortality_Derivative( currentSite, currentCohort, bc_in )
 
@@ -400,8 +414,13 @@ contains
 
           ! Growth and Allocation (PARTEH)
           call currentCohort%prt%DailyPRT()
-    
-          ! And simultaneously add the input fluxes to mass balance accounting
+
+          ! JN Tempory code to increase damage with size - just to test
+          ! all the other damage code works. Replace this with
+          ! more mechanistic drivers later
+          currentCohort%crowndamage = INT(min(ncrowndamagemax,ceiling(currentCohort%dbh/10.0_r8)))
+          
+           ! And simultaneously add the input fluxes to mass balance accounting
           site_cmass%gpp_acc   = site_cmass%gpp_acc + &
                 currentCohort%gpp_acc * currentCohort%n
           site_cmass%aresp_acc = site_cmass%aresp_acc + &
@@ -439,14 +458,23 @@ contains
              call updateSizeDepTreeHydStates(currentSite,currentCohort)
           end if
 
+          
+          ! JN Tempory code to increase damage with size - just to test
+          ! all the other damage code works. Replace this with
+          ! more mechanistic drivers later
+          ! We don't lose mass at this stage - that comes in the disturbance regimes in
+          ! EDPatchDynamicsMod.
+          if(EDPftvarcon_inst%woody(currentCohort%pft) == 1) then
+              currentCohort%crowndamage = INT(min(ncrowndamagemax,ceiling(currentCohort%dbh/10.0_r8)))
+          end if
+
           currentCohort => currentCohort%taller
           
        end do
 
        currentPatch => currentPatch%older
    end do
-    
-    
+
     ! When plants die, the water goes with them.  This effects
     ! the water balance. 
 
@@ -611,6 +639,10 @@ contains
        
        call SiteMassStock(currentSite,el,total_stock,biomass_stock,litter_stock,seed_stock)
 
+      ! write(fates_log(),*) 'call_index = ', call_index
+      ! write(fates_log(),*) 'Site litter leaf = ', litter_leaf
+      ! write(fates_log(),*) 'Site live leaf = ', live_leaf
+
        site_mass => currentSite%mass_balance(el)
        
        change_in_stock = total_stock - site_mass%old_stock
@@ -662,7 +694,6 @@ contains
           write(fates_log(),*) 'seeds',seed_stock
           write(fates_log(),*) 'previous total',site_mass%old_stock  
           write(fates_log(),*) 'lat lon',currentSite%lat,currentSite%lon
-          
           ! If this is the first day of simulation, carbon balance reports but does not end the run
 !          if(( hlm_current_year*10000 + hlm_current_month*100 + hlm_current_day).ne.hlm_reference_date) then
           
