@@ -427,6 +427,9 @@ contains
       if(present(bagw_damage)) then
          call get_crown_reduction(crowndamage, crown_reduction)
          bagw_damage = bagw * (1.0_r8 - crown_reduction) * branch_frac
+         if(present(dbagwdd))then
+            dbagwdd = dbagwdd * (1.0_r8 - crown_reduction) * branch_frac
+         end if
       end if
       
       
@@ -602,8 +605,13 @@ contains
     end if
 
     if(present(dbldd))then
-       dbldd = dblmaxdd * canopy_trim
+       if(present(bl_damage) .and. crowndamage > 1) then
+          dbldd = dblmaxdd * canopy_trim * (1.0_r8 - crown_reduction)
+       else
+          dbldd = dblmaxdd * canopy_trim
+       end if
     end if
+
     
     return
   end subroutine bleaf
@@ -831,7 +839,7 @@ contains
   ! Generic sapwood biomass interface
   ! ============================================================================
 
-  subroutine bsap_allom(d,ipft,crowndamage,canopy_trim,sapw_area,bsap,dbsapdd)
+  subroutine bsap_allom(d,ipft,crowndamage,canopy_trim,sapw_area,bsap,dbsapdd,bsap_damage)
     
     real(r8),intent(in)           :: d           ! plant diameter [cm]
     integer(i4),intent(in)        :: ipft        ! PFT index
@@ -842,7 +850,8 @@ contains
     real(r8),intent(out)          :: bsap        ! plant sapwood biomass [kgC]
     real(r8),intent(out),optional :: dbsapdd     ! change sapwood biomass
                                                  !  per d [kgC/cm]
-
+    real(r8),intent(out),optional :: bsap_damage ! plant sapwood biomss after damage [kgC]
+    
     real(r8) :: h         ! Plant height [m]
     real(r8) :: dhdd
     real(r8) :: bl
@@ -850,6 +859,7 @@ contains
     real(r8) :: bbgw
     real(r8) :: dbbgwdd
     real(r8) :: bagw
+    real(r8) :: bagw_damage
     real(r8) :: dbagwdd
     real(r8) :: bsap_cap  ! cap sapwood so that it is no larger
                           ! than some specified proportion of woody biomass
@@ -877,22 +887,23 @@ contains
 
        ! if trees are damaged reduce bsap by percent crown loss *
        ! fraction of biomass that would be in branches (pft specific)
-       if (crowndamage > 1) then
+       if (present(bsap_damage)) then
           call get_crown_reduction(crowndamage, crown_reduction)
-          bsap = bsap * (1.0_r8 - crown_reduction) * EDPftvarcon_inst%allom_branch_frac(ipft)
+          bsap_damage = bsap * (1.0_r8 - crown_reduction) * EDPftvarcon_inst%allom_branch_frac(ipft)
+          if(present(dbsapdd))then
+             dbsapdd = dbsapdd*(1.0_r8-crown_reduction)*EDPftvarcon_inst%allom_branch_frac(ipft)
+          end if
        end if
        
-
        
        ! Perform a capping/check on total woody biomass
-       ! JN - do we want damaged or undamaged here?
-       call bagw_allom(d,ipft,crowndamage,bagw,dbagwdd)
+       call bagw_allom(d,ipft,crowndamage,bagw,dbagwdd, bagw_damage)
        call bbgw_allom(d,ipft,crowndamage,bbgw,dbbgwdd)
        
        ! Force sapwood to be less than a maximum fraction of total biomass
        ! We omit the sapwood area from this calculation
        ! (this comes into play typically in very small plants)
-       bsap_cap = max_frac*(bagw+bbgw)
+       bsap_cap = max_frac*(bagw_damage+bbgw)
 
        if(bsap>bsap_cap) then
           bsap     = bsap_cap

@@ -909,8 +909,10 @@ contains
       integer  :: icrowndamage ! crown damage class
       real(r8) :: canopy_trim    ! Canopy trimming function (boundary condition [0-1]
       real(r8) :: ct_leaf    ! target leaf biomass, dummy var (kgC)
+      real(r8) :: ct_leaf_damage ! leaf biomass after damage (kgC)
       real(r8) :: ct_fnrt   ! target fine-root biomass, dummy var (kgC)
       real(r8) :: ct_sap     ! target sapwood biomass, dummy var (kgC)
+      real(r8) :: ct_sap_damage ! target sapwood biomass, after damage, (kgC)
       real(r8) :: ct_agw     ! target aboveground wood, dummy var (kgC)
       real(r8) :: ct_agw_damage ! damage aboveground wood, 
       real(r8) :: ct_bgw     ! target belowground wood, dummy var (kgC)
@@ -948,13 +950,14 @@ contains
         icrowndamage = int(intgr_params(ac_bc_in_id_cdamage))
         
 
-        call bleaf(dbh,ipft,icrowndamage,canopy_trim,ct_leaf,dbldd=ct_dleafdd)
+        call bleaf(dbh,ipft,icrowndamage,canopy_trim,ct_leaf,ct_leaf_damage, dbldd=ct_dleafdd)
         call bfineroot(dbh,ipft,canopy_trim,ct_fnrt,ct_dfnrtdd)
-        call bsap_allom(dbh,ipft,icrowndamage,canopy_trim,sapw_area,ct_sap,ct_dsapdd)
+        call bsap_allom(dbh,ipft,icrowndamage,canopy_trim,sapw_area,ct_sap,ct_dsapdd, &
+             ct_sap_damage)
 
         call bagw_allom(dbh,ipft, icrowndamage, ct_agw,ct_dagwdd, ct_agw_damage)
         call bbgw_allom(dbh,ipft, icrowndamage,ct_agw_damage, ct_dbgwdd)
-        call bdead_allom(ct_agw,ct_bgw, ct_sap, ipft, ct_dead, &
+        call bdead_allom(ct_agw_damage,ct_bgw, ct_sap_damage, ipft, ct_dead, &
                          ct_dagwdd, ct_dbgwdd, ct_dsapdd, ct_ddeaddd)
         call bstore_allom(dbh,ipft,icrowndamage,canopy_trim,ct_store,ct_dstoredd)
         
