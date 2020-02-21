@@ -16,9 +16,9 @@ module FatesInterfaceMod
    use EDTypesMod          , only : ivis
    use EDTypesMod          , only : inir
    use EDTypesMod          , only : nclmax
-   use EDTypesMod          , only : ncrowndamagemax
    use EDTypesMod          , only : nlevleaf
    use EDTypesMod          , only : maxpft
+   use EDTypesMod          , only : ncrowndamagemax
    use EDTypesMod          , only : do_fates_salinity
    use EDTypesMod          , only : numWaterMem
    use EDTypesMod          , only : numlevsoil_max
@@ -211,7 +211,12 @@ module FatesInterfaceMod
    integer , public, allocatable :: fates_hdim_levfuel(:)          ! fire fuel class dimension
    integer , public, allocatable :: fates_hdim_levcwdsc(:)         ! cwd class dimension
    integer , public, allocatable :: fates_hdim_levcan(:)           ! canopy-layer dimension
-   integer , public, allocatable :: fates_hdim_levcdam(:)   ! crown damage dimension
+   integer , public, allocatable :: fates_hdim_levcdam(:)          ! crown damage dimension
+   integer , public, allocatable :: fates_hdim_scmap_levcdsc(:)    ! map of the size-class into size-class x crown damage dimension
+   integer , public, allocatable :: fates_hdim_cdmap_levcdsc(:)    ! map of the crown damage into size-class x crown damage dimension
+   integer , public, allocatable :: fates_hdim_scmap_levcdpf(:)    ! map of the size-class into size-class x crown damage x pft dimension
+   integer , public, allocatable :: fates_hdim_cdmap_levcdpf(:)    ! map of the crown damage into size-class x crown damage x pft dimension
+   integer , public, allocatable :: fates_hdim_pftmap_levcdpf(:)   ! map of the pft into size-class x crown damage x pft dimension
    integer , public, allocatable :: fates_hdim_levelem(:)              ! element dimension
    integer , public, allocatable :: fates_hdim_canmap_levcnlf(:)   ! canopy-layer map into the canopy-layer x leaf-layer dim
    integer , public, allocatable :: fates_hdim_lfmap_levcnlf(:)    ! leaf-layer map into the can-layer x leaf-layer dimension
@@ -269,7 +274,7 @@ module FatesInterfaceMod
    integer, public, protected :: nlevage          ! The total number of patch age bins output to history
    integer, public, protected :: nlevheight       ! The total number of height bins output to history
    integer, public, protected :: nleafage         ! The total number of leaf age classes
-
+   
    ! -------------------------------------------------------------------------------------
    ! Structured Boundary Conditions (SITE/PATCH SCALE)
    ! For floating point arrays, it is sometimes the convention to define the arrays as
@@ -1181,7 +1186,7 @@ contains
        integer :: icwd
        integer :: ifuel
        integer :: ican
-       integer :: icdamage
+       integer :: icdam
        integer :: ileaf
        integer :: iage
        integer :: iheight
@@ -1197,7 +1202,12 @@ contains
        allocate( fates_hdim_levheight(1:nlevheight   ))
 
        allocate( fates_hdim_levcdam(ncrowndamagemax ))
-       
+       allocate( fates_hdim_scmap_levcdsc(1:nlevsclass*ncrowndamagemax))
+       allocate( fates_hdim_cdmap_levcdsc(1:nlevsclass*ncrowndamagemax))
+       allocate( fates_hdim_scmap_levcdpf(1:nlevsclass*ncrowndamagemax * numpft))
+       allocate( fates_hdim_cdmap_levcdpf(1:nlevsclass*ncrowndamagemax * numpft))
+       allocate( fates_hdim_pftmap_levcdpf(1:nlevsclass*ncrowndamagemax * numpft))
+
        allocate( fates_hdim_levcan(nclmax))
        allocate( fates_hdim_levelem(num_elements))
        allocate( fates_hdim_canmap_levcnlf(nlevleaf*nclmax))
@@ -1247,8 +1257,8 @@ contains
        end do
 
        ! make damage array
-       do icdamage = 1,ncrowndamagemax
-          fates_hdim_levcdam(icdamage) = icdamage
+       do icdam = 1,ncrowndamagemax
+          fates_hdim_levcdam(icdam) = icdam
        end do
        
 
@@ -1314,6 +1324,16 @@ contains
        end do
 
        i=0
+       do icdam=1,ncrowndamagemax
+          do isc=1,nlevsclass
+             i=i+1
+             fates_hdim_scmap_levcdsc(i) = isc
+             fates_hdim_cdmap_levcdsc(i) = icdam
+          end do
+       end do
+
+
+       i=0
        do ipft=1,numpft
           do ican=1,nclmax
              do ileaf=1,nlevleaf
@@ -1333,6 +1353,18 @@ contains
                 fates_hdim_scmap_levscagpft(i) = isc
                 fates_hdim_agmap_levscagpft(i) = iage
                 fates_hdim_pftmap_levscagpft(i) = ipft
+             end do
+          end do
+       end do
+
+        i=0
+       do ipft=1,numpft
+          do icdam=1,ncrowndamagemax
+             do isc=1,nlevsclass
+                i=i+1
+                fates_hdim_scmap_levcdpf(i) = isc
+                fates_hdim_cdmap_levcdpf(i) = icdam
+                fates_hdim_pftmap_levcdpf(i) = ipft
              end do
           end do
        end do

@@ -30,6 +30,8 @@ module FatesIOVariableKindMod
   character(*), parameter, public :: site_cnlf_r8 = 'SI_CNLF_R8'
   character(*), parameter, public :: site_cnlfpft_r8 = 'SI_CNLFPFT_R8'
   character(*), parameter, public :: site_cdamage_r8 = 'SI_CDAMAGE_R8'
+  character(*), parameter, public :: site_cdpf_r8 = 'SI_CDPF_R8'
+  character(*), parameter, public :: site_cdsc_r8 = 'SI_CDSC_R8'
   character(*), parameter, public :: site_scag_r8 = 'SI_SCAG_R8'
   character(*), parameter, public :: site_scagpft_r8 = 'SI_SCAGPFT_R8'
   character(*), parameter, public :: site_agepft_r8 = 'SI_AGEPFT_R8'
