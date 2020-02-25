@@ -183,6 +183,7 @@ contains
 
           call mortality_rates(currentCohort,bc_in,cmort,hmort,bmort,frmort)
           currentCohort%dmort  = cmort+hmort+bmort+frmort
+
           call carea_allom(currentCohort%dbh,currentCohort%n,site_in%spread,currentCohort%pft, &
                currentCohort%crowndamage,currentCohort%c_area)
 
@@ -370,6 +371,7 @@ contains
     ! !USES:
     
     use EDParamsMod         , only : ED_val_understorey_death, logging_coll_under_frac
+!    use EDParamsMod         , only : damage_coll_under_frac
     use EDCohortDynamicsMod , only : zero_cohort, copy_cohort, terminate_cohorts 
     use FatesAllometryMod   , only : get_crown_reduction
     use PRTLossFluxesMod    , only : PRTDamageLosses
@@ -635,7 +637,6 @@ contains
        ! at this point we have moved litter around between
        ! current and new patches 
        write(fates_log(),*) '1. live check = ', live_check1
-       write(fates_log(),*) '2. live check = ', live_check
       
        ! Site litter stock should increase between these two calls
        ! as we have added the litter from damage
@@ -750,7 +751,8 @@ contains
                          ! remaining of understory plants of those that are knocked over 
                          ! by the overstorey trees dying...  
                          nc%n = nc%n * (1.0_r8 - ED_val_understorey_death)
-
+!                         write(fates_log(),*) 'nc%n = ', nc%n
+                       
                          ! since the donor patch split and sent a fraction of its members
                          ! to the new patch and a fraction to be preserved in itself,
                          ! when reporting diagnostic rates, we must carry over the mortality rates from
@@ -961,7 +963,7 @@ contains
                          ! in the fatesparameter files 
                          nc%n = nc%n * (1.0_r8 - &
                               (1.0_r8-currentPatch%fract_ldist_not_harvested) * logging_coll_under_frac)
-
+                         
                          ! Step 3: Reduce the number count of cohorts in the 
                          !         original/donor/non-disturbed patch to reflect the area change
                          currentCohort%n = currentCohort%n * (1._r8 -  patch_site_areadis/currentPatch%area)
@@ -1006,25 +1008,36 @@ contains
                 end if   ! Select disturbance mode
 
                 
-                ! Reduce mass of damaged but surviving trees
-                if (currentCohort%crowndamage > 1) then 
-                   leaf_m_pre = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
-                   call get_crown_reduction(currentCohort%crowndamage, mass_frac)
-                   call PRTDamageLosses(currentCohort%prt, leaf_organ, mass_frac)
-                   leaf_m_post = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
-                   leaf_loss_prt = leaf_loss_prt + (leaf_m_pre - leaf_m_post)*currentCohort%n
-                   sapw_m_pre = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
-                   call PRTDamageLosses(currentCohort%prt, sapw_organ, mass_frac * &
-                        EDPftvarcon_inst%allom_branch_frac(currentCohort%pft))
-                   sapw_m_post = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
-                   sapw_loss_prt = sapw_loss_prt + (sapw_m_pre - sapw_m_post)*currentCohort%n
-                   struct_m_pre = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
-                   call PRTDamageLosses(currentCohort%prt, struct_organ, mass_frac * &
-                        EDPftvarcon_inst%allom_branch_frac(currentCohort%pft))
-                   struct_m_post = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
-                   struct_loss_prt = struct_loss_prt + (struct_m_pre - struct_m_post)*currentCohort%n
-               
-                end if
+                ! Rgardless of disturbance type, reeduce mass of damaged but surviving trees
+                if (EDPftvarcon_inst%woody(currentCohort%pft)==1)  then
+                   if(currentCohort%canopy_layer > 1) then 
+
+                      ! The understory trees that are in the new patch and survive
+                      ! receive some damage
+                      nc%crowndamage = nc%crowndamage + 1
+                      ! update crown area here also (to prevent LAI errors) ???
+                      call carea_allom(nc%dbh, nc%n, currentSite%spread, nc%pft, &
+                           nc%crowndamage, nc%c_area)
+                      
+                      leaf_m_pre = nc%prt%GetState(leaf_organ, all_carbon_elements)
+                      call get_crown_reduction(nc%crowndamage, mass_frac)
+                      call PRTDamageLosses(nc%prt, leaf_organ, mass_frac)
+                      leaf_m_post = nc%prt%GetState(leaf_organ, all_carbon_elements)
+                      
+                      leaf_loss_prt = leaf_loss_prt + (leaf_m_pre - leaf_m_post)*nc%n
+                      sapw_m_pre = nc%prt%GetState(sapw_organ, all_carbon_elements)
+                      call PRTDamageLosses(nc%prt, sapw_organ, mass_frac * &
+                           EDPftvarcon_inst%allom_branch_frac(nc%pft))
+                      sapw_m_post = nc%prt%GetState(sapw_organ, all_carbon_elements)
+                      sapw_loss_prt = sapw_loss_prt + (sapw_m_pre - sapw_m_post)*nc%n
+                      struct_m_pre = nc%prt%GetState(struct_organ, all_carbon_elements)
+                      call PRTDamageLosses(nc%prt, struct_organ, mass_frac * &
+                           EDPftvarcon_inst%allom_branch_frac(nc%pft))
+                      struct_m_post = nc%prt%GetState(struct_organ, all_carbon_elements)
+                      struct_loss_prt = struct_loss_prt + (struct_m_pre - struct_m_post)*nc%n
+
+                   end if  ! end if understory
+                end if ! end if woody
 
                 if (nc%n > 0.0_r8) then   
                    storebigcohort   =>  new_patch%tallest
@@ -1100,7 +1113,6 @@ contains
        ! at this point we have removed leaf mass from
        ! surviving trees according to damage class 
        write(fates_log(),*) '3. live check = ', live_check
-       write(fates_log(),*) '3. litter check = ', litter_check
      
        ! total damage litter should be added to litter check and
        ! subtracted from live check. if all is working as planned. 
@@ -1944,6 +1956,7 @@ contains
     ! !USES:
     use FatesAllometryMod, only : get_crown_reduction
     use SFParamsMod,       only : SF_val_cwd_frac
+    use EDParamsMod      , only : ED_val_understorey_death
     !
     ! !ARGUMENTS:
     type(ed_site_type)  , intent(inout), target :: currentSite 
@@ -1971,6 +1984,7 @@ contains
     real(r8) :: donate_frac          ! Fraction of mass to be donated                     
     real(r8) :: donate_m2            ! area normalization for litter mass destined to new patch [m-2]   
     integer  :: pft                  ! plant functional type index
+    integer  :: crowndamage          ! new increased crown damage class 
     real(r8) :: crown_reduction      ! amount that crown is reduced by (must be same as leaf biomass)
     real(r8) :: leaf_loss            ! amount of leaf biomass that has been lost
     real(r8) :: branch_loss          ! amount of branch biomass that has been lost
@@ -2015,70 +2029,81 @@ contains
        currentCohort => currentPatch%shortest
        do while(associated(currentCohort))       
 
-          if (currentCohort%crowndamage > 1 ) then 
+          ! only woody-plants are going to be damaged (not grasses)
+          if (EDPftvarcon_inst%woody(currentCohort%pft)==1) then 
 
-             pft = currentCohort%pft
+             ! only understory plants can get collateral damage
+             if(currentCohort%canopy_layer > 1)then
 
-             ! Get mass in Kg of the element in the specified organ
-             sapw_m   = currentCohort%prt%GetState(sapw_organ, element_id)
-             struct_m = currentCohort%prt%GetState(struct_organ, element_id)
-             leaf_m   = currentCohort%prt%GetState(leaf_organ, element_id) !kg
+                pft = currentCohort%pft
 
-             ! So we are not double counting litter we need to multiply by the
-             ! area NOT disturbed here
-             num_trees = currentCohort%n * (1.0_r8- patch_site_areadis/currentPatch%area)
+                ! Get mass in Kg of the element in the specified organ
+                sapw_m   = currentCohort%prt%GetState(sapw_organ, element_id)
+                struct_m = currentCohort%prt%GetState(struct_organ, element_id)
+                leaf_m   = currentCohort%prt%GetState(leaf_organ, element_id) !kg
 
-             ! fraction of crown that is lost in this damage class
-             call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
+                ! So we are not double counting litter we need to multiply by the
+                ! area disturbed here and number of SURVIVING TREES
+                num_trees = currentCohort%n * (patch_site_areadis/currentPatch%area) * &
+                     (1.0_r8 - ED_val_understorey_death)
+                ! now to get the number of damaged trees we multiply by damage frac
+!                num_trees = num_trees * damage_coll_under_frac
 
-             ! leaf loss in kg
-             leaf_loss =  leaf_m * crown_reduction
+                ! fraction of crown that is lost in this damage class
+                ! at this point we don't need to split the cohort - just calculate mass to litter
+                crowndamage = currentCohort%crowndamage + 1
+                call get_crown_reduction(crowndamage, crown_reduction)
 
-             leaf_donatable_mass = num_trees * leaf_loss
+                ! leaf loss in kg
+                leaf_loss =  leaf_m * crown_reduction
 
-             do dcmpy=1,ndcmpy
-                dcmpy_frac = GetDecompyFrac(pft,leaf_organ,dcmpy)
+                leaf_donatable_mass = num_trees * leaf_loss
 
-                new_litt%leaf_fines(dcmpy) = new_litt%leaf_fines(dcmpy) + &
-                     leaf_donatable_mass*donate_m2*dcmpy_frac ! kg per m2
-                curr_litt%leaf_fines(dcmpy) = curr_litt%leaf_fines(dcmpy) + &
-                     leaf_donatable_mass*retain_m2*dcmpy_frac ! kg per m2
-             end do
+                do dcmpy=1,ndcmpy
+                   dcmpy_frac = GetDecompyFrac(pft,leaf_organ,dcmpy)
 
-             flux_diags%leaf_litter_input(pft) = flux_diags%leaf_litter_input(pft) + &
-                  num_trees* leaf_loss
-             
-             ! branch loss
-             branch_loss = (sapw_m + struct_m) * crown_reduction * &
-                  EDPftvarcon_inst%allom_branch_frac(pft)
+                   new_litt%leaf_fines(dcmpy) = new_litt%leaf_fines(dcmpy) + &
+                        leaf_donatable_mass*donate_m2*dcmpy_frac ! kg per m2
+                   curr_litt%leaf_fines(dcmpy) = curr_litt%leaf_fines(dcmpy) + &
+                        leaf_donatable_mass*retain_m2*dcmpy_frac ! kg per m2
+                end do
 
-             branch_donatable_mass = num_trees * branch_loss
+                flux_diags%leaf_litter_input(pft) = flux_diags%leaf_litter_input(pft) + &
+                     num_trees* leaf_loss
 
-             do c=1,ncwd
+                ! branch loss
+                branch_loss = (sapw_m + struct_m) * crown_reduction * &
+                     EDPftvarcon_inst%allom_branch_frac(pft)
 
-                ! Transfer wood of dying trees to AG CWD pools
-                new_litt%ag_cwd(c) = new_litt%ag_cwd(c) + branch_donatable_mass * &
-                     SF_val_CWD_frac(c) * donate_m2
+                branch_donatable_mass = num_trees * branch_loss
 
-                curr_litt%ag_cwd(c) = curr_litt%ag_cwd(c) + branch_donatable_mass * &
-                     SF_val_CWD_frac(c) * retain_m2
+                do c=1,ncwd
 
-             end do
+                   ! Transfer wood of dying trees to AG CWD pools
+                   new_litt%ag_cwd(c) = new_litt%ag_cwd(c) + branch_donatable_mass * &
+                        SF_val_CWD_frac(c) * donate_m2
 
-             ! track diagnostic fluxes
-             do c=1,ncwd
-                flux_diags%cwd_ag_input(c) = & 
-                     flux_diags%cwd_ag_input(c) + SF_val_CWD_frac(c) * &
+                   curr_litt%ag_cwd(c) = curr_litt%ag_cwd(c) + branch_donatable_mass * &
+                        SF_val_CWD_frac(c) * retain_m2
+
+                end do
+
+                ! track diagnostic fluxes
+                do c=1,ncwd
+                   flux_diags%cwd_ag_input(c) = & 
+                        flux_diags%cwd_ag_input(c) + SF_val_CWD_frac(c) * &
+                        branch_donatable_mass
+
+                end do
+
+                ! should match leaf damage that is printed after PRTDamageLosses is called
+                total_damage_litter = total_damage_litter + leaf_donatable_mass + &
                      branch_donatable_mass
 
-             end do
 
-             ! should match leaf damage that is printed after PRTDamageLosses is called
-             total_damage_litter = total_damage_litter + leaf_donatable_mass + &
-                  branch_donatable_mass
+             end if  ! end if understory
 
-
-          end if
+          end if  ! end if woody
 
           currentCohort => currentCohort%taller
 

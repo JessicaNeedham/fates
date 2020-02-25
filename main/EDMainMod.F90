@@ -418,7 +418,7 @@ contains
           ! JN Tempory code to increase damage with size - just to test
           ! all the other damage code works. Replace this with
           ! more mechanistic drivers later
-          currentCohort%crowndamage = INT(min(ncrowndamagemax,ceiling(currentCohort%dbh/10.0_r8)))
+          !currentCohort%crowndamage = INT(min(ncrowndamagemax,ceiling(currentCohort%dbh/10.0_r8)))
           
            ! And simultaneously add the input fluxes to mass balance accounting
           site_cmass%gpp_acc   = site_cmass%gpp_acc + &

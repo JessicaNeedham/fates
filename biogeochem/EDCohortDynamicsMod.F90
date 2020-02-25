@@ -925,6 +925,8 @@ contains
   end subroutine DeallocateCohort
   
 
+!-----------------------------------------------------------------------------------
+  
   subroutine fuse_cohorts(currentSite, currentPatch, bc_in)  
 
      !
@@ -1094,7 +1096,7 @@ contains
                                       ! conserve total crown area during the fusion step, and then calculate
                                       ! dbh of the fused cohort as that which conserves both crown area and
                                       ! the dbh to crown area allometry.  dbh will be updated in the next
-                                      ! growth step in the (likely) event that dbh to structural iomass
+                                      ! growth step in the (likely) event that dbh to structural biomass
                                       ! allometry is exceeded. if using a capped crown area allometry and
                                       ! above the cap, then calculate as the weighted average of fusing
                                       ! cohorts' dbh
@@ -1171,11 +1173,25 @@ contains
                                       call endrun(msg=errMsg(sourcefile, __LINE__))
                                    end select
                                    
-                                   leaf_c = currentCohort%prt%GetState(leaf_organ,all_carbon_elements)
 
+                                   !---------------------------
+                                   
+                                   leaf_c = currentCohort%prt%GetState(leaf_organ,all_carbon_elements)
+                                   
                                    currentCohort%treelai = tree_lai(leaf_c, currentCohort%pft, currentCohort%c_area, newn, &
                                         currentCohort%canopy_layer, currentPatch%canopy_layer_tlai, &
                                         currentCohort%vcmax25top)
+
+                                   if(currentCohort%treelai > 30.0_r8) then
+                                      write(fates_log(),*) 'crown damage', currentCohort%crowndamage
+                                      write(fates_log(),*) 'leaf_c', leaf_c
+                                      write(fates_log(),*) 'c_area', currentCohort%c_area
+                                      write(fates_log(),*) 'newn', newn
+                                      write(fates_log(),*) 'canopy_layer_tlai', currentPatch%canopy_layer_tlai
+                                   end if
+                                   
+                              
+                              
                                    currentCohort%treesai = tree_sai(currentCohort%pft, currentCohort%dbh,&
                                         currentCohort%canopy_trim, &
                                         newn, currentCohort%canopy_layer, currentSite%spread, &

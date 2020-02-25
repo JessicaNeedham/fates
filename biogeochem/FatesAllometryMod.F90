@@ -515,14 +515,14 @@ contains
        select case(int(allom_lmode))
        case(1)
           dbh_eff = min(dbh,dbh_maxh)
-          call carea_2pwr(dbh_eff,site_spread,d2bl_p2,d2bl_ediff,d2ca_min,d2ca_max,c_area,do_inverse)
+          call carea_2pwr(dbh_eff,site_spread,d2bl_p2,d2bl_ediff,d2ca_min,d2ca_max,c_area,do_inverse, crowndamage)
           capped_allom = .true.
        case(2)   ! "2par_pwr")
-          call carea_2pwr(dbh,site_spread,d2bl_p2,d2bl_ediff,d2ca_min,d2ca_max,c_area,do_inverse)
+          call carea_2pwr(dbh,site_spread,d2bl_p2,d2bl_ediff,d2ca_min,d2ca_max,c_area,do_inverse, crowndamage)
           capped_allom = .false.
        case(3)
           dbh_eff = min(dbh,dbh_maxh)
-          call carea_2pwr(dbh_eff,site_spread,d2bl_p2,d2bl_ediff,d2ca_min,d2ca_max,c_area,do_inverse)
+          call carea_2pwr(dbh_eff,site_spread,d2bl_p2,d2bl_ediff,d2ca_min,d2ca_max,c_area,do_inverse, crowndamage)
           capped_allom = .true.
        case DEFAULT
           write(fates_log(),*) 'An undefined leaf allometry was specified: ', &
@@ -530,16 +530,6 @@ contains
           write(fates_log(),*) 'Aborting'
           call endrun(msg=errMsg(sourcefile, __LINE__))
        end select
-
-      
-       ! Reduce crown according to crown damage class
-       ! 1 = no damage, 2 = 20%, 3 = 40% 4 = 60%, 5 = 80%
-       if ( crowndamage > 1 ) then
-
-          call get_crown_reduction( crowndamage, crown_reduction )
-
-          c_area = c_area * (1.0_r8 - crown_reduction)
-       end if
        
        if (capped_allom .and. do_inverse) then
           if (dbh_eff .lt. dbh_maxh) then
@@ -762,7 +752,7 @@ contains
     else
        tree_lai = 0.0_r8
     endif ! (leafc_per_unitarea > 0.0_r8)
-
+       
     return
   end function tree_lai
 
@@ -2012,7 +2002,7 @@ contains
   ! =============================================================================
 
   
-  subroutine carea_2pwr(dbh,spread,d2bl_p2,d2bl_ediff,d2ca_min,d2ca_max,c_area,inverse)
+  subroutine carea_2pwr(dbh,spread,d2bl_p2,d2bl_ediff,d2ca_min,d2ca_max,c_area,inverse, crowndamage)
 
      ! ============================================================================
      ! Calculate area of ground covered by entire cohort. (m2)
@@ -2027,9 +2017,12 @@ contains
      real(r8),intent(in) :: d2ca_max    ! maximum diameter to crown area scaling factor
      real(r8),intent(inout) :: c_area   ! crown area for one plant [m2]
      logical,intent(in)  :: inverse     ! if true, calculate dbh from crown area rather than its reverse
+     integer, intent(in) :: crowndamage ! crown damage class
+      
      
      real(r8)            :: crown_area_to_dbh_exponent
      real(r8)            :: spreadterm  ! Effective 2bh to crown area scaling factor
+     real(r8)            :: crown_reduction ! fraction of crown removed in that crowndamage class
      
      ! default is to use the same exponent as the dbh to bleaf exponent so that per-plant 
      ! canopy depth remains invariant during growth, but allowed to vary via the 
@@ -2052,7 +2045,18 @@ contains
      
      if ( .not. inverse) then
         c_area = spreadterm * dbh ** crown_area_to_dbh_exponent
+
+        if ( crowndamage > 1 ) then
+           call get_crown_reduction( crowndamage, crown_reduction )
+           c_area = c_area * (1.0_r8 - crown_reduction)
+        end if
+
      else
+        ! if we are calculating dbh from crown area we want the undamaged version
+        if( crowndamage > 1) then
+           call get_crown_reduction( crowndamage, crown_reduction )
+           c_area = c_area/(1.0_r8 - crown_reduction)
+        end if   
         dbh = (c_area / spreadterm) ** (1./crown_area_to_dbh_exponent)
      endif
      
@@ -2334,11 +2338,12 @@ contains
      real(r8)  :: bt_leaf_try         ! trial leaf biomass
      real(r8)  :: dbt_leaf_dd_try     ! trial leaf derivative
      real(r8)  :: step_frac           ! step fraction
-     integer   :: counter 
+     integer   :: counter
+     
      real(r8), parameter :: step_frac0  = 0.9_r8
      integer, parameter  :: max_counter = 200
      
-     ! Do reduce "if" calls, we break this call into two parts
+     ! To reduce "if" calls, we break this call into two parts
      if ( EDPftvarcon_inst%woody(ipft) == itrue ) then
 
         if(.not.present(bdead)) then
