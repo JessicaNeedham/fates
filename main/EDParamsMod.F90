@@ -115,6 +115,12 @@ module EDParamsMod
    ! ----------------------------------------------------------------------------------------------
    real(r8),protected,public :: bgc_soil_salinity ! site-level soil salinity for FATES when not coupled to dynamic soil BGC of salinity
    character(len=param_string_length),parameter,public :: bgc_name_soil_salinity= "fates_soil_salinity"      
+
+   !----------------------------------------------------------------------------------------------------
+   ! Damage parameters
+   real(r8),protected,public :: damage_coll_under_frac ! Fraction of understory plants that get damaged from
+   ! mortality disturbance
+   character(len=param_string_length),parameter,public :: damage_name_coll_under_frac = "fates_damage_coll_under_frac"
    
    ! Logging Control Parameters (ONLY RELEVANT WHEN USE_FATES_LOGGING = TRUE)
    ! ----------------------------------------------------------------------------------------------
@@ -305,6 +311,9 @@ contains
     call fates_params%RegisterParameter(name=bgc_name_soil_salinity, dimension_shape=dimension_shape_scalar, &
          dimension_names=dim_names_scalar) 
 
+    call fates_params%RegisterParameter(name=damage_name_coll_under_frac, dimension_shape=dimension_shape_scalar, &
+         dimension_names=dim_names_scalar)
+
     call fates_params%RegisterParameter(name=logging_name_dbhmin, dimension_shape=dimension_shape_scalar, &
          dimension_names=dim_names_scalar)
 
@@ -445,7 +454,10 @@ contains
           data=hydr_psicap)
 	  
     call fates_params%RetreiveParameter(name=bgc_name_soil_salinity, &
-          data=bgc_soil_salinity)	  
+         data=bgc_soil_salinity)
+
+    call fates_params%RetreiveParameter(name=damage_name_coll_under_frac, &
+         data=damage_coll_under_frac)
 
     call fates_params%RetreiveParameter(name=logging_name_dbhmin, &
           data=logging_dbhmin)
@@ -536,6 +548,7 @@ contains
         write(fates_log(),fmt0) 'hydr_psi0 = ',hydr_psi0
         write(fates_log(),fmt0) 'hydr_psicap = ',hydr_psicap
         write(fates_log(),fmt0) 'bgc_soil_salinity = ', bgc_soil_salinity
+        write(fates_log(),fmt0) 'damage_coll_under_frac = ', damage_coll_under_frac
         write(fates_log(),fmt0) 'logging_dbhmin = ',logging_dbhmin
         write(fates_log(),fmt0) 'logging_collateral_frac = ',logging_collateral_frac
         write(fates_log(),fmt0) 'logging_coll_under_frac = ',logging_coll_under_frac
