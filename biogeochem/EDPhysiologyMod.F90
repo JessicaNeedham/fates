@@ -1317,6 +1317,8 @@ contains
     !
     ! !USES:
     use FatesInterfaceMod, only : hlm_use_ed_prescribed_phys
+    use FatesLitterMod   , only : ncwd
+    use SFParamsMod      , only : SF_val_CWD_frac
     !
     ! !ARGUMENTS    
     type(ed_site_type), intent(inout), target   :: currentSite
@@ -1326,6 +1328,7 @@ contains
     ! !LOCAL VARIABLES:
     class(prt_vartypes), pointer :: prt
     integer :: ft
+    integer :: c 
     type (ed_cohort_type) , pointer :: temp_cohort
     type (litter_type), pointer     :: litt          ! The litter object (carbon right now)
     type(site_massbal_type), pointer :: site_mass    ! For accounting total in-out mass fluxes
@@ -1368,14 +1371,24 @@ contains
        temp_cohort%hite        = EDPftvarcon_inst%hgt_min(ft)
        call h2d_allom(temp_cohort%hite,ft,temp_cohort%dbh)
 
+       temp_cohort%branch_frac = 0.0_r8
+
+       do c = 1, (ncwd-1)
+          temp_cohort%branch_frac = temp_cohort%branch_frac + &
+               SF_val_CWD_frac(c)
+       end do
+       
+
        ! Initialize live pools
        call bleaf(temp_cohort%dbh,ft,temp_cohort%crowndamage,&
             temp_cohort%canopy_trim,c_leaf)
        call bfineroot(temp_cohort%dbh,ft,temp_cohort%canopy_trim,c_fnrt)
-       call bsap_allom(temp_cohort%dbh,ft,temp_cohort%crowndamage,&
+       call bsap_allom(temp_cohort%dbh,ft,temp_cohort%crowndamage,temp_cohort%branch_frac, &
             temp_cohort%canopy_trim,a_sapw, c_sapw)
-       call bagw_allom(temp_cohort%dbh,ft,temp_cohort%crowndamage,c_agw)
-       call bbgw_allom(temp_cohort%dbh, ft, temp_cohort%crowndamage,c_bgw)
+       call bagw_allom(temp_cohort%dbh,ft,temp_cohort%crowndamage,temp_cohort%branch_frac,&
+            c_agw)
+       call bbgw_allom(temp_cohort%dbh, ft, temp_cohort%crowndamage, &
+            temp_cohort%branch_frac, c_bgw)
        call bdead_allom(c_agw,c_bgw,c_sapw,ft,c_struct)
        call bstore_allom(temp_cohort%dbh,ft,temp_cohort%crowndamage,&
             temp_cohort%canopy_trim,c_store)

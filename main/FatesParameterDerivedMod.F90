@@ -25,6 +25,10 @@ module FatesParameterDerivedMod
                                               ! rate at 25C (umol CO2/m**2/s)
      real(r8), allocatable :: kp25top(:,:)    ! canopy top: initial slope of CO2 response
                                               ! curve (C4 plants) at 25C
+
+     real(r8), allocatable :: branch_frac(:)  ! fraction of aboveground biomass in branches (as
+                                              ! oppose to stems) - for use in damage allometries
+     
    contains
      
      procedure :: Init
@@ -44,6 +48,8 @@ contains
     allocate(this%jmax25top(numpft,nleafage))
     allocate(this%tpu25top(numpft,nleafage))
     allocate(this%kp25top(numpft,nleafage))
+
+    allocate(this%branch_frac(numpft))
     
     return
   end subroutine InitAllocate
@@ -53,13 +59,17 @@ contains
   subroutine Init(this,numpft)
 
     use EDPftvarcon, only: EDPftvarcon_inst
-
+    use SFParamsMod, only: SF_val_CWD_frac
+    use FatesLitterMod, only : ncwd
+    
     class(param_derived_type), intent(inout) :: this
     integer, intent(in)                      :: numpft
     
     ! local variables
     integer  :: ft                 ! pft index
     integer  :: iage               ! leaf age class index
+    integer  :: c                  ! cwd index
+    
     
     associate( vcmax25top => EDPftvarcon_inst%vcmax25top ) 
     
@@ -85,6 +95,15 @@ contains
             this%kp25top(ft,iage)   = 20000._r8 * vcmax25top(ft,iage)
          
          end do
+
+         ! Allocate fraction of biomass in branches
+         this%branch_frac(ft) = 0.0_r8
+
+         do c = 1,(ncwd-1)
+            this%branch_frac(ft) = this%branch_frac(ft) + SF_val_CWD_frac(c)
+         end do
+         
+
          
       end do !ft 
 

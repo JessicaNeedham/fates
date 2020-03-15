@@ -301,6 +301,7 @@ module EDTypesMod
      real(r8) ::  ts_net_uptake(nlevleaf)              ! Net uptake of leaf layers: kgC/m2/timestep
      real(r8) ::  year_net_uptake(nlevleaf)            ! Net uptake of leaf layers: kgC/m2/year
 
+
      ! RESPIRATION COMPONENTS
      real(r8) ::  rdark                                  ! Dark respiration: kgC/indiv/s
      real(r8) ::  resp_g                                 ! Growth respiration:  kgC/indiv/timestep
@@ -311,6 +312,9 @@ module EDTypesMod
                                                          ! (below ground)
      real(r8) ::  froot_mr                               ! Live fine root   maintenance respiration: kgC/indiv/s
 
+     !DAMAGE
+     real(r8) :: branch_frac                             ! Fraction of aboveground biomass in branches
+     
      !MORTALITY
      real(r8) ::  dmort                                  ! proportional mortality rate. (year-1)
 

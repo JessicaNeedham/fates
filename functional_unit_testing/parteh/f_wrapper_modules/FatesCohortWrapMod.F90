@@ -216,13 +216,14 @@ contains
     call bfineroot(ccohort%dbh, ipft, canopy_trim, fnrt_c)
     
     ! Sapwood biomass (carbon)
-    call bsap_allom(ccohort%dbh, ipft, canopy_trim, sapw_area, sapw_c)
+    call bsap_allom(ccohort%dbh, ipft, ccohort%crowndamage, ccohort%branch_frac, &
+         canopy_trim, sapw_area, sapw_c)
     
     ! Above ground woody biomass (carbon)
-    call bagw_allom(ccohort%dbh, ipft, agw_c)
+    call bagw_allom(ccohort%dbh, ipft, ccohort%crowndamage, ccohort%branch_frac, agw_c)
     
     ! Below ground woody biomass (carbon)
-    call bbgw_allom(ccohort%dbh, ipft, bgw_c)
+    call bbgw_allom(ccohort%dbh, ipft, ccohort%crowndamage, ccohort%branch_frac, bgw_c)
     
     ! Total structural biomass (carbon)
     call bdead_allom(agw_c, bgw_c, sapw_c, ipft, struct_c) 
@@ -406,7 +407,7 @@ contains
   
   ! =====================================================================================
   
-  subroutine WrapQueryVars(ipft,leaf_area,crown_area,agb,store_c,target_leaf_c)
+  subroutine WrapQueryVars(ipft,crowndamage,branch_frac, leaf_area,crown_area,agb,store_c,target_leaf_c)
     
     implicit none
     ! Arguments
@@ -419,12 +420,13 @@ contains
 
     real(r8) :: leaf_c
     type(ed_cohort_type), pointer :: ccohort
-
+    
     real(r8),parameter :: nplant = 1.0_r8
     real(r8),parameter :: site_spread = 1.0_r8
 
     real(r8), parameter, dimension(nclmax) :: canopy_lai = [0.0_r8,0.0_r8,0.0_r8,0.0_r8]
     integer, parameter  :: cl1 = 1
+   
     
     ccohort     => cohort_array(ipft)
 
@@ -440,18 +442,19 @@ contains
     leaf_c  = ccohort%prt%GetState(leaf_organ, all_carbon_elements )
     store_c = ccohort%prt%GetState(store_organ, all_carbon_elements )
     
-    call carea_allom(ccohort%dbh,nplant,site_spread,ipft,crown_area)
+    call carea_allom(ccohort%dbh,nplant,site_spread,ipft,ccohort%crowndamage,crown_area)
 
     leaf_area = crown_area*tree_lai(leaf_c, ipft, crown_area, nplant, cl1, canopy_lai) 
 
-    call bagw_allom(ccohort%dbh,ipft,agb)
+    call bagw_allom(ccohort%dbh,ipft, ccohort%crowndamage, agb, branch_frac = ccohort%branch_frac)
 
-    call bleaf(ccohort%dbh,ipft, ccohort%canopy_trim, target_leaf_c)
+    call bleaf(ccohort%dbh,ipft, ccohort%crowndamage, ccohort%canopy_trim, target_leaf_c)
 
 
     return
  end subroutine WrapQueryVars
-  
+
+ ! ==========================================================================================
  
  subroutine WrapQueryDiagnostics(ipft, dbh, &
                                  leaf_c, fnrt_c, sapw_c, store_c, struct_c, repro_c, &

@@ -713,6 +713,7 @@ contains
 
          ! calculate the sapwood cross-sectional area
          call bsap_allom(ccohort%dbh,ccohort%pft,ccohort%crowndamage,&
+              ccohort%branch_frac, &
               ccohort%canopy_trim,a_sapwood_target,bsw_target)
          a_sapwood = a_sapwood_target
          

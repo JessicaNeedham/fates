@@ -1016,9 +1016,11 @@ contains
          temp_cohort%canopy_trim = 1.0_r8
 
 
-         call bagw_allom(temp_cohort%dbh,temp_cohort%pft, temp_cohort%crowndamage,b_agw)
+         call bagw_allom(temp_cohort%dbh,temp_cohort%pft, temp_cohort%crowndamage, &
+              temp_cohort%branch_frac, b_agw)
          ! Calculate coarse root biomass from allometry
-         call bbgw_allom(temp_cohort%dbh,temp_cohort%pft, temp_cohort%crowndamage, b_bgw)
+         call bbgw_allom(temp_cohort%dbh,temp_cohort%pft, temp_cohort%crowndamage,&
+              temp_cohort%branch_frac, b_bgw)
          
          ! Calculate the leaf biomass (calculates a maximum first, then applies canopy trim
          ! and sla scaling factors)
@@ -1031,7 +1033,7 @@ contains
          
          ! Calculate sapwood biomass
          call bsap_allom(temp_cohort%dbh,temp_cohort%pft,temp_cohort%crowndamage,&
-              temp_cohort%canopy_trim, a_sapw, b_sapw)
+              temp_cohort%branch_frac, temp_cohort%canopy_trim, a_sapw, b_sapw)
          
          call bdead_allom( b_agw, b_bgw, b_sapw, temp_cohort%pft, b_struct )
          

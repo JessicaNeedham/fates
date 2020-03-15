@@ -281,7 +281,7 @@ contains
     use EDTypesMod           , only : ncrowndamagemax
     use FatesAllometryMod    , only : bleaf
     use FatesAllometryMod    , only : carea_allom
-    use FatesAllometryMod    , only : get_crown_reduction
+    use DamageMainMod        , only : get_crown_reduction
     use PRTLossFluxesMod     , only : PRTDamageLosses
     use PRTGenericMod        , only : leaf_organ
     ! !ARGUMENTS:

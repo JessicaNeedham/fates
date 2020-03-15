@@ -427,6 +427,7 @@ contains
     !
     ! !USES:
     !
+    
     ! !ARGUMENTS    
     type(ed_site_type), intent(inout),  pointer  :: site_in
     type(ed_patch_type), intent(inout), pointer  :: patch_in
@@ -473,8 +474,11 @@ contains
        temp_cohort%pft         = pft
        temp_cohort%n           = EDPftvarcon_inst%initd(pft) * patch_in%area
        temp_cohort%hite        = EDPftvarcon_inst%hgt_min(pft)
+       temp_cohort%branch_frac = 0.0_r8
 
-       ! Assume no damage to begin with
+       
+       ! Assume no damage to begin with - since we assume no damage
+       ! we do not need to initialise branch frac just yet. 
        temp_cohort%crowndamage = 1
        
        ! Calculate the plant diameter from height
@@ -483,10 +487,12 @@ contains
        temp_cohort%canopy_trim = 1.0_r8
 
        ! Calculate total above-ground biomass from allometry
-       call bagw_allom(temp_cohort%dbh,pft,temp_cohort%crowndamage, c_agw)
+       call bagw_allom(temp_cohort%dbh,pft,temp_cohort%crowndamage,&
+            temp_cohort%branch_frac, c_agw)
 
        ! Calculate coarse root biomass from allometry
-       call bbgw_allom(temp_cohort%dbh,pft,temp_cohort%crowndamage,c_bgw)
+       call bbgw_allom(temp_cohort%dbh,pft,temp_cohort%crowndamage,&
+            temp_cohort%branch_frac, c_bgw)
 
        ! Calculate the leaf biomass from allometry
        ! (calculates a maximum first, then applies canopy trim)
@@ -499,7 +505,7 @@ contains
 
        ! Calculate sapwood biomass
        call bsap_allom(temp_cohort%dbh,pft,temp_cohort%crowndamage,&
-            temp_cohort%canopy_trim,a_sapw,c_sapw)
+            temp_cohort%branch_frac, temp_cohort%canopy_trim,a_sapw,c_sapw)
        
        call bdead_allom( c_agw, c_bgw, c_sapw, pft, c_struct )
 
