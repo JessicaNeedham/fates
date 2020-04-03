@@ -10,6 +10,7 @@
 # =======================================================================================
 
 import numpy as np
+from numpy import *
 import sys
 import getopt
 import code  # For development: code.interact(local=locals())

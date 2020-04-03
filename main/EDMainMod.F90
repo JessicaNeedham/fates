@@ -1,3 +1,4 @@
+
 module EDMainMod
 
   ! ===========================================================================
@@ -14,6 +15,7 @@ module EDMainMod
   use FatesInterfaceMod        , only : hlm_current_month
   use FatesInterfaceMod        , only : hlm_current_day 
   use FatesInterfaceMod        , only : hlm_use_planthydro 
+  use FatesInterfaceMod        , only : hlm_use_cohort_age_tracking
   use FatesInterfaceMod        , only : hlm_reference_date
   use FatesInterfaceMod        , only : hlm_use_ed_prescribed_phys
   use FatesInterfaceMod        , only : hlm_use_ed_st3 
@@ -40,8 +42,10 @@ module EDMainMod
   use EDCohortDynamicsMod      , only : UpdateCohortBioPhysRates
   use SFMainMod                , only : fire_model 
   use FatesSizeAgeTypeIndicesMod, only : get_age_class_index
+  use FatesSizeAgeTypeIndicesMod, only : coagetype_class_index
   use FatesLitterMod           , only : litter_type
   use FatesLitterMod           , only : ncwd
+
   use EDtypesMod               , only : ed_site_type
   use EDtypesMod               , only : ed_patch_type
   use EDtypesMod               , only : ed_cohort_type
@@ -274,6 +278,7 @@ contains
   !-------------------------------------------------------------------------------!
   subroutine ed_integrate_state_variables(currentSite, bc_in )
     !
+    
     ! !DESCRIPTION:
     ! FIX(SPM,032414) refactor so everything goes through interface
     !
@@ -284,7 +289,11 @@ contains
     use DamageMainMod        , only : get_crown_reduction
     use PRTLossFluxesMod     , only : PRTDamageLosses
     use PRTGenericMod        , only : leaf_organ
+    use FatesInterfaceMod, only : hlm_use_cohort_age_tracking
+    use FatesConstantsMod, only : itrue
+
     ! !ARGUMENTS:
+    
     type(ed_site_type)     , intent(inout) :: currentSite
     type(bc_in_type)        , intent(in)   :: bc_in
 
@@ -310,8 +319,8 @@ contains
     real(r8) :: leaf_m_pre
     real(r8) :: leaf_m_post
     real(r8) :: leaf_loss_prt
-    
-    
+    real(r8) :: current_npp           ! place holder for calculating npp each year in prescribed physiology mode
+
     !-----------------------------------------------------------------------
     leaf_loss = 0.0_r8
     leaf_loss_prt = 0.0_r8
@@ -370,13 +379,10 @@ contains
              if (currentCohort%canopy_layer .eq. 1) then
                 currentCohort%npp_acc_hold = EDPftvarcon_inst%prescribed_npp_canopy(ft) &
                      * currentCohort%c_area / currentCohort%n
-
                 currentCohort%npp_acc = currentCohort%npp_acc_hold / hlm_days_per_year 
-
                 ! for mass balancing
                 currentCohort%gpp_acc  = currentCohort%npp_acc
                 currentCohort%resp_acc = 0._r8
-
              else
                 currentCohort%npp_acc_hold = EDPftvarcon_inst%prescribed_npp_understory(ft) &
                      * currentCohort%c_area / currentCohort%n
@@ -392,7 +398,7 @@ contains
              currentCohort%gpp_acc_hold  = currentCohort%gpp_acc  * real(hlm_days_per_year,r8)
              currentCohort%resp_acc_hold = currentCohort%resp_acc * real(hlm_days_per_year,r8)
           endif
-
+          
           ! Conduct Maintenance Turnover (parteh)
           if(debug) call currentCohort%prt%CheckMassConservation(ft,3)
           if(any(currentSite%dstatus == [phen_dstat_moiston,phen_dstat_timeon])) then
@@ -458,14 +464,28 @@ contains
              call updateSizeDepTreeHydStates(currentSite,currentCohort)
           end if
 
+
           
           ! JN Tempory code to increase damage with size - just to test
           ! all the other damage code works. Replace this with
           ! more mechanistic drivers later
           ! We don't lose mass at this stage - that comes in the disturbance regimes in
           ! EDPatchDynamicsMod.
-          if(EDPftvarcon_inst%woody(currentCohort%pft) == 1) then
-              currentCohort%crowndamage = INT(min(ncrowndamagemax,ceiling(currentCohort%dbh/10.0_r8)))
+!          if(EDPftvarcon_inst%woody(currentCohort%pft) == 1) then
+ !             currentCohort%crowndamage = INT(min(ncrowndamagemax,ceiling(currentCohort%dbh/10.0_r8)))
+  !        end if
+
+          ! if we are in age-dependent mortality mode
+          if (hlm_use_cohort_age_tracking .eq. itrue) then
+             ! update cohort age
+             currentCohort%coage = currentCohort%coage + hlm_freq_day
+             if(currentCohort%coage < 0.0_r8)then
+                write(fates_log(),*) 'negative cohort age?',currentCohort%coage
+             end if
+
+             ! update cohort age class and age x pft class
+             call coagetype_class_index(currentCohort%coage, currentCohort%pft, &
+                  currentCohort%coage_class,currentCohort%coage_by_pft_class)
           end if
 
           currentCohort => currentCohort%taller
@@ -788,6 +808,8 @@ contains
           currentCohort%hmort = 0.0_r8
           currentCohort%cmort = 0.0_r8
           currentCohort%frmort = 0.0_r8
+          currentCohort%smort = 0.0_r8
+          currentCohort%asmort = 0.0_r8
 
           currentCohort%dndt      = 0.0_r8
           currentCohort%dhdt      = 0.0_r8
@@ -800,5 +822,8 @@ contains
     
  end subroutine bypass_dynamics
 
-
 end module EDMainMod
+
+
+
+

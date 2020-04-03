@@ -158,6 +158,8 @@ contains
     real(r8) :: bmort
     real(r8) :: hmort
     real(r8) :: frmort
+    real(r8) :: smort
+    real(r8) :: asmort
 
     real(r8) :: lmort_direct
     real(r8) :: lmort_collateral
@@ -181,9 +183,9 @@ contains
           ! Mortality for trees in the understorey.
           currentCohort%patchptr => currentPatch
 
-          call mortality_rates(currentCohort,bc_in,cmort,hmort,bmort,frmort)
-          currentCohort%dmort  = cmort+hmort+bmort+frmort
-
+          call mortality_rates(currentCohort,bc_in,cmort,hmort,bmort,frmort,smort,asmort)
+          currentCohort%dmort  = cmort+hmort+bmort+frmort+smort+asmort
+          
           call carea_allom(currentCohort%dbh,currentCohort%n,site_in%spread,currentCohort%pft, &
                currentCohort%crowndamage,currentCohort%c_area)
 
@@ -192,6 +194,8 @@ contains
           currentCohort%bmort = bmort
           currentCohort%hmort = hmort
           currentCohort%frmort = frmort
+          currentCohort%smort = smort
+          currentCohort%asmort = asmort
 
           call LoggingMortality_frac(currentCohort%pft, currentCohort%dbh, currentCohort%canopy_layer, &
                 lmort_direct,lmort_collateral,lmort_infra,l_degrad )
@@ -290,6 +294,8 @@ contains
                 currentCohort%bmort = currentCohort%bmort*(1.0_r8 - fates_mortality_disturbance_fraction)
                 currentCohort%dmort = currentCohort%dmort*(1.0_r8 - fates_mortality_disturbance_fraction)
                 currentCohort%frmort = currentCohort%frmort*(1.0_r8 - fates_mortality_disturbance_fraction)
+                currentCohort%smort = currentCohort%smort*(1.0_r8 - fates_mortality_disturbance_fraction)
+                currentCohort%asmort = currentCohort%asmort*(1.0_r8 - fates_mortality_disturbance_fraction)
              end if
              currentCohort => currentCohort%taller
           enddo !currentCohort
@@ -310,6 +316,8 @@ contains
                 currentCohort%bmort = currentCohort%bmort*(1.0_r8 - fates_mortality_disturbance_fraction)
                 currentCohort%dmort = currentCohort%dmort*(1.0_r8 - fates_mortality_disturbance_fraction)
                 currentCohort%frmort = currentCohort%frmort*(1.0_r8 - fates_mortality_disturbance_fraction)
+                currentCohort%smort = currentCohort%smort*(1.0_r8 - fates_mortality_disturbance_fraction)
+                currentCohort%asmort = currentCohort%asmort*(1.0_r8 - fates_mortality_disturbance_fraction)
                 currentCohort%lmort_direct    = 0.0_r8
                 currentCohort%lmort_collateral = 0.0_r8
                 currentCohort%lmort_infra      = 0.0_r8
@@ -695,6 +703,8 @@ contains
                       nc%hmort = nan
                       nc%bmort = nan
                       nc%frmort = nan
+                      nc%smort = nan
+                      nc%asmort = nan
                       nc%lmort_direct     = nan
                       nc%lmort_collateral = nan
                       nc%lmort_infra      = nan
@@ -744,6 +754,8 @@ contains
                          nc%hmort            = currentCohort%hmort
                          nc%bmort            = currentCohort%bmort
                          nc%frmort           = currentCohort%frmort
+                         nc%smort            = currentCohort%smort
+                         nc%asmort           = currentCohort%asmort
                          nc%dmort            = currentCohort%dmort
                          nc%lmort_direct     = currentCohort%lmort_direct
                          nc%lmort_collateral = currentCohort%lmort_collateral
@@ -768,6 +780,8 @@ contains
                          nc%hmort            = currentCohort%hmort
                          nc%bmort            = currentCohort%bmort
                          nc%frmort           = currentCohort%frmort
+                         nc%smort            = currentCohort%smort
+                         nc%asmort           = currentCohort%asmort
                          nc%dmort            = currentCohort%dmort
                          nc%lmort_direct    = currentCohort%lmort_direct
                          nc%lmort_collateral = currentCohort%lmort_collateral
@@ -823,6 +837,8 @@ contains
                    nc%hmort            = currentCohort%hmort
                    nc%bmort            = currentCohort%bmort
                    nc%frmort           = currentCohort%frmort
+                   nc%smort            = currentCohort%smort
+                   nc%asmort           = currentCohort%asmort
                    nc%dmort            = currentCohort%dmort
                    nc%lmort_direct     = currentCohort%lmort_direct
                    nc%lmort_collateral = currentCohort%lmort_collateral
@@ -894,6 +910,8 @@ contains
                       nc%hmort            = currentCohort%hmort
                       nc%bmort            = currentCohort%bmort
                       nc%frmort           = currentCohort%frmort
+                      nc%smort            = currentCohort%smort
+                      nc%asmort           = currentCohort%asmort
                       nc%dmort            = currentCohort%dmort
 
                       ! since these are the ones that weren't logged, 
@@ -951,6 +969,8 @@ contains
                          nc%hmort            = currentCohort%hmort
                          nc%bmort            = currentCohort%bmort
                          nc%frmort           = currentCohort%frmort
+                         nc%smort            = currentCohort%smort
+                         nc%asmort           = currentCohort%asmort
                          nc%dmort            = currentCohort%dmort
                          nc%lmort_direct     = currentCohort%lmort_direct
                          nc%lmort_collateral = currentCohort%lmort_collateral
@@ -971,6 +991,8 @@ contains
                          nc%hmort            = currentCohort%hmort
                          nc%bmort            = currentCohort%bmort
                          nc%frmort           = currentCohort%frmort
+                         nc%smort            = currentCohort%smort
+                         nc%asmort           = currentCohort%asmort
                          nc%dmort            = currentCohort%dmort
                          nc%lmort_direct     = currentCohort%lmort_direct
                          nc%lmort_collateral = currentCohort%lmort_collateral
@@ -2409,6 +2431,7 @@ contains
     new_patch%fabd_sha_z(:,:,:)  = 0._r8 
     new_patch%fabi_sun_z(:,:,:)  = 0._r8 
     new_patch%fabi_sha_z(:,:,:)  = 0._r8  
+    new_patch%scorch_ht(:)       = 0._r8  
     new_patch%frac_burnt         = 0._r8  
     new_patch%total_tree_area    = 0.0_r8  
     new_patch%NCL_p              = 1
@@ -2506,7 +2529,7 @@ contains
     currentPatch%fire                       = 999    ! sr decide_fire.1=fire hot enough to proceed. 0=stop everything- no fires today
     currentPatch%fd                         = 0.0_r8 ! fire duration (mins)
     currentPatch%ros_back                   = 0.0_r8 ! backward ros (m/min)
-    currentPatch%sh                         = 0.0_r8 ! average scorch height for the patch(m)
+    currentPatch%scorch_ht(:)               = 0.0_r8 ! scorch height of flames on a given PFT
     currentPatch%frac_burnt                 = 0.0_r8 ! fraction burnt daily  
     currentPatch%burnt_frac_litter(:)       = 0.0_r8 
     currentPatch%btran_ft(:)                = 0.0_r8
@@ -2822,7 +2845,7 @@ contains
     rp%fi                   = (dp%fi*dp%area + rp%fi*rp%area) * inv_sum_area
     rp%fd                   = (dp%fd*dp%area + rp%fd*rp%area) * inv_sum_area
     rp%ros_back             = (dp%ros_back*dp%area + rp%ros_back*rp%area) * inv_sum_area
-    rp%sh                   = (dp%sh*dp%area + rp%sh*rp%area) * inv_sum_area
+    rp%scorch_ht(:)         = (dp%scorch_ht(:)*dp%area + rp%scorch_ht(:)*rp%area) * inv_sum_area
     rp%frac_burnt           = (dp%frac_burnt*dp%area + rp%frac_burnt*rp%area) * inv_sum_area
     rp%burnt_frac_litter(:) = (dp%burnt_frac_litter(:)*dp%area + rp%burnt_frac_litter(:)*rp%area) * inv_sum_area
     rp%btran_ft(:)          = (dp%btran_ft(:)*dp%area + rp%btran_ft(:)*rp%area) * inv_sum_area
