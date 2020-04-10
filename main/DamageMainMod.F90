@@ -55,7 +55,9 @@ contains
     total = 0.0_r8
     max = ncrowndamagemax + 1
 
-    do cd = 2,max
+    ! Go from 1 here, since not all surviving trees are
+    ! damaged
+    do cd = 1,max
 
        rl_cd = real(cd)
 

@@ -1012,6 +1012,7 @@ contains
          
          temp_cohort%n           = c_nplant * cpatch%area / real(ncohorts_to_create,r8)
          temp_cohort%dbh         = c_dbh
+         temp_cohort%crowndamage = 1
 
          call h_allom(c_dbh,temp_cohort%pft,temp_cohort%hite)
          temp_cohort%canopy_trim = 1.0_r8
@@ -1020,8 +1021,7 @@ contains
          call bagw_allom(temp_cohort%dbh,temp_cohort%pft, temp_cohort%crowndamage, &
               temp_cohort%branch_frac, b_agw)
          ! Calculate coarse root biomass from allometry
-         call bbgw_allom(temp_cohort%dbh,temp_cohort%pft, temp_cohort%crowndamage,&
-              temp_cohort%branch_frac, b_bgw)
+         call bbgw_allom(temp_cohort%dbh,temp_cohort%pft,b_bgw)
          
          ! Calculate the leaf biomass (calculates a maximum first, then applies canopy trim
          ! and sla scaling factors)
@@ -1038,7 +1038,7 @@ contains
          
          call bdead_allom( b_agw, b_bgw, b_sapw, temp_cohort%pft, b_struct )
          
-         call bstore_allom(temp_cohort%dbh, temp_cohort%pft, temp_cohort%crowndamage, &
+         call bstore_allom(temp_cohort%dbh, temp_cohort%pft, &
               temp_cohort%canopy_trim, b_store)
       
          temp_cohort%laimemory = 0._r8
@@ -1135,7 +1135,7 @@ contains
               temp_cohort%coage, temp_cohort%dbh, &
               prt_obj, temp_cohort%laimemory,temp_cohort%sapwmemory, temp_cohort%structmemory, &
               cstatus, rstatus, temp_cohort%canopy_trim, &
-              1, temp_cohort%crowndamage, csite%spread, bc_in)
+              1, temp_cohort%crowndamage, temp_cohort%branch_frac, csite%spread, bc_in)
 
          deallocate(temp_cohort) ! get rid of temporary cohort
 

@@ -210,7 +210,7 @@ contains
     ! Use allometry to compute initial values
     
     ! Leaf biomass (carbon)
-    call bleaf(ccohort%dbh, ipft, canopy_trim, leaf_c)
+    call bleaf(ccohort%dbh, ipft,ccohort%crowndamage, canopy_trim, leaf_c)
     
     ! Fine-root biomass (carbon)
     call bfineroot(ccohort%dbh, ipft, canopy_trim, fnrt_c)
@@ -223,7 +223,7 @@ contains
     call bagw_allom(ccohort%dbh, ipft, ccohort%crowndamage, ccohort%branch_frac, agw_c)
     
     ! Below ground woody biomass (carbon)
-    call bbgw_allom(ccohort%dbh, ipft, ccohort%crowndamage, ccohort%branch_frac, bgw_c)
+    call bbgw_allom(ccohort%dbh, ipft, bgw_c)
     
     ! Total structural biomass (carbon)
     call bdead_allom(agw_c, bgw_c, sapw_c, ipft, struct_c) 

@@ -2333,7 +2333,7 @@ end subroutine flush_hvars
                   
                   associate( scpf => ccohort%size_by_pft_class, &
                        scls => ccohort%size_class, &
-                       icdam => ccohort%crowndamage )
+                       icdam => ccohort%crowndamage, &
                        cacls => ccohort%coage_class, &
                        capf => ccohort%coage_by_pft_class)
      

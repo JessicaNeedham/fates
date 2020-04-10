@@ -1399,7 +1399,7 @@ contains
     ! currentCohort%treesai    ! SAI per unit crown area  (m2/m2)
     ! currentCohort%lai        ! LAI per unit canopy area (m2/m2)
     ! currentCohort%sai        ! SAI per unit canopy area (m2/m2)
-    ! currentCohort%NV         ! The number of discrete vegetation
+    ! currentCohort%nv         ! The number of discrete vegetation
     !                          ! layers needed to describe this crown
     !
     ! The following patch level diagnostics are updated here:
@@ -1425,7 +1425,8 @@ contains
     ! !USES:
 
     use EDtypesMod           , only : area, dinc_ed, hitemax, n_hite_bins
-  
+    use PRTLossFluxesMod     , only : PRTDamageLosses
+    use FatesAllometryMod    , only : bleaf
     !
     ! !ARGUMENTS    
     type(ed_site_type)     , intent(inout) :: currentSite
@@ -1454,8 +1455,10 @@ contains
     real(r8) :: max_chite                ! top of cohort canopy      (m)
     real(r8) :: lai                      ! summed lai for checking m2 m-2
     real(r8) :: snow_depth_avg           ! avg snow over whole site
-    real(r8) :: leaf_c                   ! leaf carbon [kg]
-    
+    real(r8) :: leaf_c                   ! leaf carbon [kgC]
+    real(r8) :: bleaf_d
+    real(r8) :: bleaf_target
+    real(r8) :: bleaf_treelai
     !----------------------------------------------------------------------
 
 
@@ -1507,24 +1510,49 @@ contains
 
           leaf_c          = currentCohort%prt%GetState(leaf_organ,all_carbon_elements)
 
-          currentCohort%treelai = tree_lai(leaf_c, currentCohort%pft, currentCohort%c_area, &
-                                           currentCohort%n, currentCohort%canopy_layer,               &
-                                           currentPatch%canopy_layer_tlai,currentCohort%vcmax25top )    
+          
+          call bleaf(currentCohort%dbh, currentCohort%pft, currentCohort%crowndamage, &
+               currentCohort%canopy_trim, bleaf_d)
+          
+          !currentCohort%treelai = tree_lai(leaf_c, currentCohort%pft, currentCohort%c_area, &
+           !                                currentCohort%n, currentCohort%canopy_layer,     &
+            !                               currentPatch%canopy_layer_tlai,currentCohort%vcmax25top )    
 
-          currentCohort%treesai = tree_sai(currentCohort%pft, currentCohort%dbh, &
+          currentCohort%treelai = tree_lai(bleaf_d, currentCohort%pft, currentCohort%c_area, &
+                                           currentCohort%n, currentCohort%canopy_layer,     &
+                                           currentPatch%canopy_layer_tlai,currentCohort%vcmax25top )    
+          
+
+          currentCohort%treesai = tree_sai(currentCohort%pft, currentCohort%crowndamage, &
+                                           currentCohort%dbh, &
                                            currentCohort%canopy_trim, &
                                            currentCohort%n, currentCohort%canopy_layer, &
                                            currentSite%spread,                          & 
                                            currentPatch%canopy_layer_tlai, currentCohort%treelai , &
                                            currentCohort%vcmax25top,4)  
-
+        
           currentCohort%lai =  currentCohort%treelai *currentCohort%c_area/currentPatch%total_canopy_area 
-          currentCohort%sai =  currentCohort%treesai *currentCohort%c_area/currentPatch%total_canopy_area  
+          currentCohort%sai =  currentCohort%treesai *currentCohort%c_area/currentPatch%total_canopy_area
+
 
           ! Number of actual vegetation layers in this cohort's crown
           currentCohort%nv =  ceiling((currentCohort%treelai+currentCohort%treesai)/dinc_ed)  
 
-          currentPatch%ncan(cl,ft) = max(currentPatch%ncan(cl,ft),currentCohort%NV)
+          if(currentCohort%nv > 25) then
+         !    write(fates_log(),*)'leaf_c', leaf_c
+             write(fates_log(),*)'bleaf_d', bleaf_d
+             !    write(fates_log(),*)'currentCohort%c_area', currentCohort%c_area
+             write(fates_log(),*)'currentCohort%crowndamage', currentCohort%crowndamage
+         !    write(fates_log(),*)'currentCohort%n', currentCohort%n
+         !    write(fates_log(),*)'currentCohort%canopy_layer', currentCohort%canopy_layer
+         !    write(fates_log(),*)'canopy_lai', currentPatch%canopy_layer_tlai
+             write(fates_log(),*)'currentCohort%nv', currentCohort%nv
+             write(fates_log(),*)'currentCohort%treelai', currentCohort%treelai
+             write(fates_log(),*)'currentCohort%treesai', currentCohort%treesai
+         !    write(fates_log(),*)
+          end if
+          
+          currentPatch%ncan(cl,ft) = max(currentPatch%ncan(cl,ft),currentCohort%nv)
 
           patch_lai = patch_lai + currentCohort%lai
 
@@ -1672,7 +1700,7 @@ contains
                 ! before dividing it by the total area. Fill up layer for whole layers.  
                 ! --------------------------------------------------------------------------
                 
-                do iv = 1,currentCohort%NV
+                do iv = 1,currentCohort%nv
                    
                    ! This loop builds the arrays that define the effective (not snow covered)
                    ! and total (includes snow covered) area indices for leaves and stems
@@ -1680,11 +1708,11 @@ contains
                    ! is obscured by snow.
                    
                    layer_top_hite = currentCohort%hite - &
-                         ( real(iv-1,r8)/currentCohort%NV * currentCohort%hite *  &
+                         ( real(iv-1,r8)/currentCohort%nv * currentCohort%hite *  &
                          EDPftvarcon_inst%crown(currentCohort%pft) )
                    
                    layer_bottom_hite = currentCohort%hite - &
-                         ( real(iv,r8)/currentCohort%NV * currentCohort%hite * &
+                         ( real(iv,r8)/currentCohort%nv * currentCohort%hite * &
                          EDPftvarcon_inst%crown(currentCohort%pft) )
                    
                    fraction_exposed = 1.0_r8
@@ -1705,13 +1733,13 @@ contains
                    fraction_exposed= 1.0_r8
                    ! =========== OVER-WRITE =================
                    
-                   if(iv==currentCohort%NV) then
+                   if(iv==currentCohort%nv) then
                       remainder = (currentCohort%treelai + currentCohort%treesai) - &
                             (dinc_ed*real(currentCohort%nv-1,r8))
                       if(remainder > dinc_ed )then
                          write(fates_log(), *)'ED: issue with remainder', &
                                currentCohort%treelai,currentCohort%treesai,dinc_ed, & 
-                               currentCohort%NV,remainder
+                               currentCohort%nv,remainder
                          call endrun(msg=errMsg(sourcefile, __LINE__))
                       endif
                    else

@@ -287,7 +287,6 @@ contains
     use FatesAllometryMod    , only : bleaf
     use FatesAllometryMod    , only : carea_allom
     use DamageMainMod        , only : get_crown_reduction
-    use PRTLossFluxesMod     , only : PRTDamageLosses
     use PRTGenericMod        , only : leaf_organ
     use FatesInterfaceMod, only : hlm_use_cohort_age_tracking
     use FatesConstantsMod, only : itrue
@@ -463,17 +462,6 @@ contains
              call updateSizeDepTreeHydProps(currentSite,currentCohort, bc_in)
              call updateSizeDepTreeHydStates(currentSite,currentCohort)
           end if
-
-
-          
-          ! JN Tempory code to increase damage with size - just to test
-          ! all the other damage code works. Replace this with
-          ! more mechanistic drivers later
-          ! We don't lose mass at this stage - that comes in the disturbance regimes in
-          ! EDPatchDynamicsMod.
-!          if(EDPftvarcon_inst%woody(currentCohort%pft) == 1) then
- !             currentCohort%crowndamage = INT(min(ncrowndamagemax,ceiling(currentCohort%dbh/10.0_r8)))
-  !        end if
 
           ! if we are in age-dependent mortality mode
           if (hlm_use_cohort_age_tracking .eq. itrue) then

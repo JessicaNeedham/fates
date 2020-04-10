@@ -97,13 +97,7 @@ contains
          end do
 
          ! Allocate fraction of biomass in branches
-         this%branch_frac(ft) = 0.0_r8
-
-         do c = 1,(ncwd-1)
-            this%branch_frac(ft) = this%branch_frac(ft) + SF_val_CWD_frac(c)
-         end do
-         
-
+         this%branch_frac(ft) = sum(SF_val_CWD_frac(1:3))
          
       end do !ft 
 

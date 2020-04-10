@@ -447,9 +447,13 @@ contains
     real(r8) :: cd_frac
     integer  :: cd_int
 
-    
-    !---------------------------------------------------------------------
+    integer  :: cd_minus
 
+    real(r8), allocatable :: num_tree_check(:)
+    !---------------------------------------------------------------------
+    allocate(num_tree_check(ncrowndamagemax))
+    num_tree_check(:) = 0.0_r8
+    
     storesmallcohort => null() ! storage of the smallest cohort for insertion routine
     storebigcohort   => null() ! storage of the largest cohort for insertion routine 
 
@@ -1057,8 +1061,7 @@ contains
                            nc_d%prt%GetState(repro_organ, all_carbon_elements)
                       leaf_loss_prt = leaf_loss_prt + (leaf_m_pre - leaf_m_post)*nc_d%n
 
-                      write(fates_log(),*) 'branch_frac = ', nc_d%branch_frac
-                      
+          
                       sapw_m_pre = nc_d%prt%GetState(sapw_organ, all_carbon_elements)
                       call PRTDamageLosses(nc_d%prt, sapw_organ, mass_frac * &
                            nc_d%branch_frac)
@@ -1118,7 +1121,7 @@ contains
                          if(cd_n > nearzero) then
 
                             cd_frac_total = cd_frac_total + cd_frac
-                                  
+                            
                             allocate(nc_d)  ! new cohort surviving but damaged
                             if(hlm_use_planthydro.eq.itrue) call InitHydrCohort(CurrentSite,nc_d)
 
@@ -1141,11 +1144,15 @@ contains
                             ! new number densities - we just do damaged cohort here -
                             ! undamaged at the end of the cohort loop once we know how many damaged to
                             ! subtract
+                           
                             nc_d%n = nc%n * cd_frac
+                            num_tree_check(cd) = num_tree_check(cd) + nc_d%n
                             nc_d%crowndamage = cd
-                            ! update crown area here - for cohort fusion and canopy organisation below
+
+                            ! update crown area here - for cohort fusion and canopy organisation below 
                             call carea_allom(nc_d%dbh, nc_d%n, currentSite%spread, nc_d%pft, &
-                                 nc_d%crowndamage, nc_d%c_area)
+                                nc_d%crowndamage, nc_d%c_area)
+                            
                             call get_crown_reduction(nc_d%crowndamage, mass_frac)
                             
                             leaf_m_pre = nc_d%prt%GetState(leaf_organ, all_carbon_elements) + &
@@ -1192,6 +1199,12 @@ contains
                             new_patch%tallest  => storebigcohort 
                             new_patch%shortest => storesmallcohort   
 
+                         !   leaf_m_post = nc_d%prt%GetState(leaf_organ, all_carbon_elements) 
+                         !   leaf_c = nc%prt%GetState(leaf_organ, all_carbon_elements) 
+                         !   write(fates_log(),*) 'cd:', cd
+                         !   write(fates_log(),*) 'leaf_c: ', leaf_c
+                         !   write(fates_log(),*) 'leaf_c damage: ', leaf_m_post
+                            
                          end if ! end if new n is large enough
 
                       end do ! end crowndamage loop
@@ -1209,6 +1222,7 @@ contains
 
                 end if  ! end if understory and woody
 
+                
                 ! Put new undamaged cohorts in the correct place in the linked list
                 if (nc%n > 0.0_r8) then   
                    storebigcohort   =>  new_patch%tallest
@@ -1275,6 +1289,7 @@ contains
           
        enddo ! currentPatch patch loop.
 
+       !write(fates_log(),*) 'num_tree_check_biomass', num_tree_check
       !*************************/
       !**  INSERT NEW PATCH(ES) INTO LINKED LIST    
       !**********`***************/
@@ -2125,7 +2140,6 @@ contains
     type(ed_patch_type) , intent(inout), target :: newPatch
     real(r8)            , intent(in)            :: patch_site_areadis
     real(r8), intent(out) :: total_damage_litter   ! just for debugging purposes
-
     !
     ! !LOCAL VARIABLES:
     type(ed_cohort_type), pointer      :: currentCohort
@@ -2164,8 +2178,12 @@ contains
     real(r8) :: lower
     real(r8) :: upper
     real(r8) :: cd_frac
-   
-    !---------------------------------------------------------------------    
+
+    real(r8), allocatable :: num_tree_check_litter(:)
+    
+    !---------------------------------------------------------------------
+    allocate(num_tree_check_litter(ncrowndamagemax))
+    num_tree_check_litter(:) = 0.0_r8
     ! m2
     remainder_area = currentPatch%area - patch_site_areadis
     ! fraction of litter to retain (remain area frac * how much
@@ -2244,12 +2262,12 @@ contains
 
                 ! branch loss
                 branch_loss = (sapw_m + struct_m) * crown_reduction * &
-                     EDPftvarcon_inst%allom_agb_frac(pft)
+                     currentCohort%branch_frac * num_trees
 
               
-                do c=1,ncwd
+                do c=1,(ncwd-1)
                    
-                   branch_donatable_mass = num_trees * branch_loss * SF_val_CWD_frac(c)
+                   branch_donatable_mass = branch_loss * SF_val_CWD_frac(c)
 
                    ! Transfer wood of dying trees to AG CWD pools
                    new_litt%ag_cwd(c) = new_litt%ag_cwd(c) + branch_donatable_mass * donate_m2
@@ -2262,7 +2280,7 @@ contains
                
                 ! should match leaf damage that is printed after PRTDamageLosses is called
                 total_damage_litter = total_damage_litter + leaf_donatable_mass + &
-                     branch_donatable_mass
+                     branch_loss
 
              case(2) ! defines a distribution of damage for surviving trees
                
@@ -2276,7 +2294,9 @@ contains
 
                    ! if non negligable get litter
                    if (num_trees_cd > nearzero ) then
-               
+
+                      num_tree_check_litter(cd) = num_tree_check_litter(cd) + num_trees_cd
+                      
                       call get_crown_reduction(cd_int, crown_reduction)
 
                       ! leaf loss in kg
@@ -2298,12 +2318,13 @@ contains
 
                       ! branch loss
                       branch_loss = (sapw_m + struct_m) * crown_reduction * &
-                           EDPftvarcon_inst%allom_agb_frac(pft)
+                           currentCohort%branch_frac * num_trees_cd
 
+                      
                    
-                      do c=1,ncwd
+                      do c=1,(ncwd-1)
 
-                         branch_donatable_mass = num_trees_cd * branch_loss * SF_val_CWD_frac(c)
+                         branch_donatable_mass = branch_loss * SF_val_CWD_frac(c)
                             
                          ! Transfer wood of dying trees to AG CWD pools
                          new_litt%ag_cwd(c) = new_litt%ag_cwd(c) + branch_donatable_mass * donate_m2
@@ -2317,7 +2338,7 @@ contains
 
                       ! should match leaf damage that is printed after PRTDamageLosses is called
                       total_damage_litter = total_damage_litter + leaf_donatable_mass + &
-                           branch_donatable_mass
+                           branch_loss
 
 
                    end if ! end if non-negligable
@@ -2336,10 +2357,14 @@ contains
 
           currentCohort => currentCohort%taller
 
-       enddo !currentCohort         
+       enddo !currentCohort
 
+    !   if(sum(num_tree_check_litter) > 0.0_r8) then
+     !     write(fates_log(),*) 'num_tree_check_litter', num_tree_check_litter
+     !  end if
+
+       
     enddo ! end element
-
 
     return
   end subroutine damage_litter_fluxes

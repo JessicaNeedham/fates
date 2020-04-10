@@ -457,17 +457,17 @@ contains
     call bsap_allom(dbh,ipft,icrowndamage,branch_frac, canopy_trim,sapw_area,target_sapw_c)
     
     ! Target total above ground biomass in woody/fibrous tissues  [kgC]
-    call bagw_allom(dbh,ipft, icrowndamage, branch_frac, target_agw_c)
+    call bagw_allom(dbh,ipft, 1, 1.0_r8, target_agw_c)
     
     ! Target total below ground biomass in woody/fibrous tissues [kgC] 
-    call bbgw_allom(dbh,ipft, icrowndamage, branch_frac, target_bgw_c)
+    call bbgw_allom(dbh,ipft, target_bgw_c)
     
     ! Target total dead (structrual) biomass [kgC]
     call bdead_allom( target_agw_c, target_bgw_c, target_sapw_c, ipft, target_struct_c)
     
     ! Target leaf biomass according to allometry and trimming
     if(leaf_status==2) then
-        call bleaf(dbh,ipft,icrowndamage,canopy_trim,target_leaf_c)
+        call bleaf(dbh,ipft,1,canopy_trim,target_leaf_c)
     else
         target_leaf_c = 0._r8
     end if
@@ -476,7 +476,7 @@ contains
     call bfineroot(dbh,ipft,canopy_trim,target_fnrt_c)
     
     ! Target storage carbon [kgC,kgC/cm]
-    call bstore_allom(dbh,ipft,icrowndamage,canopy_trim,target_store_c)
+    call bstore_allom(dbh,ipft,canopy_trim,target_store_c)
 
 
     ! -----------------------------------------------------------------------------------
@@ -915,12 +915,9 @@ contains
       real(8)  :: branch_frac    ! fraction of biomass in branches
       real(r8) :: canopy_trim    ! Canopy trimming function (boundary condition [0-1]
       real(r8) :: ct_leaf    ! target leaf biomass, dummy var (kgC)
-      real(r8) :: ct_leaf_damage ! leaf biomass after damage (kgC)
       real(r8) :: ct_fnrt   ! target fine-root biomass, dummy var (kgC)
       real(r8) :: ct_sap     ! target sapwood biomass, dummy var (kgC)
-      real(r8) :: ct_sap_damage ! target sapwood biomass, after damage, (kgC)
       real(r8) :: ct_agw     ! target aboveground wood, dummy var (kgC)
-      real(r8) :: ct_agw_damage ! damage aboveground wood, 
       real(r8) :: ct_bgw     ! target belowground wood, dummy var (kgC)
       real(r8) :: ct_store   ! target storage, dummy var (kgC)
       real(r8) :: ct_dead    ! target structural biomas, dummy var (kgC)
@@ -956,16 +953,15 @@ contains
         icrowndamage = int(intgr_params(ac_bc_in_id_cdamage))
         branch_frac = intgr_params(ac_bc_in_id_branch_frac)
 
-        call bleaf(dbh,ipft,icrowndamage,canopy_trim,ct_leaf,ct_leaf_damage, dbldd=ct_dleafdd)
+        call bleaf(dbh,ipft,icrowndamage,canopy_trim,ct_leaf, dbldd=ct_dleafdd)
         call bfineroot(dbh,ipft,canopy_trim,ct_fnrt,ct_dfnrtdd)
-        call bsap_allom(dbh,ipft,icrowndamage,branch_frac, canopy_trim,sapw_area,ct_sap,ct_dsapdd, &
-             ct_sap_damage)
+        call bsap_allom(dbh,ipft,icrowndamage,branch_frac, canopy_trim,sapw_area,ct_sap,ct_dsapdd)
 
-        call bagw_allom(dbh,ipft, icrowndamage, branch_frac, ct_agw,ct_dagwdd, ct_agw_damage)
-        call bbgw_allom(dbh,ipft, icrowndamage, branch_frac, ct_agw_damage, ct_dbgwdd)
-        call bdead_allom(ct_agw_damage,ct_bgw, ct_sap_damage, ipft, ct_dead, &
+        call bagw_allom(dbh,ipft, icrowndamage, branch_frac, ct_agw,ct_dagwdd)
+        call bbgw_allom(dbh,ipft,ct_agw, ct_dbgwdd)
+        call bdead_allom(ct_agw,ct_bgw, ct_sap, ipft, ct_dead, &
                          ct_dagwdd, ct_dbgwdd, ct_dsapdd, ct_ddeaddd)
-        call bstore_allom(dbh,ipft,icrowndamage,canopy_trim,ct_store,ct_dstoredd)
+        call bstore_allom(dbh,ipft,canopy_trim,ct_store,ct_dstoredd)
         
         ! fraction of carbon going towards reproduction
         if (dbh <= EDPftvarcon_inst%dbh_repro_threshold(ipft)) then ! cap on leaf biomass

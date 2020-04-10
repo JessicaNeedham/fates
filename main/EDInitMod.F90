@@ -429,7 +429,7 @@ contains
     ! initialize new cohorts on bare ground
     !
     ! !USES:
-    !
+    use FatesParameterDerivedMod , only : param_derived
     
     ! !ARGUMENTS    
     type(ed_site_type), intent(inout),  pointer  :: site_in
@@ -442,6 +442,7 @@ contains
     integer  :: cstatus
     integer  :: pft
     integer  :: crowndamage ! which crown damage class
+    real     :: branch_frac ! fraction of biomass in branches
     integer  :: iage       ! index for leaf age loop
     integer  :: el         ! index for element loop
     integer  :: element_id ! element index consistent with defs in PRTGeneric
@@ -478,7 +479,7 @@ contains
        temp_cohort%pft         = pft
        temp_cohort%n           = EDPftvarcon_inst%initd(pft) * patch_in%area
        temp_cohort%hite        = EDPftvarcon_inst%hgt_min(pft)
-       temp_cohort%branch_frac = 0.0_r8
+       temp_cohort%branch_frac = param_derived%branch_frac(pft)
        
        ! Assume no damage to begin with - since we assume no damage
        ! we do not need to initialise branch frac just yet. 
@@ -494,8 +495,7 @@ contains
             temp_cohort%branch_frac, c_agw)
 
        ! Calculate coarse root biomass from allometry
-       call bbgw_allom(temp_cohort%dbh,pft,temp_cohort%crowndamage,&
-            temp_cohort%branch_frac, c_bgw)
+       call bbgw_allom(temp_cohort%dbh,pft,c_bgw)
 
        ! Calculate the leaf biomass from allometry
        ! (calculates a maximum first, then applies canopy trim)
@@ -512,7 +512,7 @@ contains
        
        call bdead_allom( c_agw, c_bgw, c_sapw, pft, c_struct )
 
-       call bstore_allom(temp_cohort%dbh, pft,temp_cohort%crowndamage, &
+       call bstore_allom(temp_cohort%dbh, pft, &
             temp_cohort%canopy_trim, c_store)
 
        temp_cohort%laimemory = 0._r8
@@ -617,8 +617,9 @@ contains
 
        call create_cohort(site_in, patch_in, pft, temp_cohort%n, temp_cohort%hite, &
             temp_cohort%coage, temp_cohort%dbh, prt_obj, temp_cohort%laimemory,&
-            temp_cohort_sapwmemory, temp_cohort%structmemory, cstatus, rstatus,        &
-             temp_cohort%canopy_trim, 1, temp_cohort%crowndamage, site_in%spread, bc_in)
+            temp_cohort%sapwmemory, temp_cohort%structmemory, cstatus, rstatus,        &
+            temp_cohort%canopy_trim, 1, temp_cohort%crowndamage, temp_cohort%branch_frac, &
+            site_in%spread, bc_in)
 
        deallocate(temp_cohort) ! get rid of temporary cohort
 

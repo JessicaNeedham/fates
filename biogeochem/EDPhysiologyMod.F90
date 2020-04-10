@@ -393,6 +393,11 @@ contains
     real(r8) :: lai_current      ! the LAI in the current leaf layer
     real(r8) :: cumulative_lai   ! the cumulative LAI, top down, to the leaf layer of interest
 
+
+    !real(r8) :: bleaf1
+    !real(r8) :: bleaf2
+    !real(r8) :: leaf_c1
+    !real(r8) :: leaf_c2
     !----------------------------------------------------------------------
 
     currentPatch => currentSite%youngest_patch
@@ -401,6 +406,15 @@ contains
        currentCohort => currentPatch%tallest
        do while (associated(currentCohort)) 
 
+     !      call bleaf(currentCohort%dbh, currentCohort%pft, currentCohort%crowndamage, &
+      !         currentCohort%canopy_trim, bleaf1)
+       !   leaf_c1   = currentCohort%prt%GetState(leaf_organ,all_carbon_elements)
+
+        !  write(fates_log(),*) 'cd : ', currentCohort%crowndamage
+         ! write(fates_log(),*) 'bleaf1', bleaf1
+          !write(fates_log(),*) 'leaf_c1', leaf_c1 
+         
+          
           trimmed = .false.
           ipft = currentCohort%pft
           call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread,currentCohort%pft,&
@@ -412,11 +426,11 @@ contains
                                            currentCohort%n, currentCohort%canopy_layer,               &
                                            currentPatch%canopy_layer_tlai,currentCohort%vcmax25top )    
 
-          currentCohort%treesai = tree_sai(currentCohort%pft, currentCohort%dbh, &
-                                           currentCohort%canopy_trim, &
-                                           currentCohort%n,currentCohort%canopy_layer,currentSite%spread,& 
-                                           currentPatch%canopy_layer_tlai, currentCohort%treelai, &
-                                           currentCohort%vcmax25top,0 )  
+          currentCohort%treesai = tree_sai(currentCohort%pft, currentCohort%crowndamage, &
+               currentCohort%dbh, currentCohort%canopy_trim, &
+               currentCohort%n,currentCohort%canopy_layer,currentSite%spread,& 
+               currentPatch%canopy_layer_tlai, currentCohort%treelai, &
+               currentCohort%vcmax25top,0 )  
 
           currentCohort%nv      = ceiling((currentCohort%treelai+currentCohort%treesai)/dinc_ed)
 
@@ -427,7 +441,7 @@ contains
              call endrun(msg=errMsg(sourcefile, __LINE__))
           endif
 
-          call bleaf(currentcohort%dbh,ipft,currentcohort%crowndamage,&
+          call bleaf(currentcohort%dbh,ipft,1,&
                currentcohort%canopy_trim,tar_bl)
 
           if ( int(EDPftvarcon_inst%allom_fmode(ipft)) .eq. 1 ) then
@@ -537,7 +551,14 @@ contains
           if ( debug ) then
              write(fates_log(),*) 'trimming',currentCohort%canopy_trim
           endif
-         
+
+         ! call bleaf(currentCohort%dbh, currentCohort%pft, currentCohort%crowndamage, &
+         !      currentCohort%canopy_trim, bleaf2)
+         ! leaf_c2   = currentCohort%prt%GetState(leaf_organ,all_carbon_elements)
+
+          !write(fates_log(),*) 'bleaf2', bleaf2
+          !write(fates_log(),*) 'leaf_c2', leaf_c2 
+          
           ! currentCohort%canopy_trim = 1.0_r8 !FIX(RF,032414) this turns off ctrim for now. 
           currentCohort => currentCohort%shorter
        enddo
@@ -1500,10 +1521,9 @@ contains
             temp_cohort%canopy_trim,a_sapw, c_sapw)
        call bagw_allom(temp_cohort%dbh,ft,temp_cohort%crowndamage,temp_cohort%branch_frac,&
             c_agw)
-       call bbgw_allom(temp_cohort%dbh, ft, temp_cohort%crowndamage, &
-            temp_cohort%branch_frac, c_bgw)
+       call bbgw_allom(temp_cohort%dbh, ft,c_bgw)
        call bdead_allom(c_agw,c_bgw,c_sapw,ft,c_struct)
-       call bstore_allom(temp_cohort%dbh,ft,temp_cohort%crowndamage,&
+       call bstore_allom(temp_cohort%dbh,ft,&
             temp_cohort%canopy_trim,c_store)
 
        ! Default assumption is that leaves are on
@@ -1715,7 +1735,7 @@ contains
                 temp_cohort%laimemory, temp_cohort%sapwmemory, temp_cohort%structmemory, &
                 cohortstatus, recruitstatus, &
                 temp_cohort%canopy_trim, currentPatch%NCL_p, &
-                temp_cohort%crowndamage,  currentSite%spread, bc_in)
+                temp_cohort%crowndamage, temp_cohort%branch_frac, currentSite%spread, bc_in)
 
            ! Note that if hydraulics is on, the number of cohorts may had
            ! changed due to hydraulic constraints.

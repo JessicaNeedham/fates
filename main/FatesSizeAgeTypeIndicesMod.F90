@@ -5,7 +5,7 @@ module FatesSizeAgeTypeIndicesMod
   use FatesInterfaceMod,     only : nlevage
   use FatesInterfaceMod,     only : nlevheight
   use FatesInterfaceMod,     only : nlevcoage
-  use FatesInterfaceMod,     only : ncrowndamagemax
+  use EDTypesMod,            only : ncrowndamagemax
   use EDParamsMod,           only : ED_val_history_sizeclass_bin_edges
   use EDParamsMod,           only : ED_val_history_ageclass_bin_edges
   use EDParamsMod,           only : ED_val_history_height_bin_edges
