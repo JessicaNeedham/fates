@@ -571,6 +571,7 @@ contains
     real(r8) :: crown_reduction 
     
     call blmax_allom(d,ipft,blmax,dblmaxdd)
+
     
     ! -------------------------------------------------------------------------
     ! Adjust for canopies that have become so deep that their bottom layer is 

@@ -290,6 +290,7 @@ contains
     use PRTGenericMod        , only : leaf_organ
     use FatesInterfaceMod, only : hlm_use_cohort_age_tracking
     use FatesConstantsMod, only : itrue
+    use PRTGenericMod        , only : all_carbon_elements
 
     ! !ARGUMENTS:
     
@@ -312,8 +313,7 @@ contains
     real(r8) :: delta_dbh             ! correction for dbh
     real(r8) :: delta_hite            ! correction for hite
     real(r8) :: leaf_loss
-    real(r8) :: leaf_c_damage
-    real(r8) :: leaf_c_target
+    real(r8) :: leaf_c
     real(r8) :: mass_frac
     real(r8) :: leaf_m_pre
     real(r8) :: leaf_m_post
@@ -353,7 +353,7 @@ contains
        currentCohort => currentPatch%shortest
        do while(associated(currentCohort)) 
 
-
+      
           ft = currentCohort%pft
 
           ! Calculate the mortality derivatives
@@ -575,10 +575,11 @@ contains
         ! This cohort count is used in the photosynthesis loop
         call count_cohorts(currentPatch)
 
-
         currentPatch => currentPatch%younger    
-    enddo
+     enddo
 
+  
+    
     ! FIX(RF,032414). This needs to be monthly, not annual
     ! If this is the second to last day of the year, then perform trimming
     if( hlm_day_of_year == hlm_days_per_year-1) then

@@ -454,7 +454,7 @@ contains
     ! -----------------------------------------------------------------------------------
     
     ! Target sapwood biomass according to allometry and trimming [kgC]
-    call bsap_allom(dbh,ipft,icrowndamage,branch_frac, canopy_trim,sapw_area,target_sapw_c)
+    call bsap_allom(dbh,ipft,1,1.0_r8, canopy_trim,sapw_area,target_sapw_c)
     
     ! Target total above ground biomass in woody/fibrous tissues  [kgC]
     call bagw_allom(dbh,ipft, 1, 1.0_r8, target_agw_c)

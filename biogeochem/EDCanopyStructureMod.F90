@@ -1219,8 +1219,8 @@ contains
        !calculate canopy area in each patch...
        currentCohort => currentPatch%tallest
        do while (associated(currentCohort))
-          call carea_allom(currentCohort%dbh,currentCohort%n, &
-                currentSite%spread,currentCohort%pft,currentCohort%crowndamage,currentCohort%c_area)
+          call carea_allom(currentCohort%dbh,currentCohort%n, currentSite%spread, &
+               currentCohort%pft,currentCohort%crowndamage,currentCohort%c_area)
           if( (EDPftvarcon_inst%woody(currentCohort%pft) .eq. 1 ) .and. &
               (currentCohort%canopy_layer .eq. 1 ) ) then
              sitelevel_canopyarea = sitelevel_canopyarea + currentCohort%c_area
@@ -1425,8 +1425,6 @@ contains
     ! !USES:
 
     use EDtypesMod           , only : area, dinc_ed, hitemax, n_hite_bins
-    use PRTLossFluxesMod     , only : PRTDamageLosses
-    use FatesAllometryMod    , only : bleaf
     !
     ! !ARGUMENTS    
     type(ed_site_type)     , intent(inout) :: currentSite
@@ -1456,9 +1454,6 @@ contains
     real(r8) :: lai                      ! summed lai for checking m2 m-2
     real(r8) :: snow_depth_avg           ! avg snow over whole site
     real(r8) :: leaf_c                   ! leaf carbon [kgC]
-    real(r8) :: bleaf_d
-    real(r8) :: bleaf_target
-    real(r8) :: bleaf_treelai
     !----------------------------------------------------------------------
 
 
@@ -1508,20 +1503,12 @@ contains
           ! Note that the canopy_layer_lai is also calculated in this loop
           ! but since we go top down in terms of plant size, we should be okay
 
+
           leaf_c          = currentCohort%prt%GetState(leaf_organ,all_carbon_elements)
 
-          
-          call bleaf(currentCohort%dbh, currentCohort%pft, currentCohort%crowndamage, &
-               currentCohort%canopy_trim, bleaf_d)
-          
-          !currentCohort%treelai = tree_lai(leaf_c, currentCohort%pft, currentCohort%c_area, &
-           !                                currentCohort%n, currentCohort%canopy_layer,     &
-            !                               currentPatch%canopy_layer_tlai,currentCohort%vcmax25top )    
-
-          currentCohort%treelai = tree_lai(bleaf_d, currentCohort%pft, currentCohort%c_area, &
+          currentCohort%treelai = tree_lai(leaf_c, currentCohort%pft, currentCohort%c_area, &
                                            currentCohort%n, currentCohort%canopy_layer,     &
                                            currentPatch%canopy_layer_tlai,currentCohort%vcmax25top )    
-          
 
           currentCohort%treesai = tree_sai(currentCohort%pft, currentCohort%crowndamage, &
                                            currentCohort%dbh, &
@@ -1530,27 +1517,14 @@ contains
                                            currentSite%spread,                          & 
                                            currentPatch%canopy_layer_tlai, currentCohort%treelai , &
                                            currentCohort%vcmax25top,4)  
-        
+
+          
           currentCohort%lai =  currentCohort%treelai *currentCohort%c_area/currentPatch%total_canopy_area 
           currentCohort%sai =  currentCohort%treesai *currentCohort%c_area/currentPatch%total_canopy_area
 
 
           ! Number of actual vegetation layers in this cohort's crown
           currentCohort%nv =  ceiling((currentCohort%treelai+currentCohort%treesai)/dinc_ed)  
-
-          if(currentCohort%nv > 25) then
-         !    write(fates_log(),*)'leaf_c', leaf_c
-             write(fates_log(),*)'bleaf_d', bleaf_d
-             !    write(fates_log(),*)'currentCohort%c_area', currentCohort%c_area
-             write(fates_log(),*)'currentCohort%crowndamage', currentCohort%crowndamage
-         !    write(fates_log(),*)'currentCohort%n', currentCohort%n
-         !    write(fates_log(),*)'currentCohort%canopy_layer', currentCohort%canopy_layer
-         !    write(fates_log(),*)'canopy_lai', currentPatch%canopy_layer_tlai
-             write(fates_log(),*)'currentCohort%nv', currentCohort%nv
-             write(fates_log(),*)'currentCohort%treelai', currentCohort%treelai
-             write(fates_log(),*)'currentCohort%treesai', currentCohort%treesai
-         !    write(fates_log(),*)
-          end if
           
           currentPatch%ncan(cl,ft) = max(currentPatch%ncan(cl,ft),currentCohort%nv)
 
