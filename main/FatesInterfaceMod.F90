@@ -1028,7 +1028,7 @@ contains
 
     ! ===================================================================================
     
-    subroutine set_fates_global_elements(use_fates)
+    subroutine set_fates_global_elements(use_fates, use_fates_cohort_age_tracking)
 
        ! --------------------------------------------------------------------------------
        !
@@ -1050,11 +1050,11 @@ contains
       use EDParamsMod, only : ED_val_history_height_bin_edges
       use EDParamsMod, only : ED_val_history_coageclass_bin_edges
       use CLMFatesParamInterfaceMod         , only : FatesReadParameters
-      use clm_varctl , only : use_fates_cohort_age_tracking
       
       implicit none
       
       logical,intent(in) :: use_fates    ! Is fates turned on?
+      logical,intent(in) :: use_fates_cohort_age_tracking ! Is cohort age tracking turned on?
       
       integer :: i
       integer :: maxCohortsPerPatch_age_tracking
