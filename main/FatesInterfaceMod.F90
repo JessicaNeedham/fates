@@ -1047,14 +1047,17 @@ contains
       use EDParamsMod, only : ED_val_history_height_bin_edges
       use EDParamsMod, only : ED_val_history_coageclass_bin_edges
       use CLMFatesParamInterfaceMod         , only : FatesReadParameters
+      use clm_varctl , only : use_fates_cohort_age_tracking
+      
       implicit none
       
       logical,intent(in) :: use_fates    ! Is fates turned on?
       
       integer :: i
-      
+      integer :: maxCohortsPerPatch_age_tracking
+  
       if (use_fates) then
-
+  
          ! first read the non-PFT parameters
          call FatesReadParameters()
 
@@ -1092,8 +1095,15 @@ contains
          ! These values are used to define the restart file allocations and general structure
          ! of memory for the cohort arrays
          
-         fates_maxElementsPerPatch = max(maxCohortsPerPatch, ndcmpy*numlevsoil_max ,ncwd*numlevsoil_max)
-
+         if (use_fates_cohort_age_tracking) then
+            maxCohortsPerPatch_age_tracking = 300
+            fates_maxElementsPerPatch = max(maxCohortsPerPatch_age_tracking, &
+                 ndcmpy*numlevsoil_max ,ncwd*numlevsoil_max)
+         else
+            fates_maxElementsPerPatch = max(maxCohortsPerPatch,&
+                 ndcmpy*numlevsoil_max ,ncwd*numlevsoil_max)
+         end if
+  
          if (maxPatchesPerSite * fates_maxElementsPerPatch <  numWaterMem) then
             write(fates_log(), *) 'By using such a tiny number of maximum patches and maximum cohorts'
             write(fates_log(), *) ' this could create problems for indexing in restart files'
