@@ -131,11 +131,7 @@ module EDParamsMod
    ! disturbance
    character(len=param_string_length),parameter,public :: damage_name_coll_exp = "fates_damage_coll_exp"
    
-   real(r8),protected,public :: damage_coll_case ! exponent in function describing distribution of collateral damage from
-   ! disturbance
-   character(len=param_string_length),parameter,public :: damage_name_coll_case = "fates_damage_coll_case"
-   
-
+ 
    ! Logging Control Parameters (ONLY RELEVANT WHEN USE_FATES_LOGGING = TRUE)
    ! ----------------------------------------------------------------------------------------------
 
@@ -338,10 +334,7 @@ contains
 
     call fates_params%RegisterParameter(name=damage_name_coll_exp, dimension_shape=dimension_shape_scalar, &
          dimension_names=dim_names_scalar)
-
-    call fates_params%RegisterParameter(name=damage_name_coll_case, dimension_shape=dimension_shape_scalar, &
-         dimension_names=dim_names_scalar)
-    
+ 
     call fates_params%RegisterParameter(name=logging_name_dbhmin, dimension_shape=dimension_shape_scalar, &
          dimension_names=dim_names_scalar)
 
@@ -496,9 +489,6 @@ contains
     call fates_params%RetreiveParameter(name=damage_name_coll_exp, &
          data=damage_coll_exp)
 
-     call fates_params%RetreiveParameter(name=damage_name_coll_case, &
-         data=damage_coll_case)
-
     call fates_params%RetreiveParameter(name=logging_name_dbhmin, &
           data=logging_dbhmin)
     
@@ -593,7 +583,6 @@ contains
         write(fates_log(),fmt0) 'bgc_soil_salinity = ', bgc_soil_salinity
         write(fates_log(),fmt0) 'damage_coll_under_frac = ', damage_coll_under_frac
         write(fates_log(),fmt0) 'damage_coll_exp = ', damage_coll_exp
-        write(fates_log(),fmt0) 'damage_coll_case = ', damage_coll_case
         write(fates_log(),fmt0) 'logging_dbhmin = ',logging_dbhmin
         write(fates_log(),fmt0) 'logging_collateral_frac = ',logging_collateral_frac
         write(fates_log(),fmt0) 'logging_coll_under_frac = ',logging_coll_under_frac

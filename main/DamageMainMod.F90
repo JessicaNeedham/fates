@@ -28,6 +28,7 @@ module DamageMainMod
   private
 
   public :: get_disturbance_collateral_damage_frac
+  public :: get_disturbance_canopy_damage_frac
   public :: get_crown_reduction
   
   logical :: debug = .false.  ! for debugging
@@ -76,7 +77,28 @@ contains
     return
   end subroutine get_disturbance_collateral_damage_frac
 
-  !------------------------------------------------------------------------------------                                                       
+  !------------------------------------------------------------------------------------
+
+  subroutine get_disturbance_canopy_damage_frac(crowndamage, dist_frac)
+
+    use EDTypesMod, only : ncrowndamagemax
+
+    integer, intent(in) :: crowndamage
+    real(r8), intent(out) :: dist_frac
+
+    ! local variables
+    real(r8) :: damage_fracs(ncrowndamagemax)
+
+    damage_fracs = (/0.85_r8, 0.075_r8, 0.05_r8, 0.02_r8, 0.005_r8/)
+
+    dist_frac = damage_fracs(crowndamage)
+    
+    
+    return
+  end subroutine get_disturbance_canopy_damage_frac
+
+!-----------------------------------------------------------------------------------
+  
   subroutine get_crown_reduction(crowndamage, crown_reduction)
 
     !------------------------------------------------------------------                                                                     
