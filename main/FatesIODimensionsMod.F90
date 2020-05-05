@@ -9,7 +9,7 @@ module FatesIODimensionsMod
     ! CLM/ALMs histFileMod.F90 and 
     character(*), parameter, public :: levcapf = 'fates_levcapf'      ! matches histFileMod
     character(*), parameter, public :: levcacls = 'fates_levcacls'    ! matches histFileMod
-   
+    character(*), parameter, public :: levcasc = 'fates_levcasc'      ! matches histFileMod
     character(*), parameter, public  :: cohort = 'cohort'           ! matches clm_varcon
     character(*), parameter, public  :: patch = 'patch'             ! matches clm_varcon
     character(*), parameter, public  :: column = 'column'           ! matches clm_varcon
@@ -55,6 +55,9 @@ module FatesIODimensionsMod
 
     ! levcacls = This is a structure that records the boundaries for the 
     ! number of cohort age class dimension
+
+    ! levcasc = This is a structure that records the boundaries for the 
+    ! number of cohort age class x size class dimension
 
     ! levpft = This is a structure that records the boundaries for the
     ! number of pft dimension
@@ -115,6 +118,8 @@ module FatesIODimensionsMod
        integer :: sizepft_class_end
        integer :: coagepf_class_begin
        integer :: coagepf_class_end
+       integer :: coagesc_class_begin
+       integer :: coagesc_class_end
        integer :: size_class_begin
        integer :: size_class_end
        integer :: coage_class_begin

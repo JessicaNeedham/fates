@@ -23,7 +23,8 @@ module FatesSizeAgeTypeIndicesMod
   public :: get_agepft_class_index
   public :: coagetype_class_index
   public :: get_coage_class_index
-
+  public :: get_coagesize_class_index
+  
 contains
 
   ! =====================================================================================
@@ -103,6 +104,25 @@ contains
 
   return
  end subroutine coagetype_class_index
+ ! ========================================================================================
+
+  function get_coagesize_class_index(dbh,coage) result(coage_by_size_class)
+     
+     ! Arguments
+     real(r8),intent(in) :: dbh
+     real(r8),intent(in) :: coage
+
+     integer             :: size_class
+     integer             :: coage_class
+     integer             :: coage_by_size_class
+     
+     size_class        = get_size_class_index(dbh)
+
+     coage_class         = get_age_class_index(coage)
+     
+     coage_by_size_class = (coage_class-1)*nlevsclass + size_class
+
+  end function get_coagesize_class_index
 
  ! ========================================================================================
 

@@ -204,7 +204,8 @@ module FatesInterfaceMod
    real(r8), public, allocatable :: fates_hdim_levcoage(:)         ! cohort age class lower bound dimension
    integer , public, allocatable :: fates_hdim_pfmap_levcapf(:)    ! map of pfts into cohort age class x pft dimension
    integer , public, allocatable :: fates_hdim_camap_levcapf(:)    ! map of cohort age class into cohort age x pft dimension
-  
+   integer , public, allocatable :: fates_hdim_camap_levcasc(:)    ! map of cohort age class into cohort age x size dimension
+   integer , public, allocatable :: fates_hdim_scmap_levcasc(:)    ! map of size class into cohort age x size dimension
 
    real(r8), public, allocatable :: fates_hdim_levsclass(:)        ! plant size class lower bound dimension
    integer , public, allocatable :: fates_hdim_pfmap_levscpf(:)    ! map of pfts into size-class x pft dimension
@@ -1213,7 +1214,9 @@ contains
        allocate( fates_hdim_levcoage(1:nlevcoage ))
        allocate( fates_hdim_pfmap_levcapf(1:nlevcoage*numpft))
        allocate( fates_hdim_camap_levcapf(1:nlevcoage*numpft))
-
+       allocate( fates_hdim_camap_levcasc(1:nlevcoage*nlevsclass))
+       allocate( fates_hdim_scmap_levcasc(1:nlevcoage*nlevsclass))
+       
        allocate( fates_hdim_levcan(nclmax))
        allocate( fates_hdim_levelem(num_elements))
        allocate( fates_hdim_canmap_levcnlf(nlevleaf*nclmax))
@@ -1366,7 +1369,17 @@ contains
           end do
        end do
 
+       
+       i=0
+       do isc=1,nlevsclass
+          do icoage=1,nlevcoage
+             i=i+1
+             fates_hdim_scmap_levcasc(i) = isc
+             fates_hdim_camap_levcasc(i) = icoage
+          end do
+       end do
 
+       
     end subroutine fates_history_maps
 
     ! ===================================================================================

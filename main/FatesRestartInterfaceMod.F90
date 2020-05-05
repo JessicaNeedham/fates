@@ -1433,6 +1433,7 @@ contains
     integer  :: io_idx_si_sc   ! each size-class index within site
     integer  :: io_idx_si_capf ! each cohort age-class x pft index within site
     integer  :: io_idx_si_cacls ! each cohort age class index within site
+    integer  :: io_idx_si_casc  ! each cohort age class x size class index within site
     integer  :: io_idx_si_cwd  ! each site-cwd index
     integer  :: io_idx_si_pft  ! each site-pft index
     integer  :: io_idx_si_vtmem ! indices for veg-temp memory at site
@@ -1567,6 +1568,7 @@ contains
           io_idx_si_sc   = io_idx_co_1st
           io_idx_si_capf = io_idx_co_1st
           io_idx_si_cacls= io_idx_co_1st
+          io_idx_si_casc = io_idx_co_1st
           
           ! recruitment rate
           do i_pft = 1,numpft
@@ -2186,6 +2188,7 @@ contains
      integer  :: io_idx_si_sc   ! each size-class index within site
      integer  :: io_idx_si_cacls ! each coage class index within site
      integer  :: io_idx_si_capf ! each cohort age class x pft index within site
+     integer  :: io_idx_si_casc ! each cohort age class x size class index within site
      integer  :: io_idx_si_cwd
      integer  :: io_idx_si_pft
 
@@ -2299,6 +2302,7 @@ contains
           io_idx_si_sc   = io_idx_co_1st
           io_idx_si_capf = io_idx_co_1st
           io_idx_si_cacls= io_idx_co_1st
+          io_idx_si_casc = io_idx_co_1st
           
           ! read seed_bank info(site-level, but PFT-resolved)
           do i_pft = 1,numpft 
@@ -2623,14 +2627,6 @@ contains
              io_idx_si_sc = io_idx_si_sc + 1
           end do
 
-       !   do i_cacls = i,nlevcoage
-        !     do i_pft = 1, numpft
-         !       sites(s)%ageflux_fusion(i_cacls, i_pft) = rio_ageflx_fusion_sicapf(io_idx_si_capf)
-          !      io_idx_si_capf = io_idx_si_capf + 1
-          !   end do
-          !   io_idx_si_cacls = io_idx_si_cacls + 1
-         ! end do
-          
          
           sites(s)%term_carbonflux_canopy   = rio_termcflux_cano_si(io_idx_si)
           sites(s)%term_carbonflux_ustory   = rio_termcflux_usto_si(io_idx_si)
