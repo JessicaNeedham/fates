@@ -112,6 +112,7 @@ module FatesHistoryInterfaceMod
   ! single dimension.  Examples of these are the following:
   ! scpf = size class x PFT
   ! cacpf = cohort age class x PFT
+  ! casc = cohort age class x size class 
   ! cnlf = canopy layer x leaf layer
   ! cnlfpft = canopy layer x leaf layer x PFT
   ! scag = size class bin x age bin
@@ -317,6 +318,8 @@ module FatesHistoryInterfaceMod
   integer :: ih_m10_si_capf
   integer :: ih_nplant_si_capf
 
+  integer :: ih_nplant_si_casc
+  
   integer :: ih_ar_si_scpf
   integer :: ih_ar_grow_si_scpf
   integer :: ih_ar_maint_si_scpf
@@ -575,7 +578,7 @@ module FatesHistoryInterfaceMod
      integer, private :: levelem_index_, levelpft_index_
      integer, private :: levelcwd_index_, levelage_index_
      integer, private :: levcacls_index_, levcapf_index_
-
+     integer, private :: levcasc_index_ 
      
    contains
      
@@ -599,6 +602,7 @@ module FatesHistoryInterfaceMod
      procedure :: levscls_index
      procedure :: levcapf_index
      procedure :: levcacls_index
+     procedure :: levcasc_index
      procedure :: levpft_index
      procedure :: levage_index
      procedure :: levfuel_index
@@ -627,6 +631,7 @@ module FatesHistoryInterfaceMod
      procedure, private :: set_levgrnd_index
      procedure, private :: set_levscpf_index
      procedure, private :: set_levcacls_index
+     procedure, private :: set_levcasc_index
      procedure, private :: set_levcapf_index
      procedure, private :: set_levscls_index
      procedure, private :: set_levpft_index
@@ -660,7 +665,7 @@ contains
 
     use FatesIODimensionsMod, only : patch, column, levgrnd, levscpf
     use FatesIODimensionsMod, only : levscls, levpft, levage
-    use FatesIODimensionsMod, only : levcacls, levcapf
+    use FatesIODimensionsMod, only : levcacls, levcapf, levcasc
     use FatesIODimensionsMod, only : levfuel, levcwdsc, levscag
     use FatesIODimensionsMod, only : levscagpft, levagepft
     use FatesIODimensionsMod, only : levcan, levcnlf, levcnlfpft
@@ -707,6 +712,11 @@ contains
     call this%dim_bounds(dim_count)%Init(levcacls, num_threads, &
          fates_bounds%coage_class_begin, fates_bounds%coage_class_end)
 
+    dim_count = dim_count + 1
+    call this%set_levcasc_index(dim_count)
+    call this%dim_bounds(dim_count)%Init(levcasc, num_threads, &
+         fates_bounds%coagesc_class_begin, fates_bounds%coagesc_class_end)
+    
     dim_count = dim_count + 1
     call this%set_levcapf_index(dim_count)
     call this%dim_bounds(dim_count)%Init(levcapf, num_threads, &
@@ -833,6 +843,10 @@ contains
     call this%dim_bounds(index)%SetThreadBounds(thread_index, &
          thread_bounds%coage_class_begin, thread_bounds%coage_class_end)
 
+    index = this%levcasc_index()
+    call this%dim_bounds(index)%SetThreadBounds(thread_index, &
+         thread_bounds%coagesc_class_begin, thread_bounds%coagesc_class_end)
+    
     index = this%levcapf_index()
     call this%dim_bounds(index)%SetThreadBounds(thread_index, &
          thread_bounds%coagepf_class_begin, thread_bounds%coagepf_class_end)
@@ -910,7 +924,7 @@ contains
     use FatesIOVariableKindMod, only : patch_r8, patch_ground_r8, patch_size_pft_r8
     use FatesIOVariableKindMod, only : site_r8, site_ground_r8, site_size_pft_r8
     use FatesIOVariableKindMod, only : site_size_r8, site_pft_r8, site_age_r8
-    use FatesIOVariableKindMod, only : site_coage_r8, site_coage_pft_r8
+    use FatesIOVariableKindMod, only : site_coage_r8, site_coage_pft_r8, site_coage_size_r8
     use FatesIOVariableKindMod, only : site_fuel_r8, site_cwdsc_r8, site_scag_r8
     use FatesIOVariableKindMod, only : site_scagpft_r8, site_agepft_r8
     use FatesIOVariableKindMod, only : site_can_r8, site_cnlf_r8, site_cnlfpft_r8
@@ -949,6 +963,9 @@ contains
     call this%set_dim_indices(site_coage_pft_r8, 1, this%column_index())
     call this%set_dim_indices(site_coage_pft_r8, 2, this%levcapf_index())
 
+    call this%set_dim_indices(site_coage_size_r8, 1, this%column_index())
+    call this%set_dim_indices(site_coage_size_r8, 2, this%levcasc_index())
+    
     call this%set_dim_indices(site_pft_r8, 1, this%column_index())
     call this%set_dim_indices(site_pft_r8, 2, this%levpft_index())
 
@@ -1135,6 +1152,21 @@ integer function levcapf_index(this)
   class(fates_history_interface_type), intent(in) :: this
   levcapf_index = this%levcapf_index_
 end function levcapf_index
+
+!=========================================================================
+ subroutine set_levcasc_index(this, index)
+   implicit none
+   class(fates_history_interface_type), intent(inout) :: this
+   integer, intent(in) :: index
+   this%levcasc_index_ = index
+ end subroutine set_levcasc_index
+
+integer function levcasc_index(this)
+  implicit none
+  class(fates_history_interface_type), intent(in) :: this
+  levcasc_index = this%levcasc_index_
+end function levcasc_index
+
 
  ! =======================================================================
  subroutine set_levpft_index(this, index)
@@ -1441,7 +1473,7 @@ end subroutine flush_hvars
     use FatesIOVariableKindMod, only : patch_r8, patch_ground_r8, patch_size_pft_r8
     use FatesIOVariableKindMod, only : site_r8, site_ground_r8, site_size_pft_r8
     use FatesIOVariableKindMod, only : site_size_r8, site_pft_r8, site_age_r8
-    use FatesIOVariableKindMod, only : site_coage_r8, site_coage_pft_r8
+    use FatesIOVariableKindMod, only : site_coage_r8, site_coage_pft_r8, site_coage_size_r8
     use FatesIOVariableKindMod, only : site_fuel_r8, site_cwdsc_r8, site_scag_r8
     use FatesIOVariableKindMod, only : site_scagpft_r8, site_agepft_r8
     use FatesIOVariableKindMod, only : site_can_r8, site_cnlf_r8, site_cnlfpft_r8
@@ -1492,6 +1524,10 @@ end subroutine flush_hvars
     ! site x cohort age-class
     index = index + 1
     call this%dim_kinds(index)%Init(site_coage_r8, 2)
+
+    ! site x cohort age-class/size
+    index = index + 1
+    call this%dim_kinds(index)%Init(site_coage_size_r8, 2)
 
     ! site x pft
     index = index + 1
@@ -1637,6 +1673,7 @@ end subroutine flush_hvars
     use FatesSizeAgeTypeIndicesMod, only : get_height_index
     use FatesSizeAgeTypeIndicesMod, only : sizetype_class_index
     use FatesSizeAgeTypeIndicesMod, only : coagetype_class_index
+    use FatesSizeAgeTypeIndicesMod, only : get_coagesize_class_index
     use EDTypesMod        , only : nlevleaf
     use EDParamsMod,           only : ED_val_history_height_bin_edges
 
@@ -1665,10 +1702,11 @@ end subroutine flush_hvars
     integer  :: cwd
     integer  :: elcwd, elpft            ! combined index of element and pft or cwd
     integer  :: i_scpf,i_pft,i_scls     ! iterators for scpf, pft, and scls dims
-    integer  :: i_cacls, i_capf      ! iterators for cohort age and cohort age x pft
+    integer  :: i_cacls, i_capf     ! iterators for cohort age and cohort age x pft
     integer  :: i_cwd,i_fuel            ! iterators for cwd and fuel dims
     integer  :: iscag        ! size-class x age index
     integer  :: iscagpft     ! size-class x age x pft index
+    integer  :: icasc        ! coage-class x size index
     integer  :: iagepft      ! age x pft index
     integer  :: ican, ileaf, cnlf_indx  ! iterators for leaf and canopy level
     integer  :: height_bin_max, height_bin_min   ! which height bin a given cohort's canopy is in
@@ -1847,6 +1885,7 @@ end subroutine flush_hvars
                hio_biomass_si_scls          => this%hvars(ih_biomass_si_scls)%r82d, &
                hio_nplant_si_scls         => this%hvars(ih_nplant_si_scls)%r82d, &
                hio_nplant_si_cacls        => this%hvars(ih_nplant_si_cacls)%r82d, &
+               hio_nplant_si_casc         => this%hvars(ih_nplant_si_casc)%r82d, &
                hio_nplant_canopy_si_scls         => this%hvars(ih_nplant_canopy_si_scls)%r82d, &
                hio_nplant_understory_si_scls     => this%hvars(ih_nplant_understory_si_scls)%r82d, &
                hio_lai_canopy_si_scls         => this%hvars(ih_lai_canopy_si_scls)%r82d, &
@@ -2077,7 +2116,8 @@ end subroutine flush_hvars
 
                call sizetype_class_index(ccohort%dbh, ccohort%pft, ccohort%size_class, ccohort%size_by_pft_class)
                call coagetype_class_index(ccohort%coage, ccohort%pft, &
-                                          ccohort%coage_class, ccohort%coage_by_pft_class)
+                    ccohort%coage_class, ccohort%coage_by_pft_class)
+               
               
                ! Increment the number of cohorts per site
                hio_ncohorts_si(io_si) = hio_ncohorts_si(io_si) + 1._r8
@@ -2343,12 +2383,23 @@ end subroutine flush_hvars
                     ! update size-class x patch-age related quantities
 
                     iscag = get_sizeage_class_index(ccohort%dbh,cpatch%age)
+
+                    ccohort%dbh = 22.0_r8
+                    ccohort%coage = 34.0_r8
+                    
+                    icasc = get_coagesize_class_index(ccohort%dbh,ccohort%coage)
+                    write(fates_log(),*) 'icasc = ', icasc
                     
                     hio_nplant_si_scag(io_si,iscag) = hio_nplant_si_scag(io_si,iscag) + ccohort%n
-
+                    hio_nplant_si_casc(io_si, icasc) = hio_nplant_si_casc(io_si,icasc)+ccohort%n
+                 
+                    write(fates_log(),*) 'hio_nplant_si_casc = ', hio_nplant_si_casc(io_si,icasc)
+                    
                     hio_nplant_si_scls(io_si,scls) = hio_nplant_si_scls(io_si,scls) + ccohort%n
                     
                   
+                    hio_nplant_si_cacls(io_si,cacls) = hio_nplant_si_cacls(io_si,cacls)+ccohort%n
+                    
                     ! update size, age, and PFT - indexed quantities
 
                     iscagpft = get_sizeagepft_class_index(ccohort%dbh,cpatch%age,ccohort%pft)
@@ -3763,7 +3814,7 @@ end subroutine flush_hvars
     use FatesIOVariableKindMod, only : patch_r8, patch_ground_r8, patch_size_pft_r8
     use FatesIOVariableKindMod, only : site_r8, site_ground_r8, site_size_pft_r8    
     use FatesIOVariableKindMod, only : site_size_r8, site_pft_r8, site_age_r8
-    use FatesIOVariableKindMod, only : site_coage_pft_r8, site_coage_r8
+    use FatesIOVariableKindMod, only : site_coage_pft_r8, site_coage_r8, site_coage_size_r8
     use FatesIOVariableKindMod, only : site_height_r8
     use FatesInterfaceMod     , only : hlm_use_planthydro
     
@@ -4914,6 +4965,11 @@ end subroutine flush_hvars
          long='number of plants by coage class', use_default='active',   &
          avgflag='A', vtype=site_coage_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_si_cacls )
+
+    call this%set_history_var(vname='NPLANT_CASC', units = 'indiv/ha',          &
+         long='number of plants by coage class by size class', use_default='active',   &
+         avgflag='A', vtype=site_coage_size_r8, hlms='CLM:ALM', flushval=0.0_r8,     &
+         upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_si_casc )
 
     call this%set_history_var(vname='M1_SCLS', units = 'N/ha/yr',          &
           long='background mortality by size', use_default='active', &
