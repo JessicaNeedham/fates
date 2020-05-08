@@ -2371,6 +2371,8 @@ end subroutine flush_hvars
                     if (hlm_use_cohort_age_tracking .eq.itrue) then
                        hio_nplant_si_capf(io_si,capf) = hio_nplant_si_capf(io_si,capf) + ccohort%n
                        hio_nplant_si_cacls(io_si,cacls) = hio_nplant_si_cacls(io_si,cacls)+ccohort%n
+                       icasc = get_coagesize_class_index(ccohort%dbh,ccohort%coage)
+                       hio_nplant_si_casc(io_si, icasc) = hio_nplant_si_casc(io_si,icasc)+ccohort%n
                     end if
                     
                     ! number density by size and biomass
@@ -2386,13 +2388,10 @@ end subroutine flush_hvars
                     ! update size-class x patch-age related quantities
 
                     iscag = get_sizeage_class_index(ccohort%dbh,cpatch%age)
-                    icasc = get_coagesize_class_index(ccohort%dbh,ccohort%coage)
                     
                     hio_nplant_si_scag(io_si,iscag) = hio_nplant_si_scag(io_si,iscag) + ccohort%n
-                    hio_nplant_si_casc(io_si, icasc) = hio_nplant_si_casc(io_si,icasc)+ccohort%n
-                   
+                    
                     hio_nplant_si_scls(io_si,scls) = hio_nplant_si_scls(io_si,scls) + ccohort%n
-                    hio_nplant_si_cacls(io_si,cacls) = hio_nplant_si_cacls(io_si,cacls)+ccohort%n
                     
                     ! update size, age, and PFT - indexed quantities
 

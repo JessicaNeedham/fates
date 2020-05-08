@@ -1,6 +1,7 @@
 module FatesSizeAgeTypeIndicesMod
 
   use FatesConstantsMod,     only : r8 => fates_r8
+  use FatesGlobals,          only : fates_log
   use FatesInterfaceMod,     only : nlevsclass
   use FatesInterfaceMod,     only : nlevage
   use FatesInterfaceMod,     only : nlevheight
@@ -117,11 +118,11 @@ contains
      integer             :: coage_by_size_class
      
      size_class        = get_size_class_index(dbh)
-
-     coage_class         = get_age_class_index(coage)
+     
+     coage_class         = get_coage_class_index(coage)
      
      coage_by_size_class = (coage_class-1)*nlevsclass + size_class
-
+     
   end function get_coagesize_class_index
 
  ! ========================================================================================
