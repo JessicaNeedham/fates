@@ -118,7 +118,7 @@ contains
      
      size_class        = get_size_class_index(dbh)
 
-     coage_class         = get_age_class_index(coage)
+     coage_class         = get_coage_class_index(coage)
      
      coage_by_size_class = (coage_class-1)*nlevsclass + size_class
 
