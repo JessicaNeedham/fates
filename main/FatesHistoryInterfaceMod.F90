@@ -701,7 +701,7 @@ contains
     dim_count = dim_count + 1
     call this%set_levcasc_index(dim_count)
     call this%dim_bounds(dim_count)%Init(levcasc, num_threads, &
-         fates_bounds%coagesc_class_begin, fates_bounds%coagesc_class_end)
+         fates_bounds%coagesize_class_begin, fates_bounds%coagesize_class_end)
     
     dim_count = dim_count + 1
     call this%set_levcapf_index(dim_count)
@@ -831,7 +831,7 @@ contains
 
     index = this%levcasc_index()
     call this%dim_bounds(index)%SetThreadBounds(thread_index, &
-         thread_bounds%coagesc_class_begin, thread_bounds%coagesc_class_end)
+         thread_bounds%coagesize_class_begin, thread_bounds%coagesize_class_end)
     
     index = this%levcapf_index()
     call this%dim_bounds(index)%SetThreadBounds(thread_index, &
@@ -2349,18 +2349,12 @@ end subroutine flush_hvars
                     ! update size-class x patch-age related quantities
 
                     iscag = get_sizeage_class_index(ccohort%dbh,cpatch%age)
-
-                    ccohort%dbh = 22.0_r8
-                    ccohort%coage = 34.0_r8
-                    
+ 
                     icasc = get_coagesize_class_index(ccohort%dbh,ccohort%coage)
-                    write(fates_log(),*) 'icasc = ', icasc
                     
                     hio_nplant_si_scag(io_si,iscag) = hio_nplant_si_scag(io_si,iscag) + ccohort%n
                     hio_nplant_si_casc(io_si, icasc) = hio_nplant_si_casc(io_si,icasc)+ccohort%n
-                 
-                    write(fates_log(),*) 'hio_nplant_si_casc = ', hio_nplant_si_casc(io_si,icasc)
-                    
+                                     
                     hio_nplant_si_scls(io_si,scls) = hio_nplant_si_scls(io_si,scls) + ccohort%n
                     hio_nplant_si_cacls(io_si,cacls) = hio_nplant_si_cacls(io_si,cacls)+ccohort%n
                     

@@ -118,8 +118,8 @@ module FatesIODimensionsMod
        integer :: sizepft_class_end
        integer :: coagepf_class_begin
        integer :: coagepf_class_end
-       integer :: coagesc_class_begin
-       integer :: coagesc_class_end
+       integer :: coagesize_class_begin
+       integer :: coagesize_class_end
        integer :: size_class_begin
        integer :: size_class_end
        integer :: coage_class_begin

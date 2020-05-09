@@ -94,9 +94,10 @@ contains
     ! rate and inflection point define the change in mortality with age
     mort_r_age_senescence = EDPftvarcon_inst%mort_r_age_senescence(cohort_in%pft)
     mort_ip_age_senescence = EDPftvarcon_inst%mort_ip_age_senescence(cohort_in%pft)
-    asmort = 1.0_r8 / (1.0_r8 + exp(-1.0_r8 * mort_r_age_senescence * &
-         (cohort_in%coage - mort_ip_age_senescence ) ) )
-
+!    asmort = 1.0_r8 / (1.0_r8 + exp(-1.0_r8 * mort_r_age_senescence * &
+ !        (cohort_in%coage - mort_ip_age_senescence ) ) )
+    asmort = 0.0_r8
+    
 if (hlm_use_ed_prescribed_phys .eq. ifalse) then
 
     ! 'Background' mortality (can vary as a function of 
