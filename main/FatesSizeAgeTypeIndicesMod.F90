@@ -1,6 +1,7 @@
 module FatesSizeAgeTypeIndicesMod
 
   use FatesConstantsMod,     only : r8 => fates_r8
+
   use FatesInterfaceMod,     only : nlevsclass
   use FatesInterfaceMod,     only : nlevage
   use FatesInterfaceMod,     only : nlevheight
