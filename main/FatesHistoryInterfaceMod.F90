@@ -5382,7 +5382,7 @@ end subroutine flush_hvars
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_crowndamage_si_cdam )
 
     call this%set_history_var(vname='CROWNDAMAGE_CDSC', units = 'N / damage x size class / ha / yr',    &
-          long='N. plants per damage x size class', use_default='inactive',   &
+          long='N. plants per damage x size class', use_default='active',   &
           avgflag='A', vtype=site_cdsc_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_crowndamage_si_cdsc )
 

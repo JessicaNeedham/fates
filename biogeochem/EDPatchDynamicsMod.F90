@@ -1182,10 +1182,7 @@ contains
 
                       call get_disturbance_canopy_damage_frac(cd, cd_frac)
                       cd_n = currentCohort%n * cd_frac
-                      write(fates_log(),*) 'cd :', cd, ' cd_frac :', cd_frac
-                      write(fates_log(),*) 'currentCohort%n :', currentCohort%n
-                      write(fates_log(),*) 'damage cohort n :', cd_n
-
+                     
                       if(cd_n > nearzero) then
 
                          num_tree_check(cd) = num_tree_check(cd) + cd_n
