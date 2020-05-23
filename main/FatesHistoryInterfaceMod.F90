@@ -1,4 +1,4 @@
-module FatesHistoryInterfaceMod
+Module FatesHistoryInterfaceMod
 
   use FatesConstantsMod        , only : r8 => fates_r8
   use FatesConstantsMod        , only : fates_avg_flag_length
@@ -531,6 +531,9 @@ module FatesHistoryInterfaceMod
   integer :: ih_crowndamage_si_cdam
   integer :: ih_crowndamage_si_cdpf
   integer :: ih_crowndamage_si_cdsc
+  integer :: ih_m3_si_cdam
+  integer :: ih_m3_si_cdpf
+  integer :: ih_m3_si_cdsc
   
   ! indices to (site x canopy layer) variables
   integer :: ih_parsun_top_si_can
@@ -1946,6 +1949,10 @@ end subroutine flush_hvars
                hio_crowndamage_si_cdam => this%hvars(ih_crowndamage_si_cdam)%r82d, &
                hio_crowndamage_si_cdpf => this%hvars(ih_crowndamage_si_cdpf)%r82d, &
                hio_crowndamage_si_cdsc => this%hvars(ih_crowndamage_si_cdsc)%r82d, &
+               hio_m3_si_cdam => this%hvars(ih_m3_si_cdam)%r82d, &
+               hio_m3_si_cdpf => this%hvars(ih_m3_si_cdpf)%r82d, &
+               hio_m3_si_cdsc => this%hvars(ih_m3_si_cdsc)%r82d, &
+              
                
                hio_m1_si_scls          => this%hvars(ih_m1_si_scls)%r82d, &
                hio_m2_si_scls          => this%hvars(ih_m2_si_scls)%r82d, &
@@ -2452,12 +2459,22 @@ end subroutine flush_hvars
 
                     ! crown damage 
                     hio_crowndamage_si_cdam(io_si, icdam) = hio_crowndamage_si_cdam(io_si, icdam) + ccohort%n
+                    hio_m3_si_cdam(io_si, icdam) = hio_m3_si_cdam(io_si, icdam) + ccohort%cmort * ccohort%n
+                    write(fates_log(),*)'icdam', icdam,  'm3 icdam', hio_m3_si_cdam(io_si, icdam)
+                    
                     ! crown damage by size
                     icdsc = get_cdamagesize_class_index(ccohort%dbh, ccohort%crowndamage)
                     hio_crowndamage_si_cdsc(io_si, icdsc) = hio_crowndamage_si_cdsc(io_si, icdsc) + ccohort%n
+                    hio_m3_si_cdsc(io_si, icdsc) = hio_m3_si_cdsc(io_si, icdsc) + ccohort%cmort * ccohort%n
+                    write(fates_log(),*)'icdsc', icdsc,  'm3 icdsc', hio_m3_si_cdsc(io_si, icdsc)
+                    
+                    
                     ! crown damage by size by pft
                     icdpf = get_cdamagesizepft_class_index(ccohort%dbh, ccohort%crowndamage, ccohort%pft)
                     hio_crowndamage_si_cdpf(io_si, icdpf) = hio_crowndamage_si_cdpf(io_si, icdpf) + ccohort%n
+                    hio_m3_si_cdpf(io_si, icdpf) = hio_m3_si_cdpf(io_si, icdpf) + ccohort%cmort * ccohort%n
+                    write(fates_log(),*)'icdpdf', icdpf,  'm3 icdpf', hio_m3_si_cdpf(io_si, icdpf)
+                    
                     
                     ! number density along the cohort age dimension
                     if (hlm_use_cohort_age_tracking .eq.itrue) then
@@ -5375,8 +5392,22 @@ end subroutine flush_hvars
           avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_crowndamage_si_cdpf )
     
+    call this%set_history_var(vname='M3_CDPF', units = 'N/ha/yr',          &
+          long='carbon starvation mortality by damaage/pft/size', use_default='inactive', &
+          avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
+          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m3_si_cdpf )
     
+    call this%set_history_var(vname='M3_CDSC', units = 'N/ha/yr',          &
+          long='carbon starvation mortality by damage/size', use_default='inactive', &
+          avgflag='A', vtype=site_cdsc_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
+          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m3_si_cdsc )
 
+    call this%set_history_var(vname='M3_CDAM', units = 'N/ha/yr',          &
+          long='carbon starvation mortality by damage class', use_default='inactive', &
+          avgflag='A', vtype=site_cdamage_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
+          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m3_si_cdam )
+
+    
     ! CARBON BALANCE VARIABLES THAT DEPEND ON HLM BGC INPUTS
 
     call this%set_history_var(vname='NEP', units='gC/m^2/s', &

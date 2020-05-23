@@ -1435,7 +1435,7 @@ contains
     ! spawn new cohorts of juveniles of each PFT             
     !
     ! !USES:
-    use FatesInterfaceMod, only : hlm_use_ed_prescribed_phys
+    use FatesInterfaceTypesMod, only : hlm_use_ed_prescribed_phys
     use FatesLitterMod   , only : ncwd
     use SFParamsMod      , only : SF_val_CWD_frac
     !

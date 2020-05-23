@@ -2,10 +2,10 @@ module FatesSizeAgeTypeIndicesMod
 
   use FatesConstantsMod,     only : r8 => fates_r8
 
-  use FatesInterfaceMod,     only : nlevsclass
-  use FatesInterfaceMod,     only : nlevage
-  use FatesInterfaceMod,     only : nlevheight
-  use FatesInterfaceMod,     only : nlevcoage
+  use FatesInterfaceTypesMod,     only : nlevsclass
+  use FatesInterfaceTypesMod,     only : nlevage
+  use FatesInterfaceTypesMod,     only : nlevheight
+  use FatesInterfaceTypesMod,     only : nlevcoage
   use EDTypesMod,            only : ncrowndamagemax
   use EDParamsMod,           only : ED_val_history_sizeclass_bin_edges
   use EDParamsMod,           only : ED_val_history_ageclass_bin_edges

@@ -89,7 +89,7 @@ module EDCohortDynamicsMod
   use PRTAllometricCarbonMod, only : ac_bc_in_id_ctrim
   use PRTAllometricCarbonMod, only : ac_bc_inout_id_dbh
   use PRTAllometricCarbonMod, only : ac_bc_in_id_lstat
-  
+   
   !  use PRTAllometricCNPMod,    only : cnp_allom_prt_vartypes
   
   use shr_infnan_mod, only : nan => shr_infnan_nan, assignment(=)  
@@ -1051,10 +1051,8 @@ contains
 
               do while (associated(nextc))
                  nextnextc => nextc%shorter
+
                  diff = abs((currentCohort%dbh - nextc%dbh)/(0.5_r8*(currentCohort%dbh + nextc%dbh)))  
-
-
-
                  if (diff < dynamic_size_fusion_tolerance) then
 
                     ! Only fuse if the cohorts are within x years of each other 
@@ -1115,7 +1113,7 @@ contains
                                                  currentCohort%year_net_uptake(i),nextc%year_net_uptake(i)
                                          end do
                                       end if
-                                      
+
                                       ! new cohort age is weighted mean of two cohorts
                                       currentCohort%coage = &
                                            (currentCohort%coage * (currentCohort%n/(currentCohort%n + nextc%n))) + &
@@ -1391,60 +1389,43 @@ contains
                                       else 
                                          tallerCohort%shorter => shorterCohort
                                       endif
-                                      =======
-                                   enddo
-
-                                end if !(currentCohort%isnew)
-
-                                currentCohort%n = newn     
-
-                                ! Set pointers and remove the current cohort from the list
-
-                                shorterCohort => nextc%shorter
-                                tallerCohort  => nextc%taller
-
-                                if (.not. associated(tallerCohort)) then
-                                   currentPatch%tallest => shorterCohort
-                                   if(associated(shorterCohort)) shorterCohort%taller => null()
-                                else 
-                                   tallerCohort%shorter => shorterCohort
-                                endif
-
-                                if (.not. associated(shorterCohort)) then
-                                   currentPatch%shortest => tallerCohort
-                                   if(associated(tallerCohort)) tallerCohort%shorter => null()
-                                else 
-                                   shorterCohort%taller => tallerCohort
-                                endif
-
-                                ! At this point, nothing should be pointing to current Cohort
-                                ! update hydraulics quantities that are functions of hite & biomasses
-                                ! deallocate the hydro structure of nextc
-                                if (hlm_use_planthydro.eq.itrue) then				    
-                                   call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread, &
-                                        currentCohort%pft,currentCohort%c_area)
-                                   leaf_c   = currentCohort%prt%GetState(leaf_organ, carbon12_element)
-                                   currentCohort%treelai = tree_lai(leaf_c,             &
-                                        currentCohort%pft, currentCohort%c_area, currentCohort%n, &
-                                        currentCohort%canopy_layer, currentPatch%canopy_layer_tlai, &
-                                        currentCohort%vcmax25top  )			    
-                                   call UpdateSizeDepPlantHydProps(currentSite,currentCohort, bc_in)  				   
-                                endif
-
-                                call DeallocateCohort(nextc)
-                                deallocate(nextc)
-                                nullify(nextc)
 
 
-                             endif ! if( currentCohort%isnew.eqv.nextc%isnew ) then
-                          endif !canopy layer
-                       endif ! crown damage
-                    endif ! pft
-                 endif  !index no. 
-              endif  ! cohort age diff 
-           endif !diff   
+                                      if (.not. associated(shorterCohort)) then
+                                         currentPatch%shortest => tallerCohort
+                                         if(associated(tallerCohort)) tallerCohort%shorter => null()
+                                      else 
+                                         shorterCohort%taller => tallerCohort
+                                      endif
 
-           nextc => nextnextc
+                                      ! At this point, nothing should be pointing to current Cohort
+                                      ! update hydraulics quantities that are functions of hite & biomasses
+                                      ! deallocate the hydro structure of nextc
+                                      if (hlm_use_planthydro.eq.itrue) then				    
+                                         call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread, &
+                                              currentCohort%pft,currentCohort%crowndamage, currentCohort%c_area)
+                                         leaf_c   = currentCohort%prt%GetState(leaf_organ, carbon12_element)
+                                         currentCohort%treelai = tree_lai(leaf_c,             &
+                                              currentCohort%pft, currentCohort%c_area, currentCohort%n, &
+                                              currentCohort%canopy_layer, currentPatch%canopy_layer_tlai, &
+                                              currentCohort%vcmax25top  )			    
+                                         call UpdateSizeDepPlantHydProps(currentSite,currentCohort, bc_in)  				   
+                                      endif
+
+                                      call DeallocateCohort(nextc)
+                                      deallocate(nextc)
+                                      nullify(nextc)
+
+
+                                   endif ! if( currentCohort%isnew.eqv.nextc%isnew ) then
+                                endif !canopy layer
+                             endif ! crown damage
+                          endif ! pft
+                       endif  !index no. 
+                    endif  ! cohort age diff 
+                 endif !diff   
+
+                 nextc => nextnextc
 
               enddo !end checking nextc cohort loop
 

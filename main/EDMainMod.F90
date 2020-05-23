@@ -284,7 +284,7 @@ contains
     use FatesAllometryMod    , only : carea_allom
     use DamageMainMod        , only : get_crown_reduction
     use PRTGenericMod        , only : leaf_organ
-    use FatesInterfaceMod, only : hlm_use_cohort_age_tracking
+    use FatesInterfaceTypesMod, only : hlm_use_cohort_age_tracking
     use FatesConstantsMod, only : itrue
     use PRTGenericMod        , only : all_carbon_elements
 

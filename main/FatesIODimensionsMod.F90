@@ -30,7 +30,7 @@ module FatesIODimensionsMod
     character(*), parameter, public  :: levcdam = 'fates_levcdam' ! matches histFileMod
     character(*), parameter, public  :: levcdsc = 'fates_levcdsc' ! matches histFileMod
     character(*), parameter, public  :: levcdpf = 'fates_levcdpf' ! matches histFileMod
-    
+
     character(*), parameter, public  :: levelem =  'fates_levelem'
     character(*), parameter, public  :: levelpft = 'fates_levelpft'
     character(*), parameter, public  :: levelcwd = 'fates_levelcwd'
