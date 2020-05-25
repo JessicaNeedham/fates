@@ -1020,6 +1020,8 @@ module FatesInterfaceMod
          hlm_use_spitfire  = unset_int
          hlm_use_planthydro = unset_int
          hlm_use_cohort_age_tracking = unset_int
+         hlm_use_understory_damage = unset_int
+         hlm_use_canopy_damage = unset_int
          hlm_use_logging   = unset_int
          hlm_use_ed_st3    = unset_int
          hlm_use_ed_prescribed_phys = unset_int
@@ -1230,6 +1232,20 @@ module FatesInterfaceMod
             call endrun(msg=errMsg(sourcefile, __LINE__))
          end if
 
+         if(hlm_use_understory_damage .eq. unset_int) then
+            if (fates_global_verbose()) then
+               write(fates_log(), *) 'switch for understory damage unset: hlm_use_understory_damage, exiting'
+            end if
+            call endrun(msg=errMsg(sourcefile, __LINE__))
+         end if
+
+          if(hlm_use_canopy_damage .eq. unset_int) then
+            if (fates_global_verbose()) then
+               write(fates_log(), *) 'switch for canopy damage unset: hlm_use_canopy_damage, exiting'
+            end if
+            call endrun(msg=errMsg(sourcefile, __LINE__))
+         end if
+
          
          if (fates_global_verbose()) then
             write(fates_log(), *) 'Checked. All control parameters sent to FATES.'
@@ -1317,6 +1333,18 @@ module FatesInterfaceMod
                hlm_use_cohort_age_tracking = ival
                if (fates_global_verbose()) then
                   write(fates_log(),*) 'Transfering hlm_use_cohort_age_tracking= ',ival,' to FATES'
+               end if
+               
+            case('use_understory_damage')
+               hlm_use_understory_damage = ival
+               if (fates_global_verbose()) then
+                  write(fates_log(),*) 'Transfering hlm_use_understory_damage= ',ival,' to FATES'
+               end if
+
+            case('use_canopy_damage')
+               hlm_use_canopy_damage = ival
+               if (fates_global_verbose()) then
+                  write(fates_log(),*) 'Transfering hlm_use_canopy_damage= ',ival,' to FATES'
                end if
 
                

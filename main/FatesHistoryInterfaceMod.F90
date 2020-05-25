@@ -32,6 +32,8 @@ Module FatesHistoryInterfaceMod
   use FatesInterfaceTypesMod        , only : hlm_use_planthydro
   use FatesInterfaceTypesMod        , only : hlm_use_ed_st3
   use FatesInterfaceTypesMod        , only : hlm_use_cohort_age_tracking
+  use FatesInterfaceTypesMod        , only : hlm_use_canopy_damage
+  use FatesInterfaceTypesMod        , only : hlm_use_understory_damage
   use FatesInterfaceTypesMod        , only : numpft
   use FatesInterfaceTypesMod        , only : hlm_freq_day
   use EDParamsMod              , only : ED_val_comp_excln
@@ -2457,25 +2459,23 @@ end subroutine flush_hvars
                     ! number density [/ha]
                     hio_nplant_si_scpf(io_si,scpf) = hio_nplant_si_scpf(io_si,scpf) + ccohort%n
 
-                    ! crown damage 
-                    hio_crowndamage_si_cdam(io_si, icdam) = hio_crowndamage_si_cdam(io_si, icdam) + ccohort%n
-                    hio_m3_si_cdam(io_si, icdam) = hio_m3_si_cdam(io_si, icdam) + ccohort%cmort * ccohort%n
-                    write(fates_log(),*)'icdam', icdam,  'm3 icdam', hio_m3_si_cdam(io_si, icdam)
-                    
-                    ! crown damage by size
-                    icdsc = get_cdamagesize_class_index(ccohort%dbh, ccohort%crowndamage)
-                    hio_crowndamage_si_cdsc(io_si, icdsc) = hio_crowndamage_si_cdsc(io_si, icdsc) + ccohort%n
-                    hio_m3_si_cdsc(io_si, icdsc) = hio_m3_si_cdsc(io_si, icdsc) + ccohort%cmort * ccohort%n
-                    write(fates_log(),*)'icdsc', icdsc,  'm3 icdsc', hio_m3_si_cdsc(io_si, icdsc)
-                    
-                    
-                    ! crown damage by size by pft
-                    icdpf = get_cdamagesizepft_class_index(ccohort%dbh, ccohort%crowndamage, ccohort%pft)
-                    hio_crowndamage_si_cdpf(io_si, icdpf) = hio_crowndamage_si_cdpf(io_si, icdpf) + ccohort%n
-                    hio_m3_si_cdpf(io_si, icdpf) = hio_m3_si_cdpf(io_si, icdpf) + ccohort%cmort * ccohort%n
-                    write(fates_log(),*)'icdpdf', icdpf,  'm3 icdpf', hio_m3_si_cdpf(io_si, icdpf)
-                    
-                    
+                    if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+                       ! crown damage 
+                       hio_crowndamage_si_cdam(io_si, icdam) = hio_crowndamage_si_cdam(io_si, icdam) + ccohort%n
+                       hio_m3_si_cdam(io_si, icdam) = hio_m3_si_cdam(io_si, icdam) + ccohort%cmort * ccohort%n
+
+                       ! crown damage by size
+                       icdsc = get_cdamagesize_class_index(ccohort%dbh, ccohort%crowndamage)
+                       hio_crowndamage_si_cdsc(io_si, icdsc) = hio_crowndamage_si_cdsc(io_si, icdsc) + ccohort%n
+                       hio_m3_si_cdsc(io_si, icdsc) = hio_m3_si_cdsc(io_si, icdsc) + ccohort%cmort * ccohort%n
+
+                       ! crown damage by size by pft
+                       icdpf = get_cdamagesizepft_class_index(ccohort%dbh, ccohort%crowndamage, ccohort%pft)
+                       hio_crowndamage_si_cdpf(io_si, icdpf) = hio_crowndamage_si_cdpf(io_si, icdpf) + ccohort%n
+                       hio_m3_si_cdpf(io_si, icdpf) = hio_m3_si_cdpf(io_si, icdpf) + ccohort%cmort * ccohort%n
+                    end if
+
+
                     ! number density along the cohort age dimension
                     if (hlm_use_cohort_age_tracking .eq.itrue) then
                        hio_nplant_si_capf(io_si,capf) = hio_nplant_si_capf(io_si,capf) + ccohort%n

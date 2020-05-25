@@ -390,6 +390,9 @@ contains
     use PRTGenericMod       , only : leaf_organ
     use ChecksBalancesMod   , only : SiteMassStock
     use EDTypesMod          , only : ncrowndamagemax
+    use FatesInterfaceTypesMod, only : hlm_use_canopy_damage
+    use FatesInterfaceTypesMod, only : hlm_use_understory_damage
+   
     !
     ! !ARGUMENTS:
     type (ed_site_type), intent(inout), target :: currentSite
@@ -626,12 +629,17 @@ contains
              end if
 
              ! send mass lost from damaged but surviving trees to litter
-             call damage_litter_fluxes(currentSite, currentPatch, new_patch, patch_site_areadis, &
-                  total_damage_litter, num_tree_check_litter_understory)
+             if(hlm_use_understory_damage .eq. itrue) then 
+                call damage_litter_fluxes(currentSite, currentPatch, new_patch, patch_site_areadis, &
+                     total_damage_litter, num_tree_check_litter_understory)
+             end if
+
              ! and the damaged canopy trees
-             call damage_canopy_litter_fluxes(currentSite, currentPatch, new_patch, patch_site_areadis, &
-                  total_canopy_damage_litter, num_tree_check_litter_canopy)
-            
+             if(hlm_use_canopy_damage .eq. itrue) then 
+                call damage_canopy_litter_fluxes(currentSite, currentPatch, new_patch, patch_site_areadis, &
+                     total_canopy_damage_litter, num_tree_check_litter_canopy)
+             end if
+
              ! in kg - for debugging
              total_litter_d = total_litter_d + total_damage_litter + total_canopy_damage_litter
              num_tree_check_litter = num_tree_check_litter + num_tree_check_litter_canopy + &
@@ -1029,253 +1037,259 @@ contains
 
                 
                 ! Regardless of disturbance type, reduce mass of damaged but surviving understory trees
-                if (EDPftvarcon_inst%woody(currentCohort%pft)==1  .and. &
-                     currentCohort%canopy_layer > 1) then 
+                if(hlm_use_understory_damage .eq. itrue) then
 
-                   ! to keep track of how much nc%n needs to be reduced by after the loop
-                   cd_frac_total = 0.0_r8 
+                   if (EDPftvarcon_inst%woody(currentCohort%pft)==1  .and. &
+                        currentCohort%canopy_layer > 1) then 
 
-                   ! for each damage class find the number density and if big enough allocate a new cohort
-                   do cd = max(2,nc%crowndamage), ncrowndamagemax
+                      ! to keep track of how much nc%n needs to be reduced by after the loop
+                      cd_frac_total = 0.0_r8 
 
-                      call get_disturbance_collateral_damage_frac(cd, cd_frac)
+                      ! for each damage class find the number density and if big enough allocate a new cohort
+                      do cd = max(2,nc%crowndamage), ncrowndamagemax
 
-                      cd_n = nc%n * cd_frac
+                         call get_disturbance_collateral_damage_frac(cd, cd_frac)
+                         !                      write(fates_log(),*) 'cd: ', cd, 'cd_frac: ', cd_frac
 
-                      if(cd_n > nearzero) then
+                         cd_n = nc%n * cd_frac
 
-                         cd_frac_total = cd_frac_total + cd_frac
+                         if(cd_n > nearzero) then
 
-                         allocate(nc_d)  ! new cohort surviving but damaged
-                         if(hlm_use_planthydro.eq.itrue) call InitHydrCohort(CurrentSite,nc_d)
+                            cd_frac_total = cd_frac_total + cd_frac
 
-                         ! Initialize the PARTEH object and point to the
-                         ! correct boundary condition fields
-                         nc_d%prt => null()
+                            allocate(nc_d)  ! new cohort surviving but damaged
+                            if(hlm_use_planthydro.eq.itrue) call InitHydrCohort(CurrentSite,nc_d)
 
-                         call InitPRTObject(nc_d%prt)
-                         call InitPRTBoundaryConditions(nc_d)
-                         call zero_cohort(nc_d)
+                            ! Initialize the PARTEH object and point to the
+                            ! correct boundary condition fields
+                            nc_d%prt => null()
 
-                         ! nc_d is the new cohort that goes in the disturbed (new) patch and gets damaged 
-                         call copy_cohort(nc, nc_d)
+                            call InitPRTObject(nc_d%prt)
+                            call InitPRTBoundaryConditions(nc_d)
+                            call zero_cohort(nc_d)
 
-                         !this is the case as the new patch probably doesn't have a closed canopy, and
-                         ! even if it does, that will be sorted out in canopy_structure. 
-                         nc_d%canopy_layer = 1 
-                         nc_d%canopy_layer_yesterday = 1._r8 
+                            ! nc_d is the new cohort that goes in the disturbed (new) patch and gets damaged 
+                            call copy_cohort(nc, nc_d)
 
-                         ! new number densities - we just do damaged cohort here -
-                         ! undamaged at the end of the cohort loop once we know how many damaged to
-                         ! subtract
+                            !this is the case as the new patch probably doesn't have a closed canopy, and
+                            ! even if it does, that will be sorted out in canopy_structure. 
+                            nc_d%canopy_layer = 1 
+                            nc_d%canopy_layer_yesterday = 1._r8 
 
-                         nc_d%n = cd_n
-                         num_tree_check(cd) = num_tree_check(cd) + nc_d%n
-                         nc_d%crowndamage = cd
+                            ! new number densities - we just do damaged cohort here -
+                            ! undamaged at the end of the cohort loop once we know how many damaged to
+                            ! subtract
 
-                         ! update crown area here - for cohort fusion and canopy organisation below 
-                         call carea_allom(nc_d%dbh, nc_d%n, currentSite%spread, nc_d%pft, &
-                              nc_d%crowndamage, nc_d%c_area)
+                            nc_d%n = cd_n
+                            num_tree_check(cd) = num_tree_check(cd) + nc_d%n
+                            nc_d%crowndamage = cd
 
-                         call get_crown_reduction(nc_d%crowndamage, mass_frac)
+                            ! update crown area here - for cohort fusion and canopy organisation below 
+                            call carea_allom(nc_d%dbh, nc_d%n, currentSite%spread, nc_d%pft, &
+                                 nc_d%crowndamage, nc_d%c_area)
 
-                         leaf_m_pre = nc_d%prt%GetState(leaf_organ, all_carbon_elements) + &
-                              nc_d%prt%GetState(repro_organ, all_carbon_elements)
-                         call PRTDamageLosses(nc_d%prt, leaf_organ, mass_frac)
-                         call PRTDamageLosses(nc_d%prt, repro_organ, mass_frac)
-                         leaf_m_post = nc_d%prt%GetState(leaf_organ, all_carbon_elements) + &
-                              nc_d%prt%GetState(repro_organ, all_carbon_elements)
-                         leaf_loss_prt = leaf_loss_prt + (leaf_m_pre - leaf_m_post)*nc_d%n
+                            call get_crown_reduction(nc_d%crowndamage, mass_frac)
 
-                         sapw_m_pre = nc_d%prt%GetState(sapw_organ, all_carbon_elements)
-                         call PRTDamageLosses(nc_d%prt, sapw_organ, mass_frac * &
-                              nc_d%branch_frac)
-                         sapw_m_post = nc_d%prt%GetState(sapw_organ, all_carbon_elements)
-                         sapw_loss_prt = sapw_loss_prt + (sapw_m_pre - sapw_m_post)*nc_d%n
+                            leaf_m_pre = nc_d%prt%GetState(leaf_organ, all_carbon_elements) + &
+                                 nc_d%prt%GetState(repro_organ, all_carbon_elements)
+                            call PRTDamageLosses(nc_d%prt, leaf_organ, mass_frac)
+                            call PRTDamageLosses(nc_d%prt, repro_organ, mass_frac)
+                            leaf_m_post = nc_d%prt%GetState(leaf_organ, all_carbon_elements) + &
+                                 nc_d%prt%GetState(repro_organ, all_carbon_elements)
+                            leaf_loss_prt = leaf_loss_prt + (leaf_m_pre - leaf_m_post)*nc_d%n
 
-                         struct_m_pre = nc_d%prt%GetState(struct_organ, all_carbon_elements)
-                         call PRTDamageLosses(nc_d%prt, struct_organ, mass_frac * &
-                              nc_d%branch_frac)
-                         struct_m_post = nc_d%prt%GetState(struct_organ, all_carbon_elements)
-                         struct_loss_prt = struct_loss_prt + (struct_m_pre - struct_m_post)*nc_d%n
+                            sapw_m_pre = nc_d%prt%GetState(sapw_organ, all_carbon_elements)
+                            call PRTDamageLosses(nc_d%prt, sapw_organ, mass_frac * &
+                                 nc_d%branch_frac)
+                            sapw_m_post = nc_d%prt%GetState(sapw_organ, all_carbon_elements)
+                            sapw_loss_prt = sapw_loss_prt + (sapw_m_pre - sapw_m_post)*nc_d%n
 
-
-                         storebigcohort   =>  new_patch%tallest
-                         storesmallcohort =>  new_patch%shortest 
-                         if(associated(new_patch%tallest))then
-                            tnull = 0
-                         else
-                            tnull = 1
-                            new_patch%tallest => nc_d
-                            nc_d%taller => null()
-                         endif
-
-                         if(associated(new_patch%shortest))then
-                            snull = 0
-                         else
-                            snull = 1
-                            new_patch%shortest => nc_d
-                            nc_d%shorter => null()
-                         endif
-                         nc_d%patchptr => new_patch
-                         call insert_cohort(nc_d, new_patch%tallest, new_patch%shortest, &
-                              tnull, snull, storebigcohort, storesmallcohort)
-
-                         new_patch%tallest  => storebigcohort 
-                         new_patch%shortest => storesmallcohort   
-
-                        
-                      end if ! end if new n is large enough
-                   end do ! end crowndamage loop
+                            struct_m_pre = nc_d%prt%GetState(struct_organ, all_carbon_elements)
+                            call PRTDamageLosses(nc_d%prt, struct_organ, mass_frac * &
+                                 nc_d%branch_frac)
+                            struct_m_post = nc_d%prt%GetState(struct_organ, all_carbon_elements)
+                            struct_loss_prt = struct_loss_prt + (struct_m_pre - struct_m_post)*nc_d%n
 
 
-                   ! Reduce nc%n now based on sum of all new damage classes
-                   nc%n = nc%n * (1.0_r8-cd_frac_total)
+                            storebigcohort   =>  new_patch%tallest
+                            storesmallcohort =>  new_patch%shortest 
+                            if(associated(new_patch%tallest))then
+                               tnull = 0
+                            else
+                               tnull = 1
+                               new_patch%tallest => nc_d
+                               nc_d%taller => null()
+                            endif
 
-                end if  ! end if understory and woody
+                            if(associated(new_patch%shortest))then
+                               snull = 0
+                            else
+                               snull = 1
+                               new_patch%shortest => nc_d
+                               nc_d%shorter => null()
+                            endif
+                            nc_d%patchptr => new_patch
+                            call insert_cohort(nc_d, new_patch%tallest, new_patch%shortest, &
+                                 tnull, snull, storebigcohort, storesmallcohort)
+
+                            new_patch%tallest  => storebigcohort 
+                            new_patch%shortest => storesmallcohort   
 
 
-                ! Put new undamaged cohorts in the correct place in the linked list
-                if (nc%n > 0.0_r8) then   
-                   storebigcohort   =>  new_patch%tallest
-                   storesmallcohort =>  new_patch%shortest 
-                   if(associated(new_patch%tallest))then
-                      tnull = 0
+                         end if ! end if new n is large enough
+                      end do ! end crowndamage loop
+
+
+                      ! Reduce nc%n now based on sum of all new damage classes
+                      nc%n = nc%n * (1.0_r8-cd_frac_total)
+
+                   end if  ! end if understory and woody
+
+
+                   ! Put new undamaged cohorts in the correct place in the linked list
+                   if (nc%n > 0.0_r8) then   
+                      storebigcohort   =>  new_patch%tallest
+                      storesmallcohort =>  new_patch%shortest 
+                      if(associated(new_patch%tallest))then
+                         tnull = 0
+                      else
+                         tnull = 1
+                         new_patch%tallest => nc
+                         nc%taller => null()
+                      endif
+
+                      if(associated(new_patch%shortest))then
+                         snull = 0
+                      else
+                         snull = 1
+                         new_patch%shortest => nc
+                         nc%shorter => null()
+                      endif
+                      nc%patchptr => new_patch
+                      call insert_cohort(nc, new_patch%tallest, new_patch%shortest, &
+                           tnull, snull, storebigcohort, storesmallcohort)
+
+                      new_patch%tallest  => storebigcohort 
+                      new_patch%shortest => storesmallcohort   
                    else
-                      tnull = 1
-                      new_patch%tallest => nc
-                      nc%taller => null()
+
+                      ! Get rid of the new temporary cohort
+                      call DeallocateCohort(nc)
+                      deallocate(nc)
+
                    endif
 
-                   if(associated(new_patch%shortest))then
-                      snull = 0
-                   else
-                      snull = 1
-                      new_patch%shortest => nc
-                      nc%shorter => null()
-                   endif
-                   nc%patchptr => new_patch
-                   call insert_cohort(nc, new_patch%tallest, new_patch%shortest, &
-                        tnull, snull, storebigcohort, storesmallcohort)
-
-                   new_patch%tallest  => storebigcohort 
-                   new_patch%shortest => storesmallcohort   
-                else
-
-                   ! Get rid of the new temporary cohort
-                   call DeallocateCohort(nc)
-                   deallocate(nc)
-                   
-                endif
-
+                end if
                 
                 ! Regardless of disturbance type, reduce mass of damaged canopy trees
-                if (EDPftvarcon_inst%woody(currentCohort%pft)==1  .and. &
-                     currentCohort%canopy_layer == 1) then 
+                if(hlm_use_canopy_damage .eq.itrue) then
+                   if (EDPftvarcon_inst%woody(currentCohort%pft)==1  .and. &
+                        currentCohort%canopy_layer == 1) then 
 
-                   ! to keep track of how much canopy n  needs to be reduced by after the loop
-                   cd_frac_total = 0.0_r8
+                      ! to keep track of how much canopy n  needs to be reduced by after the loop
+                      cd_frac_total = 0.0_r8
 
-                   ! for each damage class find the number density and if big enough allocate a new cohort
-                   do cd = max(2,currentCohort%crowndamage), ncrowndamagemax
- 
-
-                      call get_disturbance_canopy_damage_frac(cd, cd_frac)
-                      cd_n = currentCohort%n * cd_frac
-                     
-                      if(cd_n > nearzero) then
-
-                         num_tree_check(cd) = num_tree_check(cd) + cd_n
-                         cd_frac_total = cd_frac_total + cd_frac
-
-                         allocate(nc_canopy_d)  ! new cohort surviving but damaged
-                         if(hlm_use_planthydro.eq.itrue) call InitHydrCohort(CurrentSite,nc_canopy_d)
-
-                         ! Initialize the PARTEH object and point to the
-                         ! correct boundary condition fields
-                         nc_canopy_d%prt => null()
-
-                         call InitPRTObject(nc_canopy_d%prt)
-                         call InitPRTBoundaryConditions(nc_canopy_d)
-                         call zero_cohort(nc_canopy_d)
-
-                         ! nc_canopy_d is the new cohort that gets damaged 
-                         call copy_cohort(currentCohort, nc_canopy_d)
-
-                         ! assume that these damaged canopy trees are still in the canopy
-                         nc_canopy_d%canopy_layer = 1 
-                         nc_canopy_d%canopy_layer_yesterday = 1._r8 
-
-                         ! new number densities - we just do damaged cohort here -
-                         ! undamaged at the end of the cohort loop once we know how many damaged to
-                         ! subtract
-
-                         nc_canopy_d%n = cd_n
-                         nc_canopy_d%crowndamage = cd
-
-                         ! update crown area here - for cohort fusion and canopy organisation below 
-                         call carea_allom(nc_canopy_d%dbh, nc_canopy_d%n, currentSite%spread,&
-                              nc_canopy_d%pft, nc_canopy_d%crowndamage, nc_canopy_d%c_area)
-
-                         call get_crown_reduction(nc_canopy_d%crowndamage, mass_frac)
-
-                         leaf_m_pre = nc_canopy_d%prt%GetState(leaf_organ, all_carbon_elements) + &
-                              nc_canopy_d%prt%GetState(repro_organ, all_carbon_elements)
-                         call PRTDamageLosses(nc_canopy_d%prt, leaf_organ, mass_frac)
-                         call PRTDamageLosses(nc_canopy_d%prt, repro_organ, mass_frac)
-                         leaf_m_post = nc_canopy_d%prt%GetState(leaf_organ, all_carbon_elements) + &
-                              nc_canopy_d%prt%GetState(repro_organ, all_carbon_elements)
-                         leaf_loss_prt = leaf_loss_prt + (leaf_m_pre - leaf_m_post)* &
-                              nc_canopy_d%n
-
-                         sapw_m_pre = nc_canopy_d%prt%GetState(sapw_organ, all_carbon_elements)
-                         call PRTDamageLosses(nc_canopy_d%prt, sapw_organ, mass_frac * &
-                              nc_canopy_d%branch_frac)
-                         sapw_m_post = nc_canopy_d%prt%GetState(sapw_organ, all_carbon_elements)
-                         sapw_loss_prt = sapw_loss_prt + (sapw_m_pre - sapw_m_post)*nc_canopy_d%n
-
-                         struct_m_pre = nc_canopy_d%prt%GetState(struct_organ, all_carbon_elements)
-                         call PRTDamageLosses(nc_canopy_d%prt, struct_organ, mass_frac * &
-                              nc_canopy_d%branch_frac)
-                         struct_m_post = nc_canopy_d%prt%GetState(struct_organ, all_carbon_elements)
-                         struct_loss_prt = struct_loss_prt + (struct_m_pre - struct_m_post)* &
-                              nc_canopy_d%n
-
-                         storebigcohort   =>  currentPatch%tallest
-                         storesmallcohort =>  currentPatch%shortest 
-                         if(associated(currentPatch%tallest))then
-                            tnull = 0
-                         else
-                            tnull = 1
-                            currentPatch%tallest => nc_canopy_d
-                            nc_canopy_d%taller => null()
-                         endif
-
-                         if(associated(currentPatch%shortest))then
-                            snull = 0
-                         else
-                            snull = 1
-                            currentPatch%shortest => nc_canopy_d
-                            nc_canopy_d%shorter => null()
-                         endif
-                        ! nc_canopy_d%patchptr => new_patch
-                         call insert_cohort(nc_canopy_d, currentPatch%tallest, currentPatch%shortest, &
-                              tnull, snull, storebigcohort, storesmallcohort)
-
-                         currentPatch%tallest  => storebigcohort 
-                         currentPatch%shortest => storesmallcohort   
-
-                      end if ! end if new n is large enough
-
-                   end do ! end crowndamage loop
-
-                   ! Reduce currentCohort%n now based on sum of all new damage classes
-
-                   currentCohort%n = currentCohort%n * (1.0_r8-cd_frac_total)
+                      ! for each damage class find the number density and if big enough allocate a new cohort
+                      do cd = max(2,currentCohort%crowndamage), ncrowndamagemax
 
 
-                end if  ! end if canopy and woody              
-              
+                         call get_disturbance_canopy_damage_frac(cd, cd_frac)
+                         cd_n = currentCohort%n * cd_frac
+
+                         if(cd_n > nearzero) then
+
+                            num_tree_check(cd) = num_tree_check(cd) + cd_n
+                            cd_frac_total = cd_frac_total + cd_frac
+
+                            allocate(nc_canopy_d)  ! new cohort surviving but damaged
+                            if(hlm_use_planthydro.eq.itrue) call InitHydrCohort(CurrentSite,nc_canopy_d)
+
+                            ! Initialize the PARTEH object and point to the
+                            ! correct boundary condition fields
+                            nc_canopy_d%prt => null()
+
+                            call InitPRTObject(nc_canopy_d%prt)
+                            call InitPRTBoundaryConditions(nc_canopy_d)
+                            call zero_cohort(nc_canopy_d)
+
+                            ! nc_canopy_d is the new cohort that gets damaged 
+                            call copy_cohort(currentCohort, nc_canopy_d)
+
+                            ! assume that these damaged canopy trees are still in the canopy
+                            nc_canopy_d%canopy_layer = 1 
+                            nc_canopy_d%canopy_layer_yesterday = 1._r8 
+
+                            ! new number densities - we just do damaged cohort here -
+                            ! undamaged at the end of the cohort loop once we know how many damaged to
+                            ! subtract
+
+                            nc_canopy_d%n = cd_n
+                            nc_canopy_d%crowndamage = cd
+
+                            ! update crown area here - for cohort fusion and canopy organisation below 
+                            call carea_allom(nc_canopy_d%dbh, nc_canopy_d%n, currentSite%spread,&
+                                 nc_canopy_d%pft, nc_canopy_d%crowndamage, nc_canopy_d%c_area)
+
+                            call get_crown_reduction(nc_canopy_d%crowndamage, mass_frac)
+
+                            leaf_m_pre = nc_canopy_d%prt%GetState(leaf_organ, all_carbon_elements) + &
+                                 nc_canopy_d%prt%GetState(repro_organ, all_carbon_elements)
+                            call PRTDamageLosses(nc_canopy_d%prt, leaf_organ, mass_frac)
+                            call PRTDamageLosses(nc_canopy_d%prt, repro_organ, mass_frac)
+                            leaf_m_post = nc_canopy_d%prt%GetState(leaf_organ, all_carbon_elements) + &
+                                 nc_canopy_d%prt%GetState(repro_organ, all_carbon_elements)
+                            leaf_loss_prt = leaf_loss_prt + (leaf_m_pre - leaf_m_post)* &
+                                 nc_canopy_d%n
+
+                            sapw_m_pre = nc_canopy_d%prt%GetState(sapw_organ, all_carbon_elements)
+                            call PRTDamageLosses(nc_canopy_d%prt, sapw_organ, mass_frac * &
+                                 nc_canopy_d%branch_frac)
+                            sapw_m_post = nc_canopy_d%prt%GetState(sapw_organ, all_carbon_elements)
+                            sapw_loss_prt = sapw_loss_prt + (sapw_m_pre - sapw_m_post)*nc_canopy_d%n
+
+                            struct_m_pre = nc_canopy_d%prt%GetState(struct_organ, all_carbon_elements)
+                            call PRTDamageLosses(nc_canopy_d%prt, struct_organ, mass_frac * &
+                                 nc_canopy_d%branch_frac)
+                            struct_m_post = nc_canopy_d%prt%GetState(struct_organ, all_carbon_elements)
+                            struct_loss_prt = struct_loss_prt + (struct_m_pre - struct_m_post)* &
+                                 nc_canopy_d%n
+
+                            storebigcohort   =>  currentPatch%tallest
+                            storesmallcohort =>  currentPatch%shortest 
+                            if(associated(currentPatch%tallest))then
+                               tnull = 0
+                            else
+                               tnull = 1
+                               currentPatch%tallest => nc_canopy_d
+                               nc_canopy_d%taller => null()
+                            endif
+
+                            if(associated(currentPatch%shortest))then
+                               snull = 0
+                            else
+                               snull = 1
+                               currentPatch%shortest => nc_canopy_d
+                               nc_canopy_d%shorter => null()
+                            endif
+                            ! nc_canopy_d%patchptr => new_patch
+                            call insert_cohort(nc_canopy_d, currentPatch%tallest, currentPatch%shortest, &
+                                 tnull, snull, storebigcohort, storesmallcohort)
+
+                            currentPatch%tallest  => storebigcohort 
+                            currentPatch%shortest => storesmallcohort   
+
+                         end if ! end if new n is large enough
+
+                      end do ! end crowndamage loop
+
+                      ! Reduce currentCohort%n now based on sum of all new damage classes
+
+                      currentCohort%n = currentCohort%n * (1.0_r8-cd_frac_total)
+
+
+                   end if  ! end if canopy and woody              
+                end if ! end if canopy damage is on
+                
                 currentCohort => currentCohort%taller      
              enddo ! currentCohort 
 

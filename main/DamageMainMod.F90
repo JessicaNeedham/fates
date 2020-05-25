@@ -40,45 +40,37 @@ module DamageMainMod
 
 contains
 
-  
-  subroutine get_disturbance_collateral_damage_frac(crowndamage, dist_frac)
+
+    subroutine get_disturbance_collateral_damage_frac(crowndamage, dist_frac)
 
     use EDTypesMod, only : ncrowndamagemax
 
     integer, intent(in) :: crowndamage
     real(r8), intent(out) :: dist_frac
 
-    real(r8) :: t1
-    real(r8) :: t2
-    real(r8) :: rl_cd
-    real(r8) :: total
-    integer :: cd
-    integer :: max
+    real(r8) :: t1         ! lower bound for integration
+    real(r8) :: t2         ! upper bound for integration
+    real(r8) :: rl_cd      ! crowndamage as a real
+    real(r8) :: max         ! arbitrary large number 
 
-    total = 0.0_r8
-    max = ncrowndamagemax + 1
+    max = 1000000000.0_r8
 
-    ! Go from 1 here, since not all surviving trees are
-    ! damaged
-    do cd = 1,max
-
-       rl_cd = real(cd)
-
-       t1 = -1.0_r8*exp(-1.0_r8*rl_cd)
-       t2 = -1.0_r8*exp(-1.0_r8*(rl_cd-1.0_r8))
-       total = total + (t1-t2)
-
-    end do
-
+   
     rl_cd = real(crowndamage)
-    t1 = -1.0_r8*exp(-1.0_r8*(rl_cd+1.0_r8))
-    t2 = -1.0_r8*exp(-1.0_r8*(rl_cd))
 
-    dist_frac = (t1-t2)/total
+    t1 = -1.0_r8*exp(-1.0_r8*rl_cd)
+    t2 = -1.0_r8*exp(-1.0_r8*(rl_cd-1.0_r8))
+
+    if(crowndamage == ncrowndamagemax) then
+       t1 = -1.0_r8*exp(-1.0*max)
+    end if
+
+    dist_frac = t1-t2
 
     return
   end subroutine get_disturbance_collateral_damage_frac
 
+  
   !------------------------------------------------------------------------------------
   ! This subroutine calculates damage of canopy trees
   ! Parameterisation roughly follows Yanoviak-Gora 2020 New Phytologist.
@@ -110,7 +102,6 @@ contains
     
     damage_fracs(1) = 1.0_r8 - sum(damage_fracs(2:ncrowndamagemax))
   
-    
     dist_frac = damage_fracs(crowndamage)
     
     
