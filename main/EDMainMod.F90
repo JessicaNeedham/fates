@@ -644,10 +644,6 @@ contains
        
        call SiteMassStock(currentSite,el,total_stock,biomass_stock,litter_stock,seed_stock)
 
-      ! write(fates_log(),*) 'call_index = ', call_index
-      ! write(fates_log(),*) 'Site litter leaf = ', litter_leaf
-      ! write(fates_log(),*) 'Site live leaf = ', live_leaf
-
        site_mass => currentSite%mass_balance(el)
        
        change_in_stock = total_stock - site_mass%old_stock

@@ -32,7 +32,7 @@ module DamageMainMod
   public :: get_disturbance_collateral_damage_frac
   public :: get_disturbance_canopy_damage_frac
   public :: get_crown_reduction
-  
+ 
   logical :: debug = .false.  ! for debugging
 
   ! ============================================================================
@@ -73,19 +73,11 @@ contains
   
   !------------------------------------------------------------------------------------
   ! This subroutine calculates damage of canopy trees
-  ! Parameterisation roughly follows Yanoviak-Gora 2020 New Phytologist.
-  ! 12.7 CG lightening strikes on BCI km-2 yr-1.
-  ! Each strike damages 11.4 trees.
-  ! 14% have > 50% dieback
-  ! 18% have 25-50% dieback
-  ! But this is JUST LIGHTNING and damage is currently all damage. 
-  
   
   subroutine get_disturbance_canopy_damage_frac(crowndamage, dist_frac)
 
     use EDTypesMod, only : ncrowndamagemax
     use FatesConstantsMod, only : years_per_day
-    !   use FatesInterfaceMod, only : hlm_freq_day
     
     integer, intent(in) :: crowndamage
     real(r8), intent(out) :: dist_frac
@@ -93,15 +85,11 @@ contains
     ! local variables
     real(r8) :: damage_fracs(ncrowndamagemax)
 
-    ! 12.7 strikes km-2 yr-1
-    ! 12.7/100 strikes ha-2 yr-1
-    ! 12.7/100/days_per_year= strikes per ha per day
-
     damage_fracs = (/0.0_r8, 0.18_r8, 0.07_r8, 0.04_r8, 0.03_r8/)
-    damage_fracs = damage_fracs * (12.7/100 * years_per_day)
+    damage_fracs = damage_fracs * 0.001_r8
     
     damage_fracs(1) = 1.0_r8 - sum(damage_fracs(2:ncrowndamagemax))
-  
+
     dist_frac = damage_fracs(crowndamage)
     
     
@@ -151,9 +139,7 @@ contains
   ! end subroutine get_crown_damage_bounds
 
 
-!----------------------------------------------------------------------------------------                                                   
-
-
+  !----------------------------------------------------------------------------------------
 
 
 end module DamageMainMod
