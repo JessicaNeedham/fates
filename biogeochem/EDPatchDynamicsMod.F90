@@ -379,8 +379,6 @@ contains
     ! !USES:
     
     use EDParamsMod         , only : ED_val_understorey_death, logging_coll_under_frac
-    use EDParamsMod         , only : damage_coll_under_frac
-    use EDParamsMod         , only : damage_coll_exp
     use EDCohortDynamicsMod , only : zero_cohort, copy_cohort, terminate_cohorts 
     use DamageMainMod       , only : get_crown_reduction
     use DamageMainMod       , only : get_disturbance_collateral_damage_frac
