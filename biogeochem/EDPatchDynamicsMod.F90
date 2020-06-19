@@ -2250,9 +2250,17 @@ contains
     real(r8) :: num_trees_cd
     integer :: cd
     real(r8) :: cd_frac
-    
+    integer :: ncwd_no_trunk
+    real(r8), allocatable :: SF_val_CWD_frac_canopy(:)
     !---------------------------------------------------------------------
     total_damage_litter = 0.0_r8
+    ncwd_no_trunk = ncwd - 1
+    allocate(SF_val_CWD_frac_canopy(ncwd_no_trunk))
+
+    ! crown damage is currently no trunks - but we want 100% of
+    ! damage above to go to litter. We therefoer have to
+    ! renormalise just the first three litter bins
+    SF_val_CWD_frac_canopy = SF_val_CWD_frac(1:ncwd_no_trunk)/sum(SF_val_CWD_frac(1:ncwd_no_trunk))
 
     ! m2
     remainder_area = currentPatch%area - patch_site_areadis
@@ -2333,9 +2341,9 @@ contains
                       branch_loss = (sapw_m + struct_m) * crown_reduction * &
                            currentCohort%branch_frac * num_trees_cd
 
-                      do c=1,(ncwd-1)
+                      do c=1,(ncwd_no_trunk)
 
-                         branch_donatable_mass = branch_loss * SF_val_CWD_frac(c)
+                         branch_donatable_mass = branch_loss * SF_val_CWD_frac_canopy(c)
                             
                          ! Transfer wood of dying trees to AG CWD pools
                          new_litt%ag_cwd(c) = new_litt%ag_cwd(c) + branch_donatable_mass * donate_m2
@@ -2432,8 +2440,8 @@ contains
     allocate(SF_val_CWD_frac_canopy(ncwd_no_trunk))
     
     ! crown damage is currently not trunks - but we want 100% of
-    ! damage above above to go to litter. We therefore have to
-    ! renormalize just the first three litter bins    
+    ! damage above to go to litter. We therefore have to
+    ! renormalise just the first three litter bins    
     SF_val_CWD_frac_canopy = SF_val_CWD_frac(1:ncwd_no_trunk)/sum(SF_val_CWD_frac(1:ncwd_no_trunk))
 
     
