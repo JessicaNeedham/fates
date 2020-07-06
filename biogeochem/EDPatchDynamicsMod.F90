@@ -2495,7 +2495,7 @@ contains
                   min(1.0_r8, currentCohort%dmort* hlm_freq_day))
                       
                ! do cd = max(2,currentCohort%crowndamage), ncrowndamagemax  ! no recovery
-             do cd = 2, max(2,currentCohort%crowndamage-1), ncrowndamagemax ! recovery
+             do cd = max(2,currentCohort%crowndamage-1), ncrowndamagemax ! recovery
              
                    call get_disturbance_canopy_damage_frac(cd, cd_frac)
 
