@@ -86,7 +86,7 @@ contains
     real(r8) :: damage_fracs(ncrowndamagemax)
 
     damage_fracs = (/0.0_r8, 0.18_r8, 0.07_r8, 0.04_r8, 0.03_r8/)
-    damage_fracs = damage_fracs * 0.001_r8
+    damage_fracs = damage_fracs * 0.005_r8
     
     damage_fracs(1) = 1.0_r8 - sum(damage_fracs(2:ncrowndamagemax))
 
