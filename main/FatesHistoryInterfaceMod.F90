@@ -2716,6 +2716,9 @@ end subroutine flush_hvars
  
                        hio_nplant_understory_si_scpf(io_si,scpf) = hio_nplant_understory_si_scpf(io_si,scpf) + ccohort%n
                        hio_nplant_understory_si_scls(io_si,scls) = hio_nplant_understory_si_scls(io_si,scls) + ccohort%n
+                       hio_nplant_understory_si_cdsc(io_si,cdsc) = hio_nplant_understory_si_cdsc(io_si,cdsc) + ccohort%n
+                       hio_nplant_understory_si_cdpf(io_si,cdpf) = hio_nplant_understory_si_cdpf(io_si,cdpf) + ccohort%n
+
                        hio_lai_understory_si_scls(io_si,scls) = hio_lai_understory_si_scls(io_si,scls) + &
                                                                 ccohort%treelai*ccohort%c_area  * AREA_INV
                        hio_sai_understory_si_scls(io_si,scls) = hio_sai_understory_si_scls(io_si,scls) + &
@@ -2752,6 +2755,7 @@ end subroutine flush_hvars
                             ccohort%cmort * ccohort%n
                        hio_m3mortality_understory_si_cdsc(io_si,cdsc) = hio_m3mortality_understory_si_cdsc(io_si,cdsc)+&
                             ccohort%cmort * ccohort%n
+
                        
                        hio_understory_mortality_carbonflux_si(io_si) = hio_understory_mortality_carbonflux_si(io_si) + &
                              (ccohort%bmort + ccohort%hmort + ccohort%cmort + & 
