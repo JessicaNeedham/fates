@@ -451,6 +451,7 @@ contains
     real(r8) :: cd_n_total
     integer :: cd
     real(r8) :: cd_frac
+    real(r8) :: agb_frac
 
     real(r8) :: live_stock_pre
     real(r8) :: live_stock_post
@@ -458,7 +459,7 @@ contains
     real(r8) :: litter_stock_post
     
     !--------------------------------------------------------------------- 
-
+    
     
     storesmallcohort => null() ! storage of the smallest cohort for insertion routine
     storebigcohort   => null() ! storage of the largest cohort for insertion routine 
@@ -699,6 +700,8 @@ contains
              currentCohort => currentPatch%shortest
              do while(associated(currentCohort))       
 
+
+                agb_frac = EDPftvarcon_inst%allom_agb_frac(currentCohort%pft)
                 
                 allocate(nc)  ! new cohort surviving
                 if(hlm_use_planthydro.eq.itrue) call InitHydrCohort(CurrentSite,nc)
@@ -1073,8 +1076,7 @@ contains
                       !do cd = max(2,nc%crowndamage), ncrowndamagemax   ! no recovery
                        do cd = max(1,nc%crowndamage-1), ncrowndamagemax ! recovery
                          call get_disturbance_collateral_damage_frac(cd, cd_frac)
-                         !                      write(fates_log(),*) 'cd: ', cd, 'cd_frac: ', cd_frac
-
+                  
                          cd_n = nc%n * cd_frac
 
                          if(cd_n > nearzero) then
@@ -1123,13 +1125,13 @@ contains
 
                             sapw_m_pre = nc_d%prt%GetState(sapw_organ, all_carbon_elements)
                             call PRTDamageLosses(nc_d%prt, sapw_organ, mass_frac * &
-                                 nc_d%branch_frac)
+                                 nc_d%branch_frac * agb_frac)
                             sapw_m_post = nc_d%prt%GetState(sapw_organ, all_carbon_elements)
                             sapw_loss_prt = sapw_loss_prt + (sapw_m_pre - sapw_m_post)*nc_d%n
 
                             struct_m_pre = nc_d%prt%GetState(struct_organ, all_carbon_elements)
                             call PRTDamageLosses(nc_d%prt, struct_organ, mass_frac * &
-                                 nc_d%branch_frac)
+                                 nc_d%branch_frac * agb_frac)
                             struct_m_post = nc_d%prt%GetState(struct_organ, all_carbon_elements)
                             struct_loss_prt = struct_loss_prt + (struct_m_pre - struct_m_post)*nc_d%n
 
@@ -1242,13 +1244,13 @@ contains
                             
                             sapw_m_pre = nc_canopy_d%prt%GetState(sapw_organ, all_carbon_elements)
                             call PRTDamageLosses(nc_canopy_d%prt, sapw_organ, mass_frac * &
-                                 nc_canopy_d%branch_frac)
+                                 nc_canopy_d%branch_frac * agb_frac)
                             sapw_m_post = nc_canopy_d%prt%GetState(sapw_organ, all_carbon_elements)
                             sapw_loss_prt = sapw_loss_prt + (sapw_m_pre - sapw_m_post)*nc_canopy_d%n
                             
                             struct_m_pre = nc_canopy_d%prt%GetState(struct_organ, all_carbon_elements)
                             call PRTDamageLosses(nc_canopy_d%prt, struct_organ, mass_frac * &
-                                 nc_canopy_d%branch_frac)
+                                 nc_canopy_d%branch_frac * agb_frac)
                             struct_m_post = nc_canopy_d%prt%GetState(struct_organ, all_carbon_elements)
                             struct_loss_prt = struct_loss_prt + (struct_m_pre - struct_m_post)* &
                                  nc_canopy_d%n
@@ -2252,6 +2254,8 @@ contains
     integer :: cd
     real(r8) :: cd_frac
     integer :: ncwd_no_trunk
+    real(r8) :: branch_frac
+    real(r8) :: agb_frac
     real(r8), allocatable :: SF_val_CWD_frac_canopy(:)
     !---------------------------------------------------------------------
     total_damage_litter = 0.0_r8
@@ -2291,6 +2295,8 @@ contains
        currentCohort => currentPatch%shortest
        do while(associated(currentCohort))       
 
+          agb_frac = EDPftvarcon_inst%allom_agb_frac(currentCohort%pft)
+          
           ! only woody-plants are going to be damaged (not grasses)
           if (EDPftvarcon_inst%woody(currentCohort%pft)==1 .and. & 
                currentCohort%canopy_layer > 1) then
@@ -2341,7 +2347,7 @@ contains
                       
                       ! branch loss
                       branch_loss = (sapw_m + struct_m) * crown_reduction * &
-                           currentCohort%branch_frac * num_trees_cd
+                           currentCohort%branch_frac * agb_frac *  num_trees_cd
 
                       do c=1,(ncwd_no_trunk)
 
@@ -2434,6 +2440,7 @@ contains
     real(r8) :: num_trees_cd
     integer :: cd
     real(r8) :: cd_frac
+    real(r8) :: agb_frac
     integer :: ncwd_no_trunk
     real(r8), allocatable :: SF_val_CWD_frac_canopy(:)
     !---------------------------------------------------------------------
@@ -2477,6 +2484,7 @@ contains
        currentCohort => currentPatch%shortest
        do while(associated(currentCohort))       
 
+          agb_frac = EDPftvarcon_inst%allom_agb_frac(currentCohort%pft)
           ! only woody-plants are going to be damaged (not grasses)
           if (EDPftvarcon_inst%woody(currentCohort%pft)==1 .and. & 
                currentCohort%canopy_layer == 1) then
@@ -2526,7 +2534,7 @@ contains
 
                       ! branch loss
                       branch_loss = (sapw_m + struct_m) * crown_reduction * &
-                           currentCohort%branch_frac * num_trees_cd
+                           currentCohort%branch_frac * agb_frac * num_trees_cd
 
                       
                       do c=1,(ncwd_no_trunk)

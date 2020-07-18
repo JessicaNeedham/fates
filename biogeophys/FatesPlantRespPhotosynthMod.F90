@@ -1,4 +1,3 @@
-
 module FATESPlantRespPhotosynthMod
    
    !-------------------------------------------------------------------------------------
@@ -104,6 +103,8 @@ contains
     use FatesAllometryMod, only : set_root_fraction
     use FatesAllometryMod, only : decay_coeff_kn
 
+    use DamageMainMod, only : get_crown_reduction
+    
     ! ARGUMENTS:
     ! -----------------------------------------------------------------------------------
     integer,intent(in)                      :: nsites
@@ -210,6 +211,11 @@ contains
 
     real(r8), allocatable :: rootfr_ft(:,:)  ! Root fractions per depth and PFT
 
+    real(r8) :: branch_frac
+    real(r8) :: agb_frac
+    real(r8) :: crown_reduction
+    real(r8) :: sapw_c_predamage
+    
     ! -----------------------------------------------------------------------------------
     ! Keeping these two definitions in case they need to be added later
     !
@@ -592,15 +598,24 @@ contains
                      sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
                      fnrt_c   = currentCohort%prt%GetState(fnrt_organ, all_carbon_elements)
 
+                     agb_frac = EDPftvarcon_inst%allom_agb_frac(currentCohort%pft)
+                     branch_frac = currentCohort%branch_frac
+                     call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
+                     
+                     sapw_c_predamage = sapw_c / &
+                          (1.0_r8 - (agb_frac * branch_frac * (1.0_r8-crown_reduction)))
+
+                     
                      select case(hlm_parteh_mode)
                      case (prt_carbon_allom_hyp)
 
-                        live_stem_n = EDPftvarcon_inst%allom_agb_frac(currentCohort%pft) * &
-                              sapw_c * EDPftvarcon_inst%prt_nitr_stoich_p1(ft,sapw_organ)
-                        
-                        live_croot_n = (1.0_r8-EDPftvarcon_inst%allom_agb_frac(currentCohort%pft)) * &
-                              sapw_c * EDPftvarcon_inst%prt_nitr_stoich_p1(ft,sapw_organ)
+                        live_stem_n = (sapw_c_predamage*agb_frac) * &
+                             (1.0_r8 - branch_frac*(1.0_r8-crown_reduction)) * &
+                             EDPftvarcon_inst%prt_nitr_stoich_p1(ft,sapw_organ)
 
+                        live_croot_n = sapw_c_predamage * (1.0_r8 - agb_frac) * &
+                             EDPftvarcon_inst%prt_nitr_stoich_p1(ft,sapw_organ)
+                        
                         fnrt_n = fnrt_c * EDPftvarcon_inst%prt_nitr_stoich_p1(ft,fnrt_organ)
 
                      case(prt_cnp_flex_allom_hyp) 
