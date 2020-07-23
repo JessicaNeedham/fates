@@ -702,7 +702,7 @@ contains
 
   ! ============================================================================
 
-  real(r8) function tree_sai( pft, dbh, canopy_trim, c_area, nplant, cl, &
+  real(r8) function tree_sai(pft, dbh, canopy_trim, target_c_area, nplant, cl, &
                               canopy_lai, treelai, vcmax25top, call_id )
 
     ! ============================================================================
@@ -710,9 +710,9 @@ contains
     ! ============================================================================
 
     integer, intent(in)  :: pft                
-    real(r8), intent(in) :: dbh                
+    real(r8), intent(in) :: dbh
+    real(r8), intent(in) :: target_c_area
     real(r8), intent(in) :: canopy_trim        ! trimming function (0-1)
-    real(r8), intent(in) :: c_area             ! crown area (m2)
     real(r8), intent(in) :: nplant             ! number of plants
     integer, intent(in)  :: cl                 ! canopy layer index
     real(r8), intent(in) :: canopy_lai(nclmax) ! total leaf area index of 
@@ -722,12 +722,13 @@ contains
     integer,intent(in)   :: call_id            ! flag specifying where this is called
                                                ! from
     real(r8)             :: h
-    real(r8)             :: target_bleaf
     real(r8)             :: target_lai
-
-    call bleaf(dbh,pft,canopy_trim,target_bleaf)
-
-    target_lai = tree_lai( target_bleaf, pft, c_area, nplant, cl, canopy_lai, vcmax25top) 
+    real(r8)             :: target_bleaf
+   
+    call bleaf(dbh, pft, canopy_trim, target_bleaf)
+    
+    target_lai = tree_lai(target_bleaf, pft, target_c_area, nplant, cl,&
+         canopy_lai, vcmax25top) 
 
     tree_sai   =  EDPftvarcon_inst%allom_sai_scaler(pft) * target_lai
 
@@ -744,11 +745,11 @@ contains
        write(fates_log(),*) 'pft: ',pft
        write(fates_log(),*) 'call id: ',call_id
        write(fates_log(),*) 'n: ',nplant
-       write(fates_log(),*) 'c_area: ',c_area
+       write(fates_log(),*) 'target_c_area: ', target_c_area
        write(fates_log(),*) 'dbh: ',dbh,' dbh_max: ',EDPftvarcon_inst%allom_dbh_maxheight(pft)
        write(fates_log(),*) 'h: ',h
        write(fates_log(),*) 'canopy_trim: ',canopy_trim
-       write(fates_log(),*) 'target_bleaf: ',target_bleaf
+       write(fates_log(),*) 'target_bleaf: ', target_bleaf
        write(fates_log(),*) 'canopy layer: ',cl
        write(fates_log(),*) 'canopy_tlai: ',canopy_lai(:)
        write(fates_log(),*) 'vcmax25top: ',vcmax25top

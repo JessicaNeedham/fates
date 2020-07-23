@@ -392,6 +392,7 @@ contains
     real(r8) :: lai_current      ! the LAI in the current leaf layer
     real(r8) :: cumulative_lai   ! the cumulative LAI, top down, to the leaf layer of interest
 
+    real(r8) :: target_c_area
     !----------------------------------------------------------------------
 
     currentPatch => currentSite%youngest_patch
@@ -412,10 +413,12 @@ contains
                                            currentCohort%n, currentCohort%canopy_layer,               &
                                            currentPatch%canopy_layer_tlai,currentCohort%vcmax25top )    
 
-          
+          call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread,currentCohort%pft,&
+               1, target_c_area)
+
           currentCohort%treesai = tree_sai(currentCohort%pft, &
                currentCohort%dbh, currentCohort%canopy_trim, &
-               currentCohort%c_area, currentCohort%n,currentCohort%canopy_layer,& 
+               target_c_area, currentCohort%n,currentCohort%canopy_layer,& 
                currentPatch%canopy_layer_tlai, currentCohort%treelai, &
                currentCohort%vcmax25top,0 )  
 

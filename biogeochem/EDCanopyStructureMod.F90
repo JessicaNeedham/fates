@@ -1454,6 +1454,7 @@ contains
     real(r8) :: lai                      ! summed lai for checking m2 m-2
     real(r8) :: snow_depth_avg           ! avg snow over whole site
     real(r8) :: leaf_c                   ! leaf carbon [kgC]
+    real(r8) :: target_c_area            ! crown area of undamaged cohort given dbh
     !----------------------------------------------------------------------
 
 
@@ -1510,17 +1511,19 @@ contains
                                            currentCohort%n, currentCohort%canopy_layer,     &
                                            currentPatch%canopy_layer_tlai,currentCohort%vcmax25top )    
 
+          call carea_allom(currentCohort%dbh, currentCohort%n, currentSite%spread,&
+               currentCohort%pft, 1, target_c_area)
           currentCohort%treesai = tree_sai(currentCohort%pft,  &
                                            currentCohort%dbh, &
                                            currentCohort%canopy_trim, &
-                                           currentCohort%c_area, &
+                                           target_c_area, &
                                            currentCohort%n, currentCohort%canopy_layer, & 
                                            currentPatch%canopy_layer_tlai, currentCohort%treelai , &
                                            currentCohort%vcmax25top,4)  
 
           
           currentCohort%lai =  currentCohort%treelai *currentCohort%c_area/currentPatch%total_canopy_area 
-          currentCohort%sai =  currentCohort%treesai *currentCohort%c_area/currentPatch%total_canopy_area
+          currentCohort%sai =  currentCohort%treesai * target_c_area/currentPatch%total_canopy_area
 
 
           ! Number of actual vegetation layers in this cohort's crown

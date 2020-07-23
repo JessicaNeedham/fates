@@ -266,10 +266,10 @@ contains
     new_cohort%treelai = tree_lai(leaf_c, new_cohort%pft, new_cohort%c_area,    &
          new_cohort%n, new_cohort%canopy_layer,               &
          patchptr%canopy_layer_tlai,new_cohort%vcmax25top)    
-
+ 
     new_cohort%treesai = tree_sai(new_cohort%pft,  &
-         new_cohort%dbh,  &
-         new_cohort%canopy_trim,new_cohort%c_area,   &
+         new_cohort%dbh, &
+         new_cohort%canopy_trim, new_cohort%c_area,  &
          new_cohort%n, new_cohort%canopy_layer, &
          patchptr%canopy_layer_tlai, new_cohort%treelai,           &
          new_cohort%vcmax25top, 2 )  
@@ -998,6 +998,7 @@ contains
      real(r8) :: dynamic_age_fusion_tolerance
      real(r8) :: dbh
      real(r8) :: leaf_c             ! leaf carbon [kg]
+     real(r8) :: target_c_area
 
      integer  :: largersc, smallersc, sc_i        ! indices for tracking the growth flux caused by fusion
      real(r8) :: larger_n, smaller_n
@@ -1250,13 +1251,15 @@ contains
                                       end select
 
                                       leaf_c = currentCohort%prt%GetState(leaf_organ,all_carbon_elements)
-
+                                      call carea_allom(currentCohort%dbh, newn, currentSite%spread, &
+                                           currentCohort%pft, 1, target_c_area)
+                                      
                                       currentCohort%treelai = tree_lai(leaf_c, currentCohort%pft, currentCohort%c_area, newn, &
                                            currentCohort%canopy_layer, currentPatch%canopy_layer_tlai, &
                                            currentCohort%vcmax25top)
                                       currentCohort%treesai = tree_sai(currentCohort%pft, &
                                            currentCohort%dbh, currentCohort%canopy_trim, &
-                                           currentCohort%c_area, newn, currentCohort%canopy_layer,  &
+                                            target_c_area, newn, currentCohort%canopy_layer,  &
                                            currentPatch%canopy_layer_tlai, currentCohort%treelai,currentCohort%vcmax25top,1 ) 
 
                                       call sizetype_class_index(currentCohort%dbh,currentCohort%pft, &
