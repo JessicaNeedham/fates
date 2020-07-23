@@ -413,9 +413,9 @@ contains
                                            currentPatch%canopy_layer_tlai,currentCohort%vcmax25top )    
 
           
-          currentCohort%treesai = tree_sai(currentCohort%pft, currentCohort%crowndamage, &
+          currentCohort%treesai = tree_sai(currentCohort%pft, &
                currentCohort%dbh, currentCohort%canopy_trim, &
-               currentCohort%n,currentCohort%canopy_layer,currentSite%spread,& 
+               currentCohort%c_area, currentCohort%n,currentCohort%canopy_layer,& 
                currentPatch%canopy_layer_tlai, currentCohort%treelai, &
                currentCohort%vcmax25top,0 )  
 
@@ -428,7 +428,7 @@ contains
              call endrun(msg=errMsg(sourcefile, __LINE__))
           endif
 
-          call bleaf(currentcohort%dbh,ipft,currentCohort%crowndamage,&
+          call bleaf(currentcohort%dbh,ipft,&
                currentcohort%canopy_trim,tar_bl)
 
           if ( int(EDPftvarcon_inst%allom_fmode(ipft)) .eq. 1 ) then
@@ -1504,13 +1504,11 @@ contains
        
 
        ! Initialize live pools
-       call bleaf(temp_cohort%dbh,ft,temp_cohort%crowndamage,&
+       call bleaf(temp_cohort%dbh,ft,&
             temp_cohort%canopy_trim,c_leaf)
        call bfineroot(temp_cohort%dbh,ft,temp_cohort%canopy_trim,c_fnrt)
-       call bsap_allom(temp_cohort%dbh,ft,temp_cohort%crowndamage,temp_cohort%branch_frac, &
-            temp_cohort%canopy_trim,a_sapw, c_sapw)
-       call bagw_allom(temp_cohort%dbh,ft,temp_cohort%crowndamage,temp_cohort%branch_frac,&
-            c_agw)
+       call bsap_allom(temp_cohort%dbh,ft,temp_cohort%canopy_trim,a_sapw, c_sapw)
+       call bagw_allom(temp_cohort%dbh,ft,c_agw)
        call bbgw_allom(temp_cohort%dbh, ft,c_bgw)
        call bdead_allom(c_agw,c_bgw,c_sapw,ft,c_struct)
        call bstore_allom(temp_cohort%dbh,ft,&

@@ -1510,11 +1510,11 @@ contains
                                            currentCohort%n, currentCohort%canopy_layer,     &
                                            currentPatch%canopy_layer_tlai,currentCohort%vcmax25top )    
 
-          currentCohort%treesai = tree_sai(currentCohort%pft, currentCohort%crowndamage, &
+          currentCohort%treesai = tree_sai(currentCohort%pft,  &
                                            currentCohort%dbh, &
                                            currentCohort%canopy_trim, &
-                                           currentCohort%n, currentCohort%canopy_layer, &
-                                           currentSite%spread,                          & 
+                                           currentCohort%c_area, &
+                                           currentCohort%n, currentCohort%canopy_layer, & 
                                            currentPatch%canopy_layer_tlai, currentCohort%treelai , &
                                            currentCohort%vcmax25top,4)  
 

@@ -210,17 +210,16 @@ contains
     ! Use allometry to compute initial values
     
     ! Leaf biomass (carbon)
-    call bleaf(ccohort%dbh, ipft,ccohort%crowndamage, canopy_trim, leaf_c)
+    call bleaf(ccohort%dbh, ipft,canopy_trim, leaf_c)
     
     ! Fine-root biomass (carbon)
     call bfineroot(ccohort%dbh, ipft, canopy_trim, fnrt_c)
     
     ! Sapwood biomass (carbon)
-    call bsap_allom(ccohort%dbh, ipft, ccohort%crowndamage, ccohort%branch_frac, &
-         canopy_trim, sapw_area, sapw_c)
+    call bsap_allom(ccohort%dbh, ipft, canopy_trim, sapw_area, sapw_c)
     
     ! Above ground woody biomass (carbon)
-    call bagw_allom(ccohort%dbh, ipft, ccohort%crowndamage, ccohort%branch_frac, agw_c)
+    call bagw_allom(ccohort%dbh, ipft, agw_c)
     
     ! Below ground woody biomass (carbon)
     call bbgw_allom(ccohort%dbh, ipft, bgw_c)
@@ -407,7 +406,7 @@ contains
   
   ! =====================================================================================
   
-  subroutine WrapQueryVars(ipft,crowndamage,branch_frac, leaf_area,crown_area,agb,store_c,target_leaf_c)
+  subroutine WrapQueryVars(ipft,crowndamage, leaf_area,crown_area,agb,store_c,target_leaf_c)
     
     implicit none
     ! Arguments
@@ -446,9 +445,9 @@ contains
 
     leaf_area = crown_area*tree_lai(leaf_c, ipft, crown_area, nplant, cl1, canopy_lai) 
 
-    call bagw_allom(ccohort%dbh,ipft, ccohort%crowndamage, agb, branch_frac = ccohort%branch_frac)
+    call bagw_allom(ccohort%dbh,ipft, agb)
 
-    call bleaf(ccohort%dbh,ipft, ccohort%crowndamage, ccohort%canopy_trim, target_leaf_c)
+    call bleaf(ccohort%dbh,ipft, ccohort%canopy_trim, target_leaf_c)
 
 
     return

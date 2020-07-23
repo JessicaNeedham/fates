@@ -83,8 +83,6 @@ module EDCohortDynamicsMod
   use PRTAllometricCarbonMod, only : callom_prt_vartypes
   use PRTAllometricCarbonMod, only : ac_bc_inout_id_netdc
   use PRTAllometricCarbonMod, only : ac_bc_in_id_pft
-  use PRTAllometricCarbonMod, only : ac_bc_in_id_cdamage
-  use PRTAllometricCarbonMod, only : ac_bc_in_id_branch_frac
   use PRTAllometricCarbonMod, only : ac_bc_in_id_ctrim
   use PRTAllometricCarbonMod, only : ac_bc_inout_id_dbh
   use PRTAllometricCarbonMod, only : ac_bc_in_id_lstat
@@ -269,11 +267,11 @@ contains
          new_cohort%n, new_cohort%canopy_layer,               &
          patchptr%canopy_layer_tlai,new_cohort%vcmax25top)    
 
-    new_cohort%treesai = tree_sai(new_cohort%pft, new_cohort%crowndamage, &
+    new_cohort%treesai = tree_sai(new_cohort%pft,  &
          new_cohort%dbh,  &
-         new_cohort%canopy_trim,   &
+         new_cohort%canopy_trim,new_cohort%c_area,   &
          new_cohort%n, new_cohort%canopy_layer, &
-         spread, patchptr%canopy_layer_tlai, new_cohort%treelai,           &
+         patchptr%canopy_layer_tlai, new_cohort%treelai,           &
          new_cohort%vcmax25top, 2 )  
   
     new_cohort%lai     = new_cohort%treelai * new_cohort%c_area/patchptr%area
@@ -383,8 +381,6 @@ contains
        call new_cohort%prt%RegisterBCInOut(ac_bc_inout_id_dbh,bc_rval = new_cohort%dbh)
        call new_cohort%prt%RegisterBCInOut(ac_bc_inout_id_netdc,bc_rval = new_cohort%npp_acc)
        call new_cohort%prt%RegisterBCIn(ac_bc_in_id_pft,bc_ival = new_cohort%pft)
-       call new_cohort%prt%RegisterBCIn(ac_bc_in_id_cdamage,bc_ival = new_cohort%crowndamage)
-       call new_cohort%prt%RegisterBCIn(ac_bc_in_id_branch_frac, bc_rval = new_cohort%branch_frac)
        call new_cohort%prt%RegisterBCIn(ac_bc_in_id_ctrim,bc_rval = new_cohort%canopy_trim)
        call new_cohort%prt%RegisterBCIn(ac_bc_in_id_lstat,bc_ival = new_cohort%status_coh)
        
@@ -1258,9 +1254,9 @@ contains
                                       currentCohort%treelai = tree_lai(leaf_c, currentCohort%pft, currentCohort%c_area, newn, &
                                            currentCohort%canopy_layer, currentPatch%canopy_layer_tlai, &
                                            currentCohort%vcmax25top)
-                                      currentCohort%treesai = tree_sai(currentCohort%pft, currentCohort%crowndamage, &
+                                      currentCohort%treesai = tree_sai(currentCohort%pft, &
                                            currentCohort%dbh, currentCohort%canopy_trim, &
-                                           newn, currentCohort%canopy_layer, currentSite%spread, &
+                                           currentCohort%c_area, newn, currentCohort%canopy_layer,  &
                                            currentPatch%canopy_layer_tlai, currentCohort%treelai,currentCohort%vcmax25top,1 ) 
 
                                       call sizetype_class_index(currentCohort%dbh,currentCohort%pft, &
@@ -1962,10 +1958,10 @@ contains
        struct_c = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
     
        ! Target sapwood biomass according to allometry and trimming [kgC]
-       call bsap_allom(dbh,ipft,1,1.0_r8,canopy_trim,sapw_area,target_sapw_c)
+       call bsap_allom(dbh,ipft,canopy_trim,sapw_area,target_sapw_c)
        
        ! Target total above ground biomass in woody/fibrous tissues  [kgC]
-       call bagw_allom(dbh,ipft,1,1.0_r8, target_agw_c)
+       call bagw_allom(dbh,ipft, target_agw_c)
        
        ! Target total below ground biomass in woody/fibrous tissues [kgC] 
        call bbgw_allom(dbh,ipft,target_bgw_c)
@@ -1993,7 +1989,7 @@ contains
        leaf_c  = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
 
        ! Target leaf biomass according to allometry and trimming
-       call bleaf(dbh,ipft,1,canopy_trim,target_leaf_c)
+       call bleaf(dbh,ipft,canopy_trim,target_leaf_c)
 
        if( ( leaf_c - target_leaf_c ) > calloc_abs_error ) then
           call ForceDBH( ipft, canopy_trim, dbh, hite_out, bl=leaf_c )

@@ -360,7 +360,7 @@ contains
                      ft = currentCohort%pft
                      cl = currentCohort%canopy_layer
                      
-                     call bleaf(currentCohort%dbh,currentCohort%pft,currentCohort%crowndamage,&
+                     call bleaf(currentCohort%dbh,currentCohort%pft,&
                           currentCohort%canopy_trim,b_leaf)
                      call storage_fraction_of_target(b_leaf, &
                            currentCohort%prt%GetState(store_organ, all_carbon_elements), &
