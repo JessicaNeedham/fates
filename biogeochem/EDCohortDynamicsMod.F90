@@ -968,7 +968,7 @@ contains
      use FatesConstantsMod , only : itrue
      use FatesConstantsMod, only : days_per_year
      use EDTypesMod  , only : maxCohortsPerPatch
-     
+     use DamageMainMod, only : get_crown_reduction
      !
      ! !ARGUMENTS   
      type (ed_site_type), intent(inout),  target :: currentSite 
@@ -1004,6 +1004,7 @@ contains
      real(r8) :: larger_n, smaller_n
      integer  :: oldercacls, youngercacls, cacls_i ! indices for tracking the age flux caused by fusion
      real(r8) :: older_n, younger_n
+     real(r8) :: crown_reduction
 
      logical, parameter :: fuse_debug = .false.   ! This debug is over-verbose
                                                  ! and gets its own flag
@@ -1114,6 +1115,7 @@ contains
                                            (currentCohort%coage * (currentCohort%n/(currentCohort%n + nextc%n))) + &
                                            (nextc%coage * (nextc%n/(currentCohort%n + nextc%n)))
 
+                                      
                                       ! update the cohort age again
                                       if (hlm_use_cohort_age_tracking .eq.itrue) then 
                                          call coagetype_class_index(currentCohort%coage, currentCohort%pft, &
@@ -1197,11 +1199,14 @@ contains
 
                                             if( EDPftvarcon_inst%woody(currentCohort%pft) == itrue ) then
 
+                                               call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
                                                call ForceDBH( currentCohort%pft,&
                                                     currentCohort%canopy_trim, &
-                                                    currentCohort%dbh, currentCohort%hite, &
-                                                    bdead = currentCohort%prt%GetState(struct_organ,all_carbon_elements))
-
+                                                    currentCohort%dbh, currentCohort%hite,&
+                                                    bdead = currentCohort%prt%GetState(struct_organ,all_carbon_elements),&
+                                                    crown_reduction = crown_reduction,&
+                                                    branch_frac = currentCohort%branch_frac)
+                                                   
                                             end if
                                             !
                                             call carea_allom(currentCohort%dbh,newn,currentSite%spread,currentCohort%pft,&
@@ -1235,10 +1240,15 @@ contains
                                          ! -----------------------------------------------------------------
                                          !
                                          if( EDPftvarcon_inst%woody(currentCohort%pft) == itrue ) then
+
+                                            call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
+                                          
                                             call ForceDBH( currentCohort%pft,&
                                                  currentCohort%canopy_trim, &
                                                  currentCohort%dbh, currentCohort%hite, &
-                                                 bdead = currentCohort%prt%GetState(struct_organ,all_carbon_elements))
+                                                 bdead = currentCohort%prt%GetState(struct_organ,all_carbon_elements), &
+                                                 crown_reduction = crown_reduction,&
+                                                 branch_frac = currentCohort%branch_frac)
 
                                          end if
                                          !
@@ -1257,6 +1267,7 @@ contains
                                       currentCohort%treelai = tree_lai(leaf_c, currentCohort%pft, currentCohort%c_area, newn, &
                                            currentCohort%canopy_layer, currentPatch%canopy_layer_tlai, &
                                            currentCohort%vcmax25top)
+                                      
                                       currentCohort%treesai = tree_sai(currentCohort%pft, &
                                            currentCohort%dbh, currentCohort%canopy_trim, &
                                             target_c_area, newn, currentCohort%canopy_layer,  &
@@ -1406,6 +1417,16 @@ contains
                                               currentCohort%pft, currentCohort%c_area, currentCohort%n, &
                                               currentCohort%canopy_layer, currentPatch%canopy_layer_tlai, &
                                               currentCohort%vcmax25top  )			    
+
+                                         if(currentCohort%treelai > 28.0_r8) then
+                                            write(fates_log(),*) 'failing in fuse cohorts'
+                                            write(fates_log(),*) 'tree lai: ', currentCohort%treelai
+                                            write(fates_log(),*) 'c_area  : ', currentCohort%c_area
+                                            write(fates_log(),*) 'leaf_c  : ', leaf_c
+                                         end if
+                                         
+
+
                                          call UpdateSizeDepPlantHydProps(currentSite,currentCohort, bc_in)  				   
                                       endif
 
@@ -1925,7 +1946,8 @@ contains
     ! consistent with stuctural biomass (or, in the case of grasses, leaf biomass) 
     ! then correct (increase) the dbh to match that.
     ! -----------------------------------------------------------------------------------
-
+    use DamageMainMod, only : get_crown_reduction
+    
     ! argument
     type(ed_cohort_type),intent(inout) :: currentCohort
     real(r8),intent(out)               :: delta_dbh
@@ -1946,6 +1968,7 @@ contains
     real(r8) :: struct_c
     real(r8) :: hite_out
     real(r8) :: leaf_c
+    real(r8) :: crown_reduction
     
     dbh  = currentCohort%dbh
     ipft = currentCohort%pft
@@ -1979,7 +2002,12 @@ contains
        ! -----------------------------------------------------------------------------------
        
        if( (struct_c - target_struct_c ) > calloc_abs_error ) then
-          call ForceDBH( ipft,canopy_trim, dbh, hite_out, bdead=struct_c )
+
+          call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
+                                          
+          call ForceDBH( ipft,canopy_trim, dbh, hite_out, bdead=struct_c, &
+               crown_reduction = crown_reduction, &
+               branch_frac = currentCohort%branch_frac)
           delta_dbh = dbh - currentCohort%dbh 
           delta_hite = hite_out - currentCohort%hite
           currentCohort%dbh  = dbh

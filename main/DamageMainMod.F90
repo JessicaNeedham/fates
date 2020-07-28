@@ -32,7 +32,9 @@ module DamageMainMod
   public :: get_disturbance_collateral_damage_frac
   public :: get_disturbance_canopy_damage_frac
   public :: get_crown_reduction
- 
+  public :: get_crown_damage
+  public :: adjust_bdead
+
   logical :: debug = .false.  ! for debugging
 
   ! ============================================================================
@@ -118,29 +120,57 @@ contains
   end subroutine get_crown_reduction
 
   !----------------------------------------------------------------------------------------                                                 
+  subroutine get_crown_damage(leaf_c, target_leaf_c, crowndamage)
 
-  ! subroutine get_crown_damage_bounds(crowndamage, lower, upper)
+    ! This subroutine calculates which damage class a cohort should be in
+    ! based on leaf biomass relative to target leaf biomass - i.e. it allows
+    ! for cohorts to recover
 
-  !   use EDTypesMod       , only : ncrowndamagemax
+    use EDTypesMod          , only : ncrowndamagemax
 
-  !   integer(i4), intent(inout)  :: crowndamage
-  !   real(r8)   , intent(out) :: lower
-  !   real(r8)   , intent(out) :: upper
+    real(r8),    intent(in)   :: leaf_c
+    real(r8),    intent(in)   :: target_leaf_c
+    integer(i4), intent(out)  :: crowndamage
 
-  !   integer(i4)              :: cdplus
+    ! Local variables
+    real(r8) :: frac
 
-  !   cdplus = crowndamage+1
+    frac = min(leaf_c/target_leaf_c, 1.0_r8)
 
-  !   call get_crown_reduction(crowndamage, lower)
-  !   call get_crown_reduction(cdplus, upper)
+    crowndamage = max(1.0_r8, real(ceiling((1.0_r8-frac)/0.2_r8)))
 
-  !   return
-
-  ! end subroutine get_crown_damage_bounds
-
+    return
+  end subroutine get_crown_damage
+  
 
   !----------------------------------------------------------------------------------------
 
+  subroutine adjust_bdead(bt_sap, dbt_sapdd, bt_agb, dbt_agbdd, agb_frac, branch_frac, &
+    crown_reduction)
+
+    ! This subroutine takes structural biomass from pft%GetState
+    ! and scales it up to give what it should be for an undamaged tree
+
+    real(r8), intent(inout) :: bt_sap
+    real(r8), intent(inout) :: dbt_sapdd
+    real(r8), intent(inout) :: bt_agb
+    real(r8), intent(inout) :: dbt_agbdd
+    real(r8), intent(in) :: agb_frac
+    real(r8), intent(in) :: branch_frac
+    real(r8), intent(in) :: crown_reduction
+   
+    
+    bt_sap = bt_sap * agb_frac * branch_frac * (1.0_r8 - crown_reduction)
+    dbt_sapdd = dbt_sapdd * agb_frac * branch_frac * (1.0_r8 - crown_reduction)
+
+    bt_agb = bt_agb * branch_frac * (1.0_r8 - crown_reduction)
+    dbt_agbdd = dbt_agbdd * branch_frac * (1.0_r8 - crown_reduction)
+
+    return
+  end subroutine adjust_bdead
+  
+
+  !----------------------------------------------------------------------------------------
 
 end module DamageMainMod
 

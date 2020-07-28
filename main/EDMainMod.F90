@@ -283,6 +283,7 @@ contains
     use FatesAllometryMod    , only : bleaf
     use FatesAllometryMod    , only : carea_allom
     use DamageMainMod        , only : get_crown_reduction
+    use DamageMainMod        , only : get_crown_damage
     use PRTGenericMod        , only : leaf_organ
     use FatesInterfaceTypesMod, only : hlm_use_cohort_age_tracking
     use FatesConstantsMod, only : itrue
@@ -316,6 +317,8 @@ contains
     real(r8) :: leaf_loss_prt
     real(r8) :: current_npp           ! place holder for calculating npp each year in prescribed physiology mode
 
+    real(r8) :: target_leaf_c
+    
     !-----------------------------------------------------------------------
     leaf_loss = 0.0_r8
     leaf_loss_prt = 0.0_r8
@@ -401,8 +404,17 @@ contains
           else
              is_drought = .true.
           end if
-          call PRTMaintTurnover(currentCohort%prt,ft,is_drought)
 
+               
+          call PRTMaintTurnover(currentCohort%prt,ft,is_drought)
+          leaf_c = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
+          call bleaf(currentCohort%dbh, currentCohort%pft,currentCohort%canopy_trim,&
+               target_leaf_c)
+          call get_crown_damage(leaf_c, target_leaf_c, currentCohort%crowndamage)
+          call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread,currentCohort%pft, &
+               currentCohort%crowndamage, currentCohort%c_area)               
+          
+              
           ! If the current diameter of a plant is somehow less than what is consistent
           ! with what is allometrically consistent with the stuctural biomass, then
           ! correct the dbh to match.
@@ -412,9 +424,17 @@ contains
           hite_old = currentCohort%hite
           dbh_old  = currentCohort%dbh
 
-
-          ! Growth and Allocation (PARTEH)
           call currentCohort%prt%DailyPRT()
+
+          leaf_c = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
+          call bleaf(currentCohort%dbh, currentCohort%pft,currentCohort%canopy_trim,&
+               target_leaf_c)
+          call get_crown_damage(leaf_c, target_leaf_c, currentCohort%crowndamage)
+          call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread,currentCohort%pft, &
+               currentCohort%crowndamage, currentCohort%c_area)               
+        
+
+          
 
           ! JN Tempory code to increase damage with size - just to test
           ! all the other damage code works. Replace this with
