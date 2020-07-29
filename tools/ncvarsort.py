@@ -44,6 +44,7 @@ def main():
     (u'fates_variants', u'fates_pft'):6,
     (u'fates_hydr_organs', u'fates_pft'):6,
     (u'fates_leafage_class', u'fates_pft'):6,
+    (u'fates_damage_class', u'fates_pft'):6,
     (u'fates_prt_organs', u'fates_pft'):6,
     (u'fates_litterclass',):7,
     (u'fates_NCWD',):8,

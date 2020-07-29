@@ -6,7 +6,8 @@ module FatesSizeAgeTypeIndicesMod
   use FatesInterfaceTypesMod,     only : nlevage
   use FatesInterfaceTypesMod,     only : nlevheight
   use FatesInterfaceTypesMod,     only : nlevcoage
-  use EDTypesMod,            only : ncrowndamagemax
+  use FatesInterfaceTypesMod,     only : ncrowndamage
+  use EDTypesMod,            only : max_ncrowndamage
   use EDParamsMod,           only : ED_val_history_sizeclass_bin_edges
   use EDParamsMod,           only : ED_val_history_ageclass_bin_edges
   use EDParamsMod,           only : ED_val_history_height_bin_edges
@@ -190,7 +191,7 @@ contains
      size_class        = get_size_class_index(dbh)
  
      cdamage_by_size_by_pft_class = (cdamage-1)*nlevsclass + size_class + &
-          (pft-1) * nlevsclass * ncrowndamagemax
+          (pft-1) * nlevsclass * ncrowndamage
 
   end function get_cdamagesizepft_class_index
 

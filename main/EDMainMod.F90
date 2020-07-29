@@ -279,7 +279,7 @@ contains
     ! FIX(SPM,032414) refactor so everything goes through interface
     !
     ! !USES:
-    use EDTypesMod           , only : ncrowndamagemax
+    use FatesInterfaceTypesMod, only : ncrowndamage
     use FatesAllometryMod    , only : bleaf
     use FatesAllometryMod    , only : carea_allom
     use DamageMainMod        , only : get_crown_reduction

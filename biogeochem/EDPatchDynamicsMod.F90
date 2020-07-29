@@ -386,10 +386,10 @@ contains
     use PRTLossFluxesMod    , only : PRTDamageLosses
     use PRTGenericMod       , only : leaf_organ
     use ChecksBalancesMod   , only : SiteMassStock
-    use EDTypesMod          , only : ncrowndamagemax
+    use EDTypesMod          , only : max_ncrowndamage
     use FatesInterfaceTypesMod, only : hlm_use_canopy_damage
     use FatesInterfaceTypesMod, only : hlm_use_understory_damage
-   
+    use FatesInterfaceTypesMod, only : ncrowndamage
     !
     ! !ARGUMENTS:
     type (ed_site_type), intent(inout), target :: currentSite
@@ -1073,8 +1073,8 @@ contains
                       cd_frac_total = 0.0_r8 
                       
                       ! for each damage class find the number density and if big enough allocate a new cohort
-                      !do cd = max(2,nc%crowndamage), ncrowndamagemax   ! no recovery
-                       do cd = max(1,nc%crowndamage-1), ncrowndamagemax ! recovery
+                      !do cd = max(2,nc%crowndamage), ncrowndamage   ! no recovery
+                       do cd = max(1,nc%crowndamage-1), ncrowndamage ! recovery
                          call get_disturbance_collateral_damage_frac(cd, cd_frac)
                   
                          cd_n = nc%n * cd_frac
@@ -1192,10 +1192,10 @@ contains
 
                       
                       ! for each damage class find the number density and if big enough allocate a new cohort
-                      !do cd = max(2,currentCohort%crowndamage), ncrowndamagemax ! no recovery 
-                      do cd = max(1,currentCohort%crowndamage-1), ncrowndamagemax ! recovery
+                      !do cd = max(2,currentCohort%crowndamage), ncrowndamage ! no recovery 
+                      do cd = max(1,currentCohort%crowndamage-1), ncrowndamage ! recovery
                       
-                         call get_disturbance_canopy_damage_frac(cd, cd_frac)
+                         call get_disturbance_canopy_damage_frac(cd,currentCohort%pft, cd_frac)
                          cd_n = currentCohort%n * cd_frac
 
                          if(cd_n > nearzero) then
@@ -2209,7 +2209,8 @@ contains
     use DamageMainMod,     only : get_disturbance_collateral_damage_frac
     use SFParamsMod      , only : SF_val_cwd_frac
     use EDParamsMod      , only : ED_val_understorey_death
-    use EDTypesMod       , only : ncrowndamagemax
+    use EDTypesMod       , only : max_ncrowndamage
+    use FatesInterfaceTypesMod, only : ncrowndamage
     
     !
     ! !ARGUMENTS:
@@ -2314,8 +2315,8 @@ contains
              num_trees = currentCohort%n * (patch_site_areadis/currentPatch%area) * &
                   (1.0_r8 - ED_val_understorey_death)
 
-             ! do cd = max(2,currentCohort%crowndamage), ncrowndamagemax ! no recovery
-             do cd = max(1, currentCohort%crowndamage-1), ncrowndamagemax ! recovery
+             ! do cd = max(2,currentCohort%crowndamage), ncrowndamage ! no recovery
+             do cd = max(1, currentCohort%crowndamage-1), ncrowndamage ! recovery
 
                    call get_disturbance_collateral_damage_frac(cd, cd_frac)
 
@@ -2396,8 +2397,8 @@ contains
     use DamageMainMod,     only : get_crown_reduction
     use DamageMainMod,     only : get_disturbance_canopy_damage_frac
     use SFParamsMod      , only : SF_val_cwd_frac
-    use EDTypesMod       , only : ncrowndamagemax
-    
+    use EDTypesMod       , only : max_ncrowndamage
+    use FatesInterfaceTypesMod , only : ncrowndamage
     !
     ! !ARGUMENTS:
     type(ed_site_type)  , intent(inout), target :: currentSite 
@@ -2502,10 +2503,10 @@ contains
              num_trees = currentCohort%n * (1.0_r8 - fates_mortality_disturbance_fraction * &
                   min(1.0_r8, currentCohort%dmort* hlm_freq_day))
                       
-               ! do cd = max(2,currentCohort%crowndamage), ncrowndamagemax  ! no recovery
-             do cd = max(1,currentCohort%crowndamage-1), ncrowndamagemax ! recovery
+               ! do cd = max(2,currentCohort%crowndamage), ncrowndamage  ! no recovery
+             do cd = max(1,currentCohort%crowndamage-1), ncrowndamage ! recovery
              
-                   call get_disturbance_canopy_damage_frac(cd, cd_frac)
+                   call get_disturbance_canopy_damage_frac(cd,currentCohort%pft, cd_frac)
 
                    ! now to get the number of damaged trees we multiply by damage frac
                    num_trees_cd = num_trees * cd_frac

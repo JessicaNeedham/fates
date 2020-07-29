@@ -252,7 +252,8 @@ module FatesInterfaceTypesMod
    integer, public :: nlevheight       ! The total number of height bins output to history
    integer, public :: nlevcoage        ! The total number of cohort age bins output to history 
    integer, public :: nleafage         ! The total number of leaf age classes
-
+   integer, public :: ncrowndamage     ! The total number of damage classes
+   
    ! -------------------------------------------------------------------------------------
    ! Structured Boundary Conditions (SITE/PATCH SCALE)
    ! For floating point arrays, it is sometimes the convention to define the arrays as

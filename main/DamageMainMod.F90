@@ -45,7 +45,7 @@ contains
 
     subroutine get_disturbance_collateral_damage_frac(crowndamage, dist_frac)
 
-    use EDTypesMod, only : ncrowndamagemax
+    use FatesInterfaceTypesMod, only : ncrowndamage
 
     integer, intent(in) :: crowndamage
     real(r8), intent(out) :: dist_frac
@@ -63,7 +63,7 @@ contains
     t1 = -1.0_r8*exp(-1.0_r8*rl_cd)
     t2 = -1.0_r8*exp(-1.0_r8*(rl_cd-1.0_r8))
 
-    if(crowndamage == ncrowndamagemax) then
+    if(crowndamage == ncrowndamage) then
        t1 = -1.0_r8*exp(-1.0*max)
     end if
 
@@ -76,22 +76,26 @@ contains
   !------------------------------------------------------------------------------------
   ! This subroutine calculates damage of canopy trees
   
-  subroutine get_disturbance_canopy_damage_frac(crowndamage, dist_frac)
+  subroutine get_disturbance_canopy_damage_frac(crowndamage, ft, dist_frac)
 
-    use EDTypesMod, only : ncrowndamagemax
+    use FatesInterfaceTypesMod, only : ncrowndamage
     use FatesConstantsMod, only : years_per_day
     
     integer, intent(in) :: crowndamage
     real(r8), intent(out) :: dist_frac
-
-    ! local variables
-    real(r8) :: damage_fracs(ncrowndamagemax)
-
-    damage_fracs = (/0.0_r8, 0.18_r8, 0.07_r8, 0.04_r8, 0.03_r8/)
-    damage_fracs = damage_fracs * 0.005_r8
+    integer, intent(in) :: ft
     
-    damage_fracs(1) = 1.0_r8 - sum(damage_fracs(2:ncrowndamagemax))
+    ! local variables
+    real(r8) :: damage_fracs(ncrowndamage)
 
+    damage_fracs = EDPftvarcon_inst%crowndamage_fracs(ft,:)
+    write(fates_log(),*) '1. damage_fracs: ', damage_fracs
+    damage_fracs = damage_fracs * years_per_day
+    write(fates_log(),*) '2. damage_fracs: ', damage_fracs
+    
+    damage_fracs(1) = 1.0_r8 - sum(damage_fracs(2:ncrowndamage))
+    write(fates_log(),*) '3. damage_fracs: ', damage_fracs
+    
     dist_frac = damage_fracs(crowndamage)
     
     
@@ -109,7 +113,7 @@ contains
     ! before multiplying by 0.2                                                                                                             
     ! Therefore, first damage class is 20% loss of crown, second 40% etc.                                                                   
     !-------------------------------------------------------------------                                                                    
-    use EDTypesMod     , only : ncrowndamagemax
+    use FatesInterfaceTypesMod     , only : ncrowndamage
 
     integer(i4), intent(in)   :: crowndamage
     real(r8),    intent(out)  :: crown_reduction
@@ -126,7 +130,7 @@ contains
     ! based on leaf biomass relative to target leaf biomass - i.e. it allows
     ! for cohorts to recover
 
-    use EDTypesMod          , only : ncrowndamagemax
+    use FatesInterfaceTypesMod          , only : ncrowndamage
 
     real(r8),    intent(in)   :: leaf_c
     real(r8),    intent(in)   :: target_leaf_c

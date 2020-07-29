@@ -11,7 +11,7 @@ module EDInitMod
   use FatesConstantsMod         , only : primaryforest
   use FatesGlobals              , only : endrun => fates_endrun
   use EDTypesMod                , only : nclmax
-  use EDTypesMod                , only : ncrowndamagemax
+  use EDTypesMod                , only : max_ncrowndamage
   use FatesGlobals              , only : fates_log
   use FatesInterfaceTypesMod         , only : hlm_is_restart
   use EDPftvarcon               , only : EDPftvarcon_inst
@@ -44,6 +44,7 @@ module EDInitMod
   use FatesInterfaceTypesMod         , only : nleafage
   use FatesInterfaceTypesMod         , only : nlevsclass
   use FatesInterfaceTypesMod         , only : nlevcoage
+  use FatesInterfaceTypesMod         , only : ncrowndamage
   use FatesAllometryMod         , only : h2d_allom
   use FatesAllometryMod         , only : bagw_allom
   use FatesAllometryMod         , only : bbgw_allom

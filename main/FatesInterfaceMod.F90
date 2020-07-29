@@ -18,7 +18,7 @@ module FatesInterfaceMod
    use EDTypesMod                , only : nclmax
    use EDTypesMod                , only : nlevleaf
    use EDTypesMod                , only : maxpft
-   use EDTypesMod                , only : ncrowndamagemax
+   use EDTypesMod                , only : max_ncrowndamage
    use EDTypesMod                , only : do_fates_salinity
    use EDTypesMod                , only : numWaterMem
    use EDTypesMod                , only : numlevsoil_max
@@ -537,6 +537,19 @@ module FatesInterfaceMod
             nleafage = size(EDPftvarcon_inst%leaf_long,dim=2)
          end if
 
+
+         ! Identify the number of damage classes
+         
+         if((lbound(EDPftvarcon_inst%crowndamage_fracs(:,:),dim=2) .eq. 0) .or. &
+             (ubound(EDPftvarcon_inst%crowndamage_fracs(:,:),dim=2) .eq. 0) ) then
+            write(fates_log(), *) 'While assessing the number of FATES leaf age classes,'
+            write(fates_log(), *) 'The second dimension of leaf_long was 0?'
+            call endrun(msg=errMsg(sourcefile, __LINE__))
+         else
+            ncrowndamage = size(EDPftvarcon_inst%crowndamage_fracs,dim=2)
+         end if
+
+         
          ! These values are used to define the restart file allocations and general structure
          ! of memory for the cohort arrays
 
@@ -699,7 +712,7 @@ module FatesInterfaceMod
        
        use EDTypesMod, only : NFSC
        use EDTypesMod, only : nclmax
-       use EDTypesMod, only : ncrowndamagemax
+       use FatesInterfaceTypesMod, only : ncrowndamage
        use EDTypesMod, only : nlevleaf
        use EDParamsMod, only : ED_val_history_sizeclass_bin_edges
        use EDParamsMod, only : ED_val_history_ageclass_bin_edges
@@ -739,12 +752,12 @@ module FatesInterfaceMod
        allocate( fates_hdim_pfmap_levcapf(1:nlevcoage*numpft))
        allocate( fates_hdim_camap_levcapf(1:nlevcoage*numpft))
 
-       allocate( fates_hdim_levcdam(ncrowndamagemax ))
-       allocate( fates_hdim_scmap_levcdsc(1:nlevsclass*ncrowndamagemax))
-       allocate( fates_hdim_cdmap_levcdsc(1:nlevsclass*ncrowndamagemax))
-       allocate( fates_hdim_scmap_levcdpf(1:nlevsclass*ncrowndamagemax * numpft))
-       allocate( fates_hdim_cdmap_levcdpf(1:nlevsclass*ncrowndamagemax * numpft))
-       allocate( fates_hdim_pftmap_levcdpf(1:nlevsclass*ncrowndamagemax * numpft))
+       allocate( fates_hdim_levcdam(ncrowndamage ))
+       allocate( fates_hdim_scmap_levcdsc(1:nlevsclass*ncrowndamage))
+       allocate( fates_hdim_cdmap_levcdsc(1:nlevsclass*ncrowndamage))
+       allocate( fates_hdim_scmap_levcdpf(1:nlevsclass*ncrowndamage * numpft))
+       allocate( fates_hdim_cdmap_levcdpf(1:nlevsclass*ncrowndamage * numpft))
+       allocate( fates_hdim_pftmap_levcdpf(1:nlevsclass*ncrowndamage * numpft))
 
        allocate( fates_hdim_levcan(nclmax))
        allocate( fates_hdim_levelem(num_elements))
@@ -796,7 +809,7 @@ module FatesInterfaceMod
        end do
 
        ! make damage array
-       do icdam = 1,ncrowndamagemax
+       do icdam = 1,ncrowndamage
           fates_hdim_levcdam(icdam) = icdam
        end do
        
@@ -872,7 +885,7 @@ module FatesInterfaceMod
        end do
 
        i=0
-       do icdam=1,ncrowndamagemax
+       do icdam=1,ncrowndamage
           do isc=1,nlevsclass
              i=i+1
              fates_hdim_scmap_levcdsc(i) = isc
@@ -907,7 +920,7 @@ module FatesInterfaceMod
 
         i=0
        do ipft=1,numpft
-          do icdam=1,ncrowndamagemax
+          do icdam=1,ncrowndamage
              do isc=1,nlevsclass
                 i=i+1
                 fates_hdim_scmap_levcdpf(i) = isc

@@ -130,6 +130,8 @@ module EDPftvarcon
      real(r8), allocatable :: taus(:, :)
 
 
+     ! Damage parameters
+     real(r8), allocatable :: crowndamage_fracs(:,:)
      
 
      ! Fire Parameters (No PFT vector capabilities in their own routines)
@@ -316,6 +318,8 @@ module EDPftvarcon
      procedure, private :: Receive_PFT_prt_organs
      procedure, private :: Register_PFT_leafage
      procedure, private :: Receive_PFT_leafage
+     procedure, private :: Register_PFT_damage
+     procedure, private :: Receive_PFT_damage
      procedure, private :: Register_PFT_numrad
      procedure, private :: Receive_PFT_numrad
   end type EDPftvarcon_type
@@ -360,7 +364,8 @@ contains
     call this%Register_PFT_hydr_organs(fates_params)
     call this%Register_PFT_prt_organs(fates_params)
     call this%Register_PFT_leafage(fates_params)
-    
+    call this%Register_PFT_damage(fates_params)
+    write(fates_log(),*) 'registered damage'
   end subroutine Register
 
   !-----------------------------------------------------------------------
@@ -379,7 +384,8 @@ contains
     call this%Receive_PFT_hydr_organs(fates_params)
     call this%Receive_PFT_prt_organs(fates_params)
     call this%Receive_PFT_leafage(fates_params)
-
+    call this%Receive_PFT_damage(fates_params)
+    write(fates_log(),*) 'received damage'
   end subroutine Receive
 
   !-----------------------------------------------------------------------
@@ -388,6 +394,7 @@ contains
     use FatesParametersInterface, only : fates_parameters_type, param_string_length
     use FatesParametersInterface, only : dimension_name_pft, dimension_shape_1d
 
+    
     implicit none
 
     class(EDPftvarcon_type), intent(inout) :: this
@@ -1886,7 +1893,8 @@ contains
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_2d, &
           dimension_names=dim_names, lower_bounds=dim_lower_bound)
     
-
+   
+    
   end subroutine Register_PFT_hydr_organs
 
   !-----------------------------------------------------------------------
@@ -1942,8 +1950,59 @@ contains
   end subroutine Receive_PFT_hydr_organs
 
   ! ===============================================================================================
+
   
-  subroutine FatesReportPFTParams(is_master)
+  subroutine Register_PFT_damage(this, fates_params)
+
+    use FatesParametersInterface, only : fates_parameters_type, param_string_length
+    use FatesParametersInterface, only : max_dimensions, dimension_name_damage
+    use FatesParametersInterface, only : dimension_name_pft, dimension_shape_2d
+
+    implicit none
+
+    class(EDPftvarcon_type), intent(inout) :: this
+    class(fates_parameters_type), intent(inout) :: fates_params
+
+    integer, parameter :: dim_lower_bound(2) = (/ lower_bound_pft, lower_bound_general /)
+    character(len=param_string_length) :: dim_names(2)
+    character(len=param_string_length) :: name
+
+    ! NOTE(bja, 2017-01) initialization doesn't seem to work correctly
+    ! if dim_names has a parameter qualifier.
+    dim_names(1) = dimension_name_pft
+    dim_names(2) = dimension_name_damage
+
+    name = 'fates_crowndamage_fracs'
+    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_2d, &
+         dimension_names=dim_names, lower_bounds=dim_lower_bound)
+  
+    return
+ end subroutine Register_PFT_damage
+
+  ! =====================================================================================
+
+  subroutine Receive_PFT_damage(this, fates_params)
+     
+     use FatesParametersInterface, only : fates_parameters_type
+     use FatesParametersInterface, only : param_string_length
+     
+     implicit none
+     
+     class(EDPftvarcon_type), intent(inout) :: this
+     class(fates_parameters_type), intent(inout) :: fates_params
+     
+     character(len=param_string_length) :: name
+
+    name = 'fates_crowndamage_fracs'
+    call fates_params%RetreiveParameterAllocate(name=name, &
+         data=this%crowndamage_fracs)
+
+    return
+  end subroutine Receive_PFT_damage
+
+  ! -----------------------------------------------------------------------
+
+    subroutine FatesReportPFTParams(is_master)
      
      ! Argument
      logical, intent(in) :: is_master  ! Only log if this is the master proc
@@ -2033,6 +2092,7 @@ contains
         write(fates_log(),fmt0) 'germination_rate = ',EDPftvarcon_inst%germination_rate
         write(fates_log(),fmt0) 'seed_decay_rate = ',EDPftvarcon_inst%seed_decay_rate
         write(fates_log(),fmt0) 'branch_turnover = ',EDPftvarcon_inst%branch_turnover
+        write(fates_log(),fmt0) 'crowndamage_fracs = ',EDPftvarcon_inst%crowndamage_fracs
         write(fates_log(),fmt0) 'trim_limit = ',EDPftvarcon_inst%trim_limit
         write(fates_log(),fmt0) 'trim_inc = ',EDPftvarcon_inst%trim_inc
         write(fates_log(),fmt0) 'rhol = ',EDPftvarcon_inst%rhol
@@ -2130,8 +2190,11 @@ contains
      integer :: nleafage ! size of the leaf age class array
      integer :: iage     ! leaf age class index
      integer :: norgans  ! size of the plant organ dimension
-
+     integer :: ncrowndamage ! number of crown damage classes
+     
      npft = size(EDPftvarcon_inst%evergreen,1)
+
+     ncrowndamage = size(EDPftvarcon_inst%crowndamage_fracs, 2)
 
      ! Prior to performing checks copy grperc to the 
      ! organ dimensioned version

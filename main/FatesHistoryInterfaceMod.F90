@@ -11,7 +11,7 @@ Module FatesHistoryInterfaceMod
   use FatesGlobals             , only : fates_log
   use FatesGlobals             , only : endrun => fates_endrun
   use EDTypesMod               , only : nclmax
-  use EDTypesMod               , only : ncrowndamagemax
+  use EDTypesMod               , only : max_ncrowndamage
   use EDTypesMod               , only : ican_upper
   use EDTypesMod               , only : element_pos
   use EDTypesMod               , only : num_elements
@@ -43,6 +43,7 @@ Module FatesHistoryInterfaceMod
   use FatesInterfaceTypesMod        , only : bc_in_type
   use FatesInterfaceTypesMod        , only : hlm_model_day
   use FatesInterfaceTypesMod        , only : nlevcoage
+  use FatesInterfaceTypesMod        , only : ncrowndamage
 
   ! FIXME(bja, 2016-10) need to remove CLM dependancy 
   use EDPftvarcon              , only : EDPftvarcon_inst
@@ -1776,9 +1777,10 @@ end subroutine flush_hvars
     use FatesSizeAgeTypeIndicesMod, only : get_cdamagesizepft_class_index
     use FatesSizeAgeTypeIndicesMod, only : coagetype_class_index
     use EDTypesMod        , only : nlevleaf
-    use EDTypesMod        , only : ncrowndamagemax
+    use EDTypesMod        , only : max_ncrowndamage
     use EDParamsMod,           only : ED_val_history_height_bin_edges
-
+    use FatesInterfaceTypesMod, only : ncrowndamage
+    
     ! Arguments
     class(fates_history_interface_type)             :: this
     integer                 , intent(in)            :: nc   ! clump index
