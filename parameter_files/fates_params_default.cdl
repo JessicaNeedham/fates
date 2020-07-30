@@ -127,7 +127,7 @@ variables:
 		fates_branch_turnover:units = "yr" ;
 		fates_branch_turnover:long_name = "turnover time of branches" ;
 	double fates_crowndamage_fracs(fates_damage_class, fates_pft) ;
-	        fates_crowndamage_fracs:untils = "yr" ;
+	        fates_crowndamage_fracs:units = "yr" ;
 		fates_crowndamage_fracs:long_name = "fraction of cohorts to each damage class per year" ;
 	double fates_c2b(fates_pft) ;
 		fates_c2b:units = "ratio" ;
