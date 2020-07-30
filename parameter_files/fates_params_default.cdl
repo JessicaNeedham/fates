@@ -125,6 +125,9 @@ variables:
 	double fates_branch_turnover(fates_pft) ;
 		fates_branch_turnover:units = "yr" ;
 		fates_branch_turnover:long_name = "turnover time of branches" ;
+	double fates_crowndamage_fracs(fates_damage_class, fates_pft) ;
+	        fates_crowndamage_fracs:untils = "yr" ;
+		fates_crowndamage_fracs:long_name = "fraction of cohorts to each damage class per year" ;
 	double fates_c2b(fates_pft) ;
 		fates_c2b:units = "ratio" ;
 		fates_c2b:long_name = "Carbon to biomass multiplier of bulk structural tissues" ;
@@ -795,6 +798,13 @@ data:
  fates_allom_stmode = 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ;
 
  fates_branch_turnover = 150, 150, 150, 150, 150, 150, 150, 150, 150, 0, 0, 0 ;
+
+ fates_crowndamage_fracs =
+ 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4,
+ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3,
+ 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2,
+ 0.075, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075,
+ 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025 ;
 
  fates_c2b = 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 ;
 
