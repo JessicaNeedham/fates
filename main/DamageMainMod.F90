@@ -29,12 +29,14 @@ module DamageMainMod
   implicit none
   private
 
-  public :: get_disturbance_collateral_damage_frac
-  public :: get_disturbance_canopy_damage_frac
+  !public :: get_disturbance_collateral_damage_frac
+  !public :: get_disturbance_canopy_damage_frac
   public :: get_crown_reduction
   public :: get_crown_damage
   public :: adjust_bdead
-
+  public :: damage_function
+  public :: get_damage_frac
+  
   logical :: debug = .false.  ! for debugging
 
   ! ============================================================================
@@ -42,65 +44,120 @@ module DamageMainMod
 
 contains
 
+  real(r8) function damage_function(crowndamage)
 
-    subroutine get_disturbance_collateral_damage_frac(crowndamage, dist_frac)
+    real(r8), intent(in) :: crowndamage ! plant crowndamage level
 
+    ! hard coded here - could have different cases and parameters?
+    damage_function = exp(-0.2*crowndamage)
+    return
+  end function damage_function
+
+  !---------------------------------------------------------------------------
+
+  subroutine get_damage_frac(cc_cd, nc_cd, dist_frac)
+
+    ! There is a transition matrix describing the probabilities of cohorts
+    ! increasing in damage. Movement from one damage class to a higher
+    ! damage class is described by the damage_function above - this form is yet
+    ! to be decided on or properly parameterised.
+    ! movement from i to i+1, i+2 etc is given by the vector transition_probs
+    ! this would populate the lower diagonal of a  matrix of dim(ncrowndamage,ncrowndamage)
+    ! the matrix columns need to be normalised so that transitions from any damage class
+    ! (including staying in the same damage class) sum to 1.
+    ! since this function takes current cohort damage class and retuns the probability of
+    ! moving to a new damage class, we don't actually make the whole matrix here
+    
+    ! USES
     use FatesInterfaceTypesMod, only : ncrowndamage
 
-    integer, intent(in) :: crowndamage
-    real(r8), intent(out) :: dist_frac
+    ! ARGUMENTS
+    integer, intent(in) :: cc_cd                   ! current cohort crown damage
+    integer, intent(in) :: nc_cd                   ! new cohort crown damage
+    real(r8), intent(out) :: dist_frac             ! probability of current cohort moving to new damage level
 
-    real(r8) :: t1         ! lower bound for integration
-    real(r8) :: t2         ! upper bound for integration
-    real(r8) :: rl_cd      ! crowndamage as a real
-    real(r8) :: max         ! arbitrary large number 
+    ! LOCAL VARIABLES
+    real(r8), allocatable :: transition_probs(:)   ! vector of transition probabilities between damage classes
+    integer                :: i                    ! counter
+    real(r8)               :: i_real               ! real version of counter
+    integer                :: n                    ! how long vector of transition probs needs to be
 
-    max = 1000000000.0_r8
+    n = ncrowndamage + 1 - cc_cd
+    allocate(transition_probs(n))
 
-   
-    rl_cd = real(crowndamage)
+    do i = 1,n
+       i_real = real(i)
+       transition_probs(i) = damage_function(i_real)
+    end do
 
-    t1 = -1.0_r8*exp(-1.0_r8*rl_cd)
-    t2 = -1.0_r8*exp(-1.0_r8*(rl_cd-1.0_r8))
+    ! normalise it
+    transition_probs = transition_probs/sum(transition_probs)
 
-    if(crowndamage == ncrowndamage) then
-       t1 = -1.0_r8*exp(-1.0*max)
-    end if
-
-    dist_frac = t1-t2
+    i = nc_cd - cc_cd + 1
+    dist_frac = transition_probs(i)
 
     return
-  end subroutine get_disturbance_collateral_damage_frac
+  end subroutine get_damage_frac
+  
+  !-------------------------------------------------------------------------------
+
+    
+  
+  
+
+! subroutine get_disturbance_collateral_damage_frac(crowndamage, dist_frac)
+
+!     use FatesInterfaceTypesMod, only : ncrowndamage
+
+!     integer, intent(in) :: crowndamage
+!     real(r8), intent(out) :: dist_frac
+
+!     real(r8) :: t1         ! lower bound for integration                                 
+!     real(r8) :: t2         ! upper bound for integration
+!     real(r8) :: rl_cd      ! crowndamage as a real
+!     real(r8) :: max         ! arbitrary large number                                                                   
+
+!     max = 1000000000.0_r8
+!     rl_cd = real(crowndamage)
+
+!     t1 = negative_exponential(rl_cd)
+!     t2 = negative_exponential(rl_cd-1.0_r8)
+
+!     if(crowndamage == ncrowndamage) then
+!        t1 = negative_exponential(max)
+!     end if
+
+!     dist_frac = t2-t1
+
+!     return
+!   end subroutine get_disturbance_collateral_damage_frac
+
 
   
-  !------------------------------------------------------------------------------------
-  ! This subroutine calculates damage of canopy trees
+!   !------------------------------------------------------------------------------------
+!   ! This subroutine calculates damage of canopy trees
   
-  subroutine get_disturbance_canopy_damage_frac(crowndamage, ft, dist_frac)
+!   subroutine get_disturbance_canopy_damage_frac(crowndamage, ft, dist_frac)
 
-    use FatesInterfaceTypesMod, only : ncrowndamage
-    use FatesConstantsMod, only : years_per_day
+!     use FatesInterfaceTypesMod, only : ncrowndamage
+!     use FatesConstantsMod, only : years_per_day
     
-    integer, intent(in) :: crowndamage
-    real(r8), intent(out) :: dist_frac
-    integer, intent(in) :: ft
+!     integer, intent(in) :: crowndamage
+!     real(r8), intent(out) :: dist_frac
+!     integer, intent(in) :: ft
     
-    ! local variables
-    real(r8) :: damage_fracs(ncrowndamage)
+!     ! local variables
+!     real(r8) :: damage_fracs(ncrowndamage)
 
-    damage_fracs = EDPftvarcon_inst%crowndamage_fracs(ft,:)
-    write(fates_log(),*) '1. damage_fracs: ', damage_fracs
-    damage_fracs = damage_fracs * years_per_day
-    write(fates_log(),*) '2. damage_fracs: ', damage_fracs
+!     damage_fracs = EDPftvarcon_inst%crowndamage_fracs(ft,:)
+!     damage_fracs = damage_fracs * years_per_day
+!     damage_fracs(1) = 1.0_r8 - sum(damage_fracs(2:ncrowndamage))
     
-    damage_fracs(1) = 1.0_r8 - sum(damage_fracs(2:ncrowndamage))
-    write(fates_log(),*) '3. damage_fracs: ', damage_fracs
-    
-    dist_frac = damage_fracs(crowndamage)
+!     dist_frac = damage_fracs(crowndamage)
     
     
-    return
-  end subroutine get_disturbance_canopy_damage_frac
+!     return
+!   end subroutine get_disturbance_canopy_damage_frac
 
 !-----------------------------------------------------------------------------------
   

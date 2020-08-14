@@ -381,8 +381,9 @@ contains
     use EDParamsMod         , only : ED_val_understorey_death, logging_coll_under_frac
     use EDCohortDynamicsMod , only : zero_cohort, copy_cohort, terminate_cohorts 
     use DamageMainMod       , only : get_crown_reduction
-    use DamageMainMod       , only : get_disturbance_collateral_damage_frac
-    use DamageMainMod       , only : get_disturbance_canopy_damage_frac
+  !  use DamageMainMod       , only : get_disturbance_collateral_damage_frac
+   ! use DamageMainMod       , only : get_disturbance_canopy_damage_frac
+    use DamageMainMod       , only : get_damage_frac
     use PRTLossFluxesMod    , only : PRTDamageLosses
     use PRTGenericMod       , only : leaf_organ
     use ChecksBalancesMod   , only : SiteMassStock
@@ -649,7 +650,7 @@ contains
              
              ! and the damaged canopy trees
              if(hlm_use_canopy_damage .eq. itrue) then 
-                call damage_canopy_litter_fluxes(currentSite, currentPatch, new_patch, patch_site_areadis, &
+                call damage_litter_fluxes(currentSite, currentPatch, new_patch, patch_site_areadis, &
                      total_canopy_damage_litter)
              end if
 
@@ -1073,9 +1074,8 @@ contains
                       cd_frac_total = 0.0_r8 
                       
                       ! for each damage class find the number density and if big enough allocate a new cohort
-                      !do cd = max(2,nc%crowndamage), ncrowndamage   ! no recovery
-                       do cd = max(1,nc%crowndamage-1), ncrowndamage ! recovery
-                         call get_disturbance_collateral_damage_frac(cd, cd_frac)
+                       do cd = nc%crowndamage+1, ncrowndamage 
+                         call get_damage_frac(nc%crowndamage, cd, cd_frac)
                   
                          cd_n = nc%n * cd_frac
 
@@ -1192,10 +1192,9 @@ contains
 
                       
                       ! for each damage class find the number density and if big enough allocate a new cohort
-                      !do cd = max(2,currentCohort%crowndamage), ncrowndamage ! no recovery 
-                      do cd = max(1,currentCohort%crowndamage-1), ncrowndamage ! recovery
+                      do cd = currentCohort%crowndamage+1, ncrowndamage
                       
-                         call get_disturbance_canopy_damage_frac(cd,currentCohort%pft, cd_frac)
+                         call get_damage_frac(currentCohort%crowndamage, cd, cd_frac)
                          cd_n = currentCohort%n * cd_frac
 
                          if(cd_n > nearzero) then
@@ -2206,207 +2205,25 @@ contains
     !
     ! !USES:
     use DamageMainMod,     only : get_crown_reduction
-    use DamageMainMod,     only : get_disturbance_collateral_damage_frac
-    use SFParamsMod      , only : SF_val_cwd_frac
-    use EDParamsMod      , only : ED_val_understorey_death
-    use EDTypesMod       , only : max_ncrowndamage
-    use FatesInterfaceTypesMod, only : ncrowndamage
-    
-    !
-    ! !ARGUMENTS:
-    type(ed_site_type)  , intent(inout), target :: currentSite 
-    type(ed_patch_type) , intent(inout), target :: currentPatch
-    type(ed_patch_type) , intent(inout), target :: newPatch
-    real(r8)            , intent(in)            :: patch_site_areadis
-    real(r8), intent(out) :: total_damage_litter   ! just for debugging purposes
-    
-    ! !LOCAL VARIABLES:
-    type(ed_cohort_type), pointer      :: currentCohort
-    type(litter_type), pointer         :: new_litt
-    type(litter_type), pointer         :: curr_litt
-    type(site_massbal_type), pointer   :: site_mass
-    type(site_fluxdiags_type), pointer :: flux_diags
-
-    real(r8) :: leaf_donatable_mass  ! mass of donatable litter [kg]
-    real(r8) :: branch_donatable_mass! mass of donatable cwd [kg] 
-    real(r8) :: leaf_m               ! leaf mass [kg]
-    real(r8) :: sapw_m               ! sapwood mass [kg]
-    real(r8) :: struct_m             ! structure mass [kg]
-    real(r8) :: repro_m              ! reproductive mass [kg]
-    real(r8) :: remainder_area       ! current patch area after donation [m2]
-    real(r8) :: retain_frac          ! Fraction of mass to be retained
-    real(r8) :: retain_m2            ! area normalization for litter mass destined to old patch [m-2]
-    real(r8) :: donate_frac          ! Fraction of mass to be donated                     
-    real(r8) :: donate_m2            ! area normalization for litter mass destined to new patch [m-2]   
-    integer  :: pft                  ! plant functional type index
-    integer  :: crowndamage          ! new increased crown damage class 
-    real(r8) :: crown_reduction      ! amount that crown is reduced by (must be same as leaf biomass)
-    real(r8) :: leaf_loss            ! amount of leaf biomass that has been lost
-    real(r8) :: branch_loss          ! amount of branch biomass that has been lost
-    integer  :: dcmpy                ! decomposability index
-    real(r8) :: seed_mass            ! Total seed mass generated from storage death [kg]
-    integer  :: c                    ! coarse woody debris pool index
-    integer  :: el                   ! element loop index
-    integer  :: sl                   ! soil layer index
-    integer  :: element_id           ! parteh compatible global element index
-    real(r8) :: dcmpy_frac           ! decomposability fraction
-    real(r8) :: num_trees            ! number of trees that were damaged
-    real(r8) :: num_trees_cd
-    integer :: cd
-    real(r8) :: cd_frac
-    integer :: ncwd_no_trunk
-    real(r8) :: branch_frac
-    real(r8) :: agb_frac
-    real(r8), allocatable :: SF_val_CWD_frac_canopy(:)
-    !---------------------------------------------------------------------
-    total_damage_litter = 0.0_r8
-    ncwd_no_trunk = ncwd - 1
-    allocate(SF_val_CWD_frac_canopy(ncwd_no_trunk))
-
-    ! crown damage is currently no trunks - but we want 100% of
-    ! damage above to go to litter. We therefoer have to
-    ! renormalise just the first three litter bins
-    SF_val_CWD_frac_canopy = SF_val_CWD_frac(1:ncwd_no_trunk)/sum(SF_val_CWD_frac(1:ncwd_no_trunk))
-
-    ! m2
-    remainder_area = currentPatch%area - patch_site_areadis
-    ! fraction of litter to retain (remain area frac * how much
-    ! dispersal of litter there is)
-    retain_frac = (1.0_r8-damage_localization) * &
-         remainder_area/(newPatch%area+remainder_area)
-    donate_frac = 1.0_r8-retain_frac
-
-    if(remainder_area > rsnbl_math_prec) then
-       retain_m2 = retain_frac/remainder_area
-       donate_m2 = (1.0_r8-retain_frac)/newPatch%area
-    else
-       retain_m2 = 0._r8
-       donate_m2 = 1._r8/newPatch%area
-    end if
-   
-    ! loop through elements and spread between retain and donate litter
-    do el = 1,num_elements
-
-       element_id = element_list(el)
-       site_mass  => currentSite%mass_balance(el)
-       flux_diags => currentSite%flux_diags(el)
-       curr_litt  => currentPatch%litter(el)   ! Litter pool of "current" patch
-       new_litt   => newPatch%litter(el)
-       
-       currentCohort => currentPatch%shortest
-       do while(associated(currentCohort))       
-
-          agb_frac = EDPftvarcon_inst%allom_agb_frac(currentCohort%pft)
-          
-          ! only woody-plants are going to be damaged (not grasses)
-          if (EDPftvarcon_inst%woody(currentCohort%pft)==1 .and. & 
-               currentCohort%canopy_layer > 1) then
-
-             pft = currentCohort%pft
-
-             ! Get mass in Kg of the element in the specified organ
-             sapw_m   = currentCohort%prt%GetState(sapw_organ, element_id)
-             struct_m = currentCohort%prt%GetState(struct_organ, element_id)
-             leaf_m   = currentCohort%prt%GetState(leaf_organ, element_id) !kg
-             repro_m  = currentCohort%prt%GetState(repro_organ, element_id) 
-
-             ! So we are not double counting litter we need to multiply by the
-             ! area disturbed here and number of SURVIVING TREES
-             num_trees = currentCohort%n * (patch_site_areadis/currentPatch%area) * &
-                  (1.0_r8 - ED_val_understorey_death)
-
-             ! do cd = max(2,currentCohort%crowndamage), ncrowndamage ! no recovery
-             do cd = max(1, currentCohort%crowndamage-1), ncrowndamage ! recovery
-
-                   call get_disturbance_collateral_damage_frac(cd, cd_frac)
-
-                   ! now to get the number of damaged trees we multiply by damage frac
-                   num_trees_cd = num_trees * cd_frac
-
-                   ! if non negligable get litter
-                   if (num_trees_cd > nearzero ) then
-                      
-                      call get_crown_reduction(cd, crown_reduction)
-
-                      ! leaf loss in kg
-                      leaf_loss =  (leaf_m + repro_m) * crown_reduction
-
-                      leaf_donatable_mass = num_trees_cd * leaf_loss
-
-                      do dcmpy=1,ndcmpy
-                         dcmpy_frac = GetDecompyFrac(pft,leaf_organ,dcmpy)
-
-                         new_litt%leaf_fines(dcmpy) = new_litt%leaf_fines(dcmpy) + &
-                              leaf_donatable_mass*donate_m2*dcmpy_frac ! kg per m2
-                         curr_litt%leaf_fines(dcmpy) = curr_litt%leaf_fines(dcmpy) + &
-                              leaf_donatable_mass*retain_m2*dcmpy_frac ! kg per m2
-                      end do
-
-                      flux_diags%leaf_litter_input(pft) = flux_diags%leaf_litter_input(pft) + &
-                           leaf_donatable_mass
-
-                      
-                      ! branch loss
-                      branch_loss = (sapw_m + struct_m) * crown_reduction * &
-                           currentCohort%branch_frac * agb_frac *  num_trees_cd
-
-                      do c=1,(ncwd_no_trunk)
-
-                         branch_donatable_mass = branch_loss * SF_val_CWD_frac_canopy(c)
-                            
-                         ! Transfer wood of dying trees to AG CWD pools
-                         new_litt%ag_cwd(c) = new_litt%ag_cwd(c) + branch_donatable_mass * donate_m2
-
-                         curr_litt%ag_cwd(c) = curr_litt%ag_cwd(c) + branch_donatable_mass * retain_m2
-
-                         flux_diags%cwd_ag_input(c) = & 
-                              flux_diags%cwd_ag_input(c) + branch_donatable_mass
-
-                      end do
-
-                      ! should match leaf damage that is printed after PRTDamageLosses is called
-                      total_damage_litter = total_damage_litter + leaf_donatable_mass + &
-                           branch_loss
-
-
-                   end if ! end if non-negligable
-
-                end do ! end crown damage loop
-             
-          end if  ! end if woody and understory
-
-
-          currentCohort => currentCohort%taller
-
-       enddo !currentCohort
-
-       
-    enddo ! end element
-
-    return
-  end subroutine damage_litter_fluxes
-
-  ! ============================================================================
-  
-  subroutine damage_canopy_litter_fluxes(currentSite, currentPatch, newPatch,patch_site_areadis, &
-       total_damage_litter)
-    !
-    ! !DESCRIPTION:
-    !
-    ! !USES:
-    use DamageMainMod,     only : get_crown_reduction
-    use DamageMainMod,     only : get_disturbance_canopy_damage_frac
+    !  use DamageMainMod,     only : get_disturbance_canopy_damage_frac
+    use DamageMainMod    , only : get_damage_frac
     use SFParamsMod      , only : SF_val_cwd_frac
     use EDTypesMod       , only : max_ncrowndamage
     use FatesInterfaceTypesMod , only : ncrowndamage
+    use EDParamsMod      , only : ED_val_understorey_death
+    use FatesInterfaceTypesMod, only : hlm_use_canopy_damage
+    use FatesInterfaceTypesMod, only : hlm_use_understory_damage
+    use FatesConstantsMod,      only : itrue
+
     !
+
     ! !ARGUMENTS:
     type(ed_site_type)  , intent(inout), target :: currentSite 
     type(ed_patch_type) , intent(inout), target :: currentPatch
     type(ed_patch_type) , intent(inout), target :: newPatch
     real(r8)            , intent(in)            :: patch_site_areadis
     real(r8), intent(out) :: total_damage_litter   ! just for debugging purposes
-    
+
     ! !LOCAL VARIABLES:
     type(ed_cohort_type), pointer      :: currentCohort
     type(litter_type), pointer         :: new_litt
@@ -2448,13 +2265,13 @@ contains
     total_damage_litter = 0.0_r8
     ncwd_no_trunk = ncwd - 1
     allocate(SF_val_CWD_frac_canopy(ncwd_no_trunk))
-    
+
     ! crown damage is currently not trunks - but we want 100% of
     ! damage above to go to litter. We therefore have to
     ! renormalise just the first three litter bins    
     SF_val_CWD_frac_canopy = SF_val_CWD_frac(1:ncwd_no_trunk)/sum(SF_val_CWD_frac(1:ncwd_no_trunk))
 
-    
+
     ! m2
     remainder_area = currentPatch%area - patch_site_areadis
     ! fraction of litter to retain (remain area frac * how much
@@ -2471,7 +2288,7 @@ contains
        donate_m2 = 1._r8/newPatch%area
     end if
 
-  
+
     ! loop through elements and spread between retain and donate litter
     do el = 1,num_elements
 
@@ -2482,97 +2299,160 @@ contains
        new_litt   => newPatch%litter(el)
 
        
+
        currentCohort => currentPatch%shortest
+
        do while(associated(currentCohort))       
 
           agb_frac = EDPftvarcon_inst%allom_agb_frac(currentCohort%pft)
-          ! only woody-plants are going to be damaged (not grasses)
-          if (EDPftvarcon_inst%woody(currentCohort%pft)==1 .and. & 
-               currentCohort%canopy_layer == 1) then
+          pft = currentCohort%pft
+          ! Get mass in Kg of the element in the specified organ
+          sapw_m   = currentCohort%prt%GetState(sapw_organ, element_id)
+          struct_m = currentCohort%prt%GetState(struct_organ, element_id)
+          leaf_m   = currentCohort%prt%GetState(leaf_organ, element_id) !kg
+          repro_m  = currentCohort%prt%GetState(repro_organ, element_id) 
 
-             pft = currentCohort%pft
+          ! if we are in canopy damage mode skip understory trees
+          if(hlm_use_canopy_damage .eq.itrue .and. &
+               EDPftvarcon_inst%woody(currentCohort%pft)==1 .and. &
+               currentCohort%canopy_layer ==1 ) then
 
-             ! Get mass in Kg of the element in the specified organ
-             sapw_m   = currentCohort%prt%GetState(sapw_organ, element_id)
-             struct_m = currentCohort%prt%GetState(struct_organ, element_id)
-             leaf_m   = currentCohort%prt%GetState(leaf_organ, element_id) !kg
-             repro_m  = currentCohort%prt%GetState(repro_organ, element_id) 
-
-             ! when we calculate damage we account for trees dying first.
              ! litter is called before damage - so we need to account for mortality here too
              num_trees = currentCohort%n * (1.0_r8 - fates_mortality_disturbance_fraction * &
                   min(1.0_r8, currentCohort%dmort* hlm_freq_day))
-                      
-               ! do cd = max(2,currentCohort%crowndamage), ncrowndamage  ! no recovery
-             do cd = max(1,currentCohort%crowndamage-1), ncrowndamage ! recovery
-             
-                   call get_disturbance_canopy_damage_frac(cd,currentCohort%pft, cd_frac)
 
-                   ! now to get the number of damaged trees we multiply by damage frac
-                   num_trees_cd = num_trees * cd_frac
+             do cd = currentCohort%crowndamage+1, ncrowndamage
 
-                   ! if non negligable get litter
-                   if (num_trees_cd > nearzero ) then
-                      
-                      call get_crown_reduction(cd, crown_reduction)
+                call get_damage_frac(currentCohort%crowndamage, cd, cd_frac)
 
-                      ! leaf loss in kg
-                      leaf_loss =  (leaf_m + repro_m) * crown_reduction
+                ! now to get the number of damaged trees we multiply by damage frac
+                num_trees_cd = num_trees * cd_frac
 
-                      leaf_donatable_mass = num_trees_cd * leaf_loss
+                ! if non negligable get litter
+                if (num_trees_cd > nearzero ) then
 
-                      do dcmpy=1,ndcmpy
-                         dcmpy_frac = GetDecompyFrac(pft,leaf_organ,dcmpy)
+                   call get_crown_reduction(cd, crown_reduction)
 
-                         new_litt%leaf_fines(dcmpy) = new_litt%leaf_fines(dcmpy) + &
-                              leaf_donatable_mass*donate_m2*dcmpy_frac ! kg per m2
-                         curr_litt%leaf_fines(dcmpy) = curr_litt%leaf_fines(dcmpy) + &
-                              leaf_donatable_mass*retain_m2*dcmpy_frac ! kg per m2
-                      end do
+                   ! leaf loss in kg
+                   leaf_loss =  (leaf_m + repro_m) * crown_reduction
 
-                      flux_diags%leaf_litter_input(pft) = flux_diags%leaf_litter_input(pft) + &
-                           leaf_donatable_mass
+                   leaf_donatable_mass = num_trees_cd * leaf_loss
 
-                      ! branch loss
-                      branch_loss = (sapw_m + struct_m) * crown_reduction * &
-                           currentCohort%branch_frac * agb_frac * num_trees_cd
+                   do dcmpy=1,ndcmpy
+                      dcmpy_frac = GetDecompyFrac(pft,leaf_organ,dcmpy)
 
-                      
-                      do c=1,(ncwd_no_trunk)
+                      new_litt%leaf_fines(dcmpy) = new_litt%leaf_fines(dcmpy) + &
+                           leaf_donatable_mass*donate_m2*dcmpy_frac ! kg per m2
+                      curr_litt%leaf_fines(dcmpy) = curr_litt%leaf_fines(dcmpy) + &
+                           leaf_donatable_mass*retain_m2*dcmpy_frac ! kg per m2
+                   end do
 
-                         branch_donatable_mass = branch_loss * SF_val_CWD_frac_canopy(c)
-                            
-                         ! Transfer wood of dying trees to AG CWD pools
-                         new_litt%ag_cwd(c) = new_litt%ag_cwd(c) + branch_donatable_mass * donate_m2
+                   flux_diags%leaf_litter_input(pft) = flux_diags%leaf_litter_input(pft) + &
+                        leaf_donatable_mass
 
-                         curr_litt%ag_cwd(c) = curr_litt%ag_cwd(c) + branch_donatable_mass * retain_m2
-
-                         flux_diags%cwd_ag_input(c) = & 
-                              flux_diags%cwd_ag_input(c) + branch_donatable_mass
-
-                      end do
-
-                      ! should match leaf damage that is printed after PRTDamageLosses is called
-                      total_damage_litter = total_damage_litter + leaf_donatable_mass + &
-                           branch_loss
+                   ! branch loss
+                   branch_loss = (sapw_m + struct_m) * crown_reduction * &
+                        currentCohort%branch_frac * agb_frac * num_trees_cd
 
 
-                   end if ! end if non-negligable
+                   do c=1,(ncwd_no_trunk)
 
-                end do ! end crown damage loop
-                
-          end if  ! end if woody and canopy
+                      branch_donatable_mass = branch_loss * SF_val_CWD_frac_canopy(c)
+
+                      ! Transfer wood of dying trees to AG CWD pools
+                      new_litt%ag_cwd(c) = new_litt%ag_cwd(c) + branch_donatable_mass * donate_m2
+
+                      curr_litt%ag_cwd(c) = curr_litt%ag_cwd(c) + branch_donatable_mass * retain_m2
+
+                      flux_diags%cwd_ag_input(c) = & 
+                           flux_diags%cwd_ag_input(c) + branch_donatable_mass
+
+                   end do
+
+                   ! should match leaf damage that is printed after PRTDamageLosses is called
+                   total_damage_litter = total_damage_litter + leaf_donatable_mass + &
+                        branch_loss
+
+                end if ! end if non-negligable
+             end do ! end crown damage loop
+          end if  ! end if woody, canopy and hlm use canopy = true
+
+          ! if we are in canopy damage mode skip understory trees
+          if(hlm_use_understory_damage .eq.itrue .and. &
+               EDPftvarcon_inst%woody(currentCohort%pft)==1 .and. &
+               currentCohort%canopy_layer > 1 ) then
+
+             ! litter is called before damage - so we need to account for mortality here too
+             num_trees = currentCohort%n * (patch_site_areadis/currentPatch%area) * &
+                  (1.0_r8 - ED_val_understorey_death) 
+
+             do cd = currentCohort%crowndamage+1, ncrowndamage
+
+                call get_damage_frac(currentCohort%crowndamage, cd, cd_frac)
+
+                ! now to get the number of damaged trees we multiply by damage frac
+                num_trees_cd = num_trees * cd_frac
+
+                ! if non negligable get litter
+                if (num_trees_cd > nearzero ) then
+
+                   call get_crown_reduction(cd, crown_reduction)
+
+                   ! leaf loss in kg
+                   leaf_loss =  (leaf_m + repro_m) * crown_reduction
+
+                   leaf_donatable_mass = num_trees_cd * leaf_loss
+
+                   do dcmpy=1,ndcmpy
+                      dcmpy_frac = GetDecompyFrac(pft,leaf_organ,dcmpy)
+
+                      new_litt%leaf_fines(dcmpy) = new_litt%leaf_fines(dcmpy) + &
+                           leaf_donatable_mass*donate_m2*dcmpy_frac ! kg per m2
+                      curr_litt%leaf_fines(dcmpy) = curr_litt%leaf_fines(dcmpy) + &
+                           leaf_donatable_mass*retain_m2*dcmpy_frac ! kg per m2
+                   end do
+
+                   flux_diags%leaf_litter_input(pft) = flux_diags%leaf_litter_input(pft) + &
+                        leaf_donatable_mass
+
+                   ! branch loss
+                   branch_loss = (sapw_m + struct_m) * crown_reduction * &
+                        currentCohort%branch_frac * agb_frac * num_trees_cd
+
+
+                   do c=1,(ncwd_no_trunk)
+
+                      branch_donatable_mass = branch_loss * SF_val_CWD_frac_canopy(c)
+
+                      ! Transfer wood of dying trees to AG CWD pools
+                      new_litt%ag_cwd(c) = new_litt%ag_cwd(c) + branch_donatable_mass * donate_m2
+
+                      curr_litt%ag_cwd(c) = curr_litt%ag_cwd(c) + branch_donatable_mass * retain_m2
+
+                      flux_diags%cwd_ag_input(c) = & 
+                           flux_diags%cwd_ag_input(c) + branch_donatable_mass
+
+                   end do
+
+                   ! should match leaf damage that is printed after PRTDamageLosses is called
+                   total_damage_litter = total_damage_litter + leaf_donatable_mass + &
+                        branch_loss
+
+                end if ! end if non-negligable
+             end do ! end crown damage loop
+          end if  ! end if woody, understory and hlm use canopy = true
+
 
 
           currentCohort => currentCohort%taller
 
        enddo !currentCohort
-       
+
     enddo ! end element
 
-        
+
     return
-  end subroutine damage_canopy_litter_fluxes
+  end subroutine damage_litter_fluxes
 
 
 
