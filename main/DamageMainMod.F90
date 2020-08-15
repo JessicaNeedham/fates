@@ -70,12 +70,15 @@ contains
     
     ! USES
     use FatesInterfaceTypesMod, only : ncrowndamage
+    use FatesConstantsMod, only : years_per_day
 
+    
     ! ARGUMENTS
     integer, intent(in) :: cc_cd                   ! current cohort crown damage
     integer, intent(in) :: nc_cd                   ! new cohort crown damage
     real(r8), intent(out) :: dist_frac             ! probability of current cohort moving to new damage level
 
+    
     ! LOCAL VARIABLES
     real(r8), allocatable :: transition_probs(:)   ! vector of transition probabilities between damage classes
     integer                :: i                    ! counter
@@ -92,7 +95,8 @@ contains
 
     ! normalise it
     transition_probs = transition_probs/sum(transition_probs)
-
+    transition_probs = transition_probs * years_per_day
+    
     i = nc_cd - cc_cd + 1
     dist_frac = transition_probs(i)
 
