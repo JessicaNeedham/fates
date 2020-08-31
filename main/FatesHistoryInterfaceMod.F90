@@ -11,7 +11,6 @@ Module FatesHistoryInterfaceMod
   use FatesGlobals             , only : fates_log
   use FatesGlobals             , only : endrun => fates_endrun
   use EDTypesMod               , only : nclmax
-  use EDTypesMod               , only : max_ncrowndamage
   use EDTypesMod               , only : ican_upper
   use EDTypesMod               , only : element_pos
   use EDTypesMod               , only : num_elements
@@ -1777,7 +1776,6 @@ end subroutine flush_hvars
     use FatesSizeAgeTypeIndicesMod, only : get_cdamagesizepft_class_index
     use FatesSizeAgeTypeIndicesMod, only : coagetype_class_index
     use EDTypesMod        , only : nlevleaf
-    use EDTypesMod        , only : max_ncrowndamage
     use EDParamsMod,           only : ED_val_history_height_bin_edges
     use FatesInterfaceTypesMod, only : ncrowndamage
     

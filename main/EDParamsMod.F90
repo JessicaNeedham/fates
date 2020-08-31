@@ -26,6 +26,7 @@ module EDParamsMod
    real(r8),protected, public :: ED_val_init_litter
    real(r8),protected, public :: ED_val_nignitions
    real(r8),protected, public :: ED_val_understorey_death
+   real(r8),protected, public :: ED_val_ncrowndamage
    real(r8),protected, public :: ED_val_cwd_fcel
    real(r8),protected, public :: ED_val_cwd_flig
    real(r8),protected, public :: ED_val_base_mr_20
@@ -65,6 +66,7 @@ module EDParamsMod
    character(len=param_string_length),parameter,public :: ED_name_init_litter = "fates_init_litter"
    character(len=param_string_length),parameter,public :: ED_name_nignitions = "fates_fire_nignitions"
    character(len=param_string_length),parameter,public :: ED_name_understorey_death = "fates_mort_understorey_death"
+   character(len=param_string_length),parameter,public :: ED_name_ncrowndamage = 'fates_ncrowndamage'
    character(len=param_string_length),parameter,public :: ED_name_cwd_fcel= "fates_cwd_fcel"   
    character(len=param_string_length),parameter,public :: ED_name_cwd_flig= "fates_cwd_flig"   
    character(len=param_string_length),parameter,public :: ED_name_base_mr_20= "fates_base_mr_20"   
@@ -177,6 +179,7 @@ contains
     ED_val_init_litter                    = nan
     ED_val_nignitions                     = nan
     ED_val_understorey_death              = nan
+    ED_val_ncrowndamage                   = nan
     ED_val_cwd_fcel                       = nan
     ED_val_cwd_flig                       = nan
     ED_val_base_mr_20                     = nan
@@ -256,6 +259,9 @@ contains
     call fates_params%RegisterParameter(name=ED_name_understorey_death, dimension_shape=dimension_shape_scalar, &
          dimension_names=dim_names_scalar)
 
+    call fates_params%RegisterParameter(name=ED_name_ncrowndamage, dimension_shape=dimension_shape_scalar, &
+         dimension_names=dim_names_scalar)
+    
     call fates_params%RegisterParameter(name=ED_name_cwd_fcel, dimension_shape=dimension_shape_scalar, &
          dimension_names=dim_names_scalar)
 
@@ -404,6 +410,9 @@ contains
     call fates_params%RetreiveParameter(name=ED_name_understorey_death, &
          data=ED_val_understorey_death)
 
+    call fates_params%RetreiveParameter(name=ED_name_ncrowndamage, &
+         data=ED_val_ncrowndamage)
+
     call fates_params%RetreiveParameter(name=ED_name_cwd_fcel, &
          data=ED_val_cwd_fcel)
 
@@ -543,6 +552,7 @@ contains
         write(fates_log(),fmt0) 'ED_val_init_litter = ',ED_val_init_litter
         write(fates_log(),fmt0) 'ED_val_nignitions = ',ED_val_nignitions
         write(fates_log(),fmt0) 'ED_val_understorey_death = ',ED_val_understorey_death
+        write(fates_log(),fmt0) 'ED_val_ncrowndamage = ', ED_val_ncrowndamage
         write(fates_log(),fmt0) 'ED_val_cwd_fcel = ',ED_val_cwd_fcel
         write(fates_log(),fmt0) 'ED_val_cwd_flig = ',ED_val_cwd_flig
         write(fates_log(),fmt0) 'ED_val_base_mr_20 = ', ED_val_base_mr_20

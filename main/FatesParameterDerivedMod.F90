@@ -13,6 +13,8 @@ module FatesParameterDerivedMod
   use FatesConstantsMod,     only : umolC_to_kgC
   use FatesConstantsMod,     only : g_per_kg
   use FatesInterfaceTypesMod,     only : nleafage
+  use FatesInterfaceTypesMod,     only : ncrowndamage
+  use FatesGlobals     ,     only : fates_log
   
   implicit none
   private
@@ -28,18 +30,48 @@ module FatesParameterDerivedMod
 
      real(r8), allocatable :: branch_frac(:)  ! fraction of aboveground biomass in branches (as
                                               ! oppose to stems) - for use in damage allometries
+
+     real(r8), allocatable :: damage_transitions(:,:,:) ! matrix of transition probabilities between
+                                                      ! damage classes - one per PFT
      
    contains
      
      procedure :: Init
+     procedure :: InitDamageTransitions
      procedure :: InitAllocate
+     procedure :: InitAllocateDamageTransitions
      
   end type param_derived_type
   
   type(param_derived_type), public :: param_derived
   
 contains
+
+  real(r8) function integral_exp(x, y)
+
+    real(r8), intent(in) :: x
+    real(r8), intent(in) :: y
+
+    integral_exp = (1/y) * exp(y*x)
+    return
+  end function integral_exp
+
+  real(r8) function damage_integral(l, u, y)
+
+    real(r8), intent(in) :: l
+    real(r8), intent(in) :: u
+    real(r8), intent(in) :: y
+
+    real(r8) :: lower
+    real(r8) :: upper
+
+    lower = integral_exp(l, y)
+    upper = integral_exp(u, y)
+    damage_integral = upper - lower
+    return
+  end function damage_integral
   
+  ! ===================================================================================
   subroutine InitAllocate(this,numpft)
     
     class(param_derived_type), intent(inout) :: this
@@ -51,11 +83,26 @@ contains
 
     allocate(this%branch_frac(numpft))
     
+    
     return
   end subroutine InitAllocate
 
   ! =====================================================================================
-  
+
+ ! ===================================================================================
+  subroutine InitAllocateDamageTransitions(this,ncrowndamage, numpft)
+    
+    class(param_derived_type), intent(inout) :: this
+    integer, intent(in)                      :: ncrowndamage
+    integer, intent(in)                      :: numpft
+
+    allocate(this%damage_transitions(ncrowndamage,ncrowndamage, numpft))
+    
+    return
+  end subroutine InitAllocateDamageTransitions
+
+  ! =====================================================================================
+ 
   subroutine Init(this,numpft)
 
     use EDPftvarcon, only: EDPftvarcon_inst
@@ -69,8 +116,7 @@ contains
     integer  :: ft                 ! pft index
     integer  :: iage               ! leaf age class index
     integer  :: c                  ! cwd index
-    
-    
+
     associate( vcmax25top => EDPftvarcon_inst%vcmax25top ) 
     
       call this%InitAllocate(numpft)
@@ -99,10 +145,77 @@ contains
          ! Allocate fraction of biomass in branches
          this%branch_frac(ft) = sum(SF_val_CWD_frac(1:3))
          
-      end do !ft 
+      end do !ft
 
     end associate
     return
   end subroutine Init
+
+!=========================================================================
+  
+  subroutine InitDamageTransitions(this, ncrowndamage, numpft)
+
+    use FatesConstantsMod,      only : years_per_day
+    use EDPftvarcon, only: EDPftvarcon_inst
+
+
+    class(param_derived_type), intent(inout) :: this
+    integer, intent(in)                      :: ncrowndamage
+    integer, intent(in)                      :: numpft
+
+    ! local variables
+    integer  :: ft                ! pft index
+    integer  :: i                 ! crowndamage index (rows)
+    integer  :: j                 ! crowndamage index (columns)
+    real(r8) :: exponent          ! in the function for damage transitions 
+    real(r8) :: cd_real           ! for in functions
+    real(r8), allocatable :: transition_vec(:)
+
+    allocate(transition_vec(ncrowndamage))
+
+    call this%InitAllocateDamageTransitions(ncrowndamage, numpft)
+
+    do ft = 1, numpft
+
+       exponent = EDPftvarcon_inst%damage_exponent(ft)
+
+       ! make a look up matrix that holds transition rates between
+       ! damage classes. 
+       ! Transition rates of moving from one class to the next are integral of
+       ! a negative exponential with exponent a parameter from param file
+       do i = 1, ncrowndamage
+          cd_real = real(i)
+          transition_vec(i) = damage_integral(cd_real-1.0_r8, cd_real, exponent)
+       end do
+       ! normalise so they sum to 1
+       transition_vec = transition_vec/sum(transition_vec)
+       ! go from annual to daily
+       transition_vec = transition_vec * years_per_day
+       ! make sure they sum to one - so we don't lose cohorts - rate of staying in
+       ! the same damage class is one minus rate of moving
+       transition_vec(1) = 1.0_r8 - sum(transition_vec(2:ncrowndamage))
+
+       ! populate a matrix
+       do i = 1, ncrowndamage
+          do j = 1, ncrowndamage
+             if(j > i) then
+                this%damage_transitions(i,j,ft) = 0.0_r8
+             else
+                this%damage_transitions(i,j,ft) = transition_vec(i - j + 1)
+             end if
+          end do
+       end do
+
+       do j = 1, ncrowndamage
+          this%damage_transitions(:,j,ft) = this%damage_transitions(:,j,ft)/ &
+               sum(this%damage_transitions(:,j,ft))
+       end do
+
+       write(fates_log(),*) 'Transition matrix', this%damage_transitions
+
+    end do
+
+    return
+  end subroutine InitDamageTransitions
 
 end module FatesParameterDerivedMod

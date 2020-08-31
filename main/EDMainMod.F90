@@ -1,4 +1,3 @@
-
 module EDMainMod
 
   ! ===========================================================================
@@ -19,6 +18,8 @@ module EDMainMod
   use FatesInterfaceTypesMod        , only : hlm_reference_date
   use FatesInterfaceTypesMod        , only : hlm_use_ed_prescribed_phys
   use FatesInterfaceTypesMod        , only : hlm_use_ed_st3 
+  use FatesInterfaceTypesMod        , only : hlm_use_canopy_damage
+  use FatesInterfaceTypesMod        , only : hlm_use_understory_damage
   use FatesInterfaceTypesMod        , only : bc_in_type
   use FatesInterfaceTypesMod        , only : hlm_masterproc
   use FatesInterfaceTypesMod        , only : numpft
@@ -407,13 +408,18 @@ contains
 
                
           call PRTMaintTurnover(currentCohort%prt,ft,is_drought)
-          leaf_c = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
-          call bleaf(currentCohort%dbh, currentCohort%pft,currentCohort%canopy_trim,&
-               target_leaf_c)
-          call get_crown_damage(leaf_c, target_leaf_c, currentCohort%crowndamage)
-          call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread,currentCohort%pft, &
-               currentCohort%crowndamage, currentCohort%c_area)               
-          
+
+          if(hlm_use_canopy_damage .eq. itrue .or. &
+               hlm_use_understory_damage .eq. itrue) then
+
+             leaf_c = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
+             call bleaf(currentCohort%dbh, currentCohort%pft,currentCohort%canopy_trim,&
+                  target_leaf_c)
+             call get_crown_damage(leaf_c, target_leaf_c, currentCohort%crowndamage)
+             call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread,currentCohort%pft, &
+                  currentCohort%crowndamage, currentCohort%c_area)               
+          end if
+
               
           ! If the current diameter of a plant is somehow less than what is consistent
           ! with what is allometrically consistent with the stuctural biomass, then
@@ -425,14 +431,18 @@ contains
           dbh_old  = currentCohort%dbh
 
           call currentCohort%prt%DailyPRT()
+          
+          if(hlm_use_canopy_damage .eq. itrue .or. &
+               hlm_use_understory_damage .eq. itrue) then
 
-          leaf_c = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
-          call bleaf(currentCohort%dbh, currentCohort%pft,currentCohort%canopy_trim,&
-               target_leaf_c)
-          call get_crown_damage(leaf_c, target_leaf_c, currentCohort%crowndamage)
-          call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread,currentCohort%pft, &
-               currentCohort%crowndamage, currentCohort%c_area)               
-        
+             leaf_c = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
+             call bleaf(currentCohort%dbh, currentCohort%pft,currentCohort%canopy_trim,&
+                  target_leaf_c)
+             call get_crown_damage(leaf_c, target_leaf_c, currentCohort%crowndamage)
+             call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread,currentCohort%pft, &
+                  currentCohort%crowndamage, currentCohort%c_area)               
+          end if
+
 
           
 

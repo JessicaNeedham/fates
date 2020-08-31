@@ -381,13 +381,10 @@ contains
     use EDParamsMod         , only : ED_val_understorey_death, logging_coll_under_frac
     use EDCohortDynamicsMod , only : zero_cohort, copy_cohort, terminate_cohorts 
     use DamageMainMod       , only : get_crown_reduction
-  !  use DamageMainMod       , only : get_disturbance_collateral_damage_frac
-   ! use DamageMainMod       , only : get_disturbance_canopy_damage_frac
     use DamageMainMod       , only : get_damage_frac
     use PRTLossFluxesMod    , only : PRTDamageLosses
     use PRTGenericMod       , only : leaf_organ
     use ChecksBalancesMod   , only : SiteMassStock
-    use EDTypesMod          , only : max_ncrowndamage
     use FatesInterfaceTypesMod, only : hlm_use_canopy_damage
     use FatesInterfaceTypesMod, only : hlm_use_understory_damage
     use FatesInterfaceTypesMod, only : ncrowndamage
@@ -458,9 +455,7 @@ contains
     real(r8) :: live_stock_post
     real(r8) :: litter_stock_pre
     real(r8) :: litter_stock_post
-    
     !--------------------------------------------------------------------- 
-    
     
     storesmallcohort => null() ! storage of the smallest cohort for insertion routine
     storebigcohort   => null() ! storage of the largest cohort for insertion routine 
@@ -688,7 +683,8 @@ contains
        ! these will be site level 
        live_stock_pre = 0.0_r8
        live_stock_post = 0.0_r8
-        
+
+       
        currentPatch => currentSite%oldest_patch
        do while(associated(currentPatch))
 
@@ -697,7 +693,8 @@ contains
           patch_site_areadis = currentPatch%area * currentPatch%disturbance_rate
           
           if ( patch_site_areadis > nearzero ) then
-             
+
+           
              currentCohort => currentPatch%shortest
              do while(associated(currentCohort))       
 
@@ -1072,10 +1069,10 @@ contains
 
                       ! to keep track of how much nc%n needs to be reduced by after the loop
                       cd_frac_total = 0.0_r8 
-                      
+                     
                       ! for each damage class find the number density and if big enough allocate a new cohort
                        do cd = nc%crowndamage+1, ncrowndamage 
-                         call get_damage_frac(nc%crowndamage, cd, cd_frac)
+                         call get_damage_frac(nc%crowndamage, cd, currentCohort%pft, cd_frac)
                   
                          cd_n = nc%n * cd_frac
 
@@ -1181,7 +1178,7 @@ contains
                      currentCohort%prt%GetState(store_organ, 1) + &
                      currentCohort%prt%GetState(repro_organ, 1) ) &
                      * currentCohort%n
-                
+
                 ! Regardless of disturbance type, reduce mass of damaged canopy trees
                 if(hlm_use_canopy_damage .eq.itrue) then
                    if (EDPftvarcon_inst%woody(currentCohort%pft)==1  .and. &
@@ -1189,18 +1186,16 @@ contains
 
                       ! to keep track of how much canopy n  needs to be reduced by after the loop
                       cd_frac_total = 0.0_r8
-
-                      
+  
                       ! for each damage class find the number density and if big enough allocate a new cohort
                       do cd = currentCohort%crowndamage+1, ncrowndamage
-                      
-                         call get_damage_frac(currentCohort%crowndamage, cd, cd_frac)
+                        
+                         call get_damage_frac(currentCohort%crowndamage, cd, currentCohort%pft, cd_frac)
                          cd_n = currentCohort%n * cd_frac
-
                          if(cd_n > nearzero) then
 
                             cd_frac_total = cd_frac_total + cd_frac
-                             
+                            
                             allocate(nc_canopy_d)  ! new cohort surviving but damaged
                             if(hlm_use_planthydro.eq.itrue) call InitHydrCohort(CurrentSite,nc_canopy_d)
 
@@ -1284,12 +1279,9 @@ contains
 
                       ! Reduce currentCohort%n now based on sum of all new damage classes  
                       currentCohort%n = currentCohort%n * (1.0_r8-cd_frac_total)
-                                            
                    end if  ! end if canopy and woody              
                 end if ! end if canopy damage is on
 
-                
-                
                 ! Put new undamaged cohorts in the correct place in the linked list
                 if (nc%n > 0.0_r8) then   
                    storebigcohort   =>  new_patch%tallest
@@ -1323,6 +1315,8 @@ contains
 
                 endif
 
+                write(fates_log(),*) '2. crowndamage: ', currentCohort%crowndamage
+                
                 currentCohort => currentCohort%taller      
              enddo ! currentCohort 
 
@@ -2208,7 +2202,6 @@ contains
     !  use DamageMainMod,     only : get_disturbance_canopy_damage_frac
     use DamageMainMod    , only : get_damage_frac
     use SFParamsMod      , only : SF_val_cwd_frac
-    use EDTypesMod       , only : max_ncrowndamage
     use FatesInterfaceTypesMod , only : ncrowndamage
     use EDParamsMod      , only : ED_val_understorey_death
     use FatesInterfaceTypesMod, only : hlm_use_canopy_damage
@@ -2323,7 +2316,7 @@ contains
 
              do cd = currentCohort%crowndamage+1, ncrowndamage
 
-                call get_damage_frac(currentCohort%crowndamage, cd, cd_frac)
+                call get_damage_frac(currentCohort%crowndamage, cd, currentCohort%pft, cd_frac)
 
                 ! now to get the number of damaged trees we multiply by damage frac
                 num_trees_cd = num_trees * cd_frac
@@ -2388,7 +2381,7 @@ contains
 
              do cd = currentCohort%crowndamage+1, ncrowndamage
 
-                call get_damage_frac(currentCohort%crowndamage, cd, cd_frac)
+                call get_damage_frac(currentCohort%crowndamage, cd, currentCohort%pft, cd_frac)
 
                 ! now to get the number of damaged trees we multiply by damage frac
                 num_trees_cd = num_trees * cd_frac

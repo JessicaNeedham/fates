@@ -41,7 +41,6 @@ module EDTypesMod
   integer, parameter, public :: max_nleafage = 4          ! This is the maximum number of leaf age pools, 
                                                           ! used for allocating scratch space
 
-  integer, parameter, public :: max_ncrowndamage = 5     ! This is the max number of damage classes
   ! -------------------------------------------------------------------------------------
   ! Radiation parameters
   ! These should be part of the radiation module, but since we only have one option

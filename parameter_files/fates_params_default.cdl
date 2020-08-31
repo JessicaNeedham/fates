@@ -7,8 +7,7 @@ dimensions:
 	fates_history_coage_bins = 2 ;
 	fates_hydr_organs = 4 ;
 	fates_leafage_class = 1 ;
-	fates_damage_class = 5 ;
-	fates_litterclass = 6 ;
+	fates_litterclass = 6 ; 
 	fates_pft = 12 ;
 	fates_prt_organs = 6 ;
 	fates_string_length = 60 ;
@@ -126,9 +125,9 @@ variables:
 	double fates_branch_turnover(fates_pft) ;
 		fates_branch_turnover:units = "yr" ;
 		fates_branch_turnover:long_name = "turnover time of branches" ;
-	double fates_crowndamage_fracs(fates_damage_class, fates_pft) ;
-	        fates_crowndamage_fracs:units = "yr" ;
-		fates_crowndamage_fracs:long_name = "fraction of cohorts to each damage class per year" ;
+	double fates_damage_exponent(fates_pft) ;
+	        fates_damage_exponent:units = "unitless" ;
+		fates_damage_exponent:long_name = "exponent of exponential describing annual transitions between damage classes" ;
 	double fates_c2b(fates_pft) ;
 		fates_c2b:units = "ratio" ;
 		fates_c2b:long_name = "Carbon to biomass multiplier of bulk structural tissues" ;
@@ -649,6 +648,9 @@ variables:
 	double fates_mort_understorey_death ;
 		fates_mort_understorey_death:units = "fraction" ;
 		fates_mort_understorey_death:long_name = "fraction of plants in understorey cohort impacted by overstorey tree-fall" ;
+	double fates_ncrowndamage ;
+		fates_ncrowndamage:units = "unitless" ;
+		fates_ncrowndamage:long_name = "number of crowndamage classes" ;
 	double fates_patch_fusion_tol ;
 		fates_patch_fusion_tol:units = "unitless" ;
 		fates_patch_fusion_tol:long_name = "minimum fraction in difference in profiles between patches" ;
@@ -800,12 +802,8 @@ data:
 
  fates_branch_turnover = 150, 150, 150, 150, 150, 150, 150, 150, 150, 0, 0, 0 ;
 
- fates_crowndamage_fracs =
- 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4,
- 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3,
- 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2,
- 0.075, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075,
- 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025 ;
+ fates_damage_exponent = -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0,
+ -5.0, -5.0, -5.0, -5.0 ;
 
  fates_c2b = 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 ;
 
@@ -1317,6 +1315,8 @@ data:
  fates_mort_disturb_frac = 1 ;
 
  fates_mort_understorey_death = 0.55983 ;
+
+ fates_ncrowndamage = 5 ; 
 
  fates_patch_fusion_tol = 0.05 ;
 

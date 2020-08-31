@@ -18,7 +18,6 @@ module FatesInterfaceMod
    use EDTypesMod                , only : nclmax
    use EDTypesMod                , only : nlevleaf
    use EDTypesMod                , only : maxpft
-   use EDTypesMod                , only : max_ncrowndamage
    use EDTypesMod                , only : do_fates_salinity
    use EDTypesMod                , only : numWaterMem
    use EDTypesMod                , only : numlevsoil_max
@@ -48,6 +47,7 @@ module FatesInterfaceMod
    use EDParamsMod               , only : ED_val_history_ageclass_bin_edges
    use EDParamsMod               , only : ED_val_history_height_bin_edges
    use EDParamsMod               , only : ED_val_history_coageclass_bin_edges
+   use EDParamsMod               , only : ED_val_ncrowndamage
    use CLMFatesParamInterfaceMod , only : FatesReadParameters
    use PRTAllometricCarbonMod    , only : InitPRTGlobalAllometricCarbon
 
@@ -495,10 +495,14 @@ module FatesInterfaceMod
        !
        ! --------------------------------------------------------------------------------
 
+      use EDParamsMod, only : ED_val_ncrowndamage
+
 
       implicit none
+
       
       logical,intent(in) :: use_fates    ! Is fates turned on?
+
       integer :: i
       
       if (use_fates) then
@@ -537,17 +541,8 @@ module FatesInterfaceMod
             nleafage = size(EDPftvarcon_inst%leaf_long,dim=2)
          end if
 
-
-         ! Identify the number of damage classes
-         
-         if((lbound(EDPftvarcon_inst%crowndamage_fracs(:,:),dim=2) .eq. 0) .or. &
-             (ubound(EDPftvarcon_inst%crowndamage_fracs(:,:),dim=2) .eq. 0) ) then
-            write(fates_log(), *) 'While assessing the number of FATES leaf age classes,'
-            write(fates_log(), *) 'The second dimension of leaf_long was 0?'
-            call endrun(msg=errMsg(sourcefile, __LINE__))
-         else
-            ncrowndamage = size(EDPftvarcon_inst%crowndamage_fracs,dim=2)
-         end if
+          ! Identify the number of damage classes
+         ncrowndamage = ED_val_ncrowndamage
 
          
          ! These values are used to define the restart file allocations and general structure
@@ -580,6 +575,7 @@ module FatesInterfaceMod
          nlevheight = size(ED_val_history_height_bin_edges,dim=1)
          nlevcoage = size(ED_val_history_coageclass_bin_edges,dim=1)
 
+         
          ! do some checks on the size, age, and height bin arrays to make sure they make sense:
          ! make sure that all start at zero, and that both are monotonically increasing
          if ( ED_val_history_sizeclass_bin_edges(1) .ne. 0._r8 ) then
