@@ -54,7 +54,6 @@ module EDPftvarcon
      real(r8), allocatable :: bb_slope(:)            ! ball berry slope parameter
      real(r8), allocatable :: medlyn_slope(:)        ! Medlyn slope parameter KPa^0.5
      real(r8), allocatable :: stomatal_intercept(:)  ! intercept of stomatal conductance model
-                                                     ! (or unstressed minimum conductance) umol/m**2/s
      real(r8), allocatable :: seed_alloc_mature(:)   ! fraction of carbon balance allocated to 
                                                      ! clonal reproduction.
      real(r8), allocatable :: seed_alloc(:)          ! fraction of carbon balance allocated to seeds.
@@ -458,12 +457,11 @@ contains
     name = 'fates_leaf_stomatal_slope_medlyn'
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
-
+          
     name = 'fates_leaf_stomatal_intercept'
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
 
-    
     name = 'fates_senleaf_long_fdrought'
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
           dimension_names=dim_names, lower_bounds=dim_lower_bound)
@@ -996,7 +994,7 @@ contains
     name = 'fates_leaf_stomatal_intercept'
     call fates_params%RetreiveParameterAllocate(name=name, &
          data=this%stomatal_intercept)
-
+     
     name = 'fates_senleaf_long_fdrought'
     call fates_params%RetreiveParameterAllocate(name=name, &
           data=this%senleaf_long_fdrought)
@@ -2183,6 +2181,7 @@ contains
      ! -----------------------------------------------------------------------------------
     use FatesConstantsMod  , only : fates_check_param_set
     use FatesConstantsMod  , only : itrue, ifalse
+    use EDParamsMod        , only : logging_mechanical_frac, logging_collateral_frac, logging_direct_frac
     
      ! Argument
      logical, intent(in) :: is_master    ! Only log if this is the master proc
@@ -2237,7 +2236,13 @@ contains
         call endrun(msg=errMsg(sourcefile, __LINE__))
      end if
 
-
+     ! logging parameters, make sure they make sense
+     if ( (logging_mechanical_frac + logging_collateral_frac + logging_direct_frac) .gt. 1._r8) then
+        write(fates_log(),*) 'the sum of logging_mechanical_frac + logging_collateral_frac + logging_direct_frac'
+        write(fates_log(),*) 'must be less than or equal to 1.'
+        write(fates_log(),*) 'Exiting'
+        call endrun(msg=errMsg(sourcefile, __LINE__))
+     endif
      
      do ipft = 1,npft
         

@@ -1189,14 +1189,15 @@ contains
 
                                          currentCohort%c_area = currentCohort%c_area + nextc%c_area
 
-                                         !
+                                         dbh = currentCohort%dbh
                                          call carea_allom(dbh,newn,currentSite%spread,currentCohort%pft,&
-                                              currentCohort%crowndamage, currentCohort%c_area,inverse=.true.)
+                                              currentCohort%c_area,inverse=.true.)
                                          !
                                          if (abs(dbh-fates_unset_r8)<nearzero) then
                                             currentCohort%dbh = (currentCohort%n*currentCohort%dbh         &
                                                  + nextc%n*nextc%dbh)/newn
 
+                                            !
                                             if( EDPftvarcon_inst%woody(currentCohort%pft) == itrue ) then
 
                                                call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
@@ -1206,7 +1207,7 @@ contains
                                                     bdead = currentCohort%prt%GetState(struct_organ,all_carbon_elements),&
                                                     crown_reduction = crown_reduction,&
                                                     branch_frac = currentCohort%branch_frac)
-                                                   
+
                                             end if
                                             !
                                             call carea_allom(currentCohort%dbh,newn,currentSite%spread,currentCohort%pft,&
