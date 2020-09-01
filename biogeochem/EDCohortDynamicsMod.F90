@@ -1191,7 +1191,7 @@ contains
 
                                          dbh = currentCohort%dbh
                                          call carea_allom(dbh,newn,currentSite%spread,currentCohort%pft,&
-                                              currentCohort%c_area,inverse=.true.)
+                                              currentCohort%crowndamage, currentCohort%c_area,inverse=.true.)
                                          !
                                          if (abs(dbh-fates_unset_r8)<nearzero) then
                                             currentCohort%dbh = (currentCohort%n*currentCohort%dbh         &

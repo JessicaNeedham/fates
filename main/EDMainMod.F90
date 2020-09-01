@@ -320,11 +320,11 @@ contains
     real(r8) :: current_npp           ! place holder for calculating npp each year in prescribed physiology mode
 
     real(r8) :: target_leaf_c
+    real(r8) :: frac_site_primary
     
     !-----------------------------------------------------------------------
     leaf_loss = 0.0_r8
     leaf_loss_prt = 0.0_r8
-    real(r8) :: frac_site_primary
 
 
     call get_frac_site_primary(currentSite, frac_site_primary)
