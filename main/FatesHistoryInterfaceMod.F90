@@ -371,7 +371,7 @@ Module FatesHistoryInterfaceMod
   integer :: ih_agb_si_scls
   integer :: ih_biomass_si_scls
   
-  ! mortality vars
+  ! mortality var
   integer :: ih_m1_si_scls
   integer :: ih_m2_si_scls
   integer :: ih_m3_si_scls
@@ -566,7 +566,12 @@ Module FatesHistoryInterfaceMod
   integer :: ih_nplant_understory_si_cdpf
   integer :: ih_nplant_canopy_si_cdsc
   integer :: ih_nplant_understory_si_cdsc
- 
+  ! damage carbonflux
+  integer :: ih_damage_cflux_si_cdcd
+  integer :: ih_damage_rate_si_cdcd
+  integer :: ih_recovery_cflux_si_cdcd
+  integer :: ih_recovery_rate_si_cdcd
+  
   
   ! indices to (site x canopy layer) variables
   integer :: ih_parsun_top_si_can
@@ -620,6 +625,7 @@ Module FatesHistoryInterfaceMod
      integer, private :: levfuel_index_, levcwdsc_index_, levscag_index_
      integer, private :: levcan_index_, levcnlf_index_, levcnlfpft_index_
      integer, private :: levcdam_index_, levcdpf_index_, levcdsc_index_ 
+     integer, private :: levcdcd_index_ 
      integer, private :: levscagpft_index_, levagepft_index_
      integer, private :: levheight_index_
      integer, private :: levelem_index_, levelpft_index_
@@ -657,6 +663,7 @@ Module FatesHistoryInterfaceMod
      procedure :: levcnlf_index
      procedure :: levcnlfpft_index
      procedure :: levcdam_index
+     procedure :: levcdcd_index
      procedure :: levcdpf_index
      procedure :: levcdsc_index
      procedure :: levscag_index
@@ -690,6 +697,7 @@ Module FatesHistoryInterfaceMod
      procedure, private :: set_levcnlf_index
      procedure, private :: set_levcnlfpft_index
      procedure, private :: set_levcdam_index
+     procedure, private :: set_levcdcd_index
      procedure, private :: set_levcdpf_index
      procedure, private :: set_levcdsc_index
      procedure, private :: set_levscag_index
@@ -721,6 +729,7 @@ contains
     use FatesIODimensionsMod, only : levscagpft, levagepft
     use FatesIODimensionsMod, only : levcan, levcnlf, levcnlfpft
     use FatesIODimensionsMod, only : levcdam, levcdpf, levcdsc
+    use FatesIODimensionsMod, only : levcdcd
     use FatesIODimensionsMod, only : fates_bounds_type
     use FatesIODimensionsMod, only : levheight
     use FatesIODimensionsMod, only : levelem, levelpft
@@ -809,6 +818,11 @@ contains
     call this%dim_bounds(dim_count)%Init(levcdam, num_threads, &
          fates_bounds%cdamage_begin, fates_bounds%cdamage_end)
 
+    dim_count = dim_count + 1
+    call this%set_levcdcd_index(dim_count)
+    call this%dim_bounds(dim_count)%Init(levcdcd, num_threads, &
+         fates_bounds%cdcd_begin, fates_bounds%cdcd_end)
+    
     dim_count = dim_count + 1
     call this%set_levcdpf_index(dim_count)
     call this%dim_bounds(dim_count)%Init(levcdpf, num_threads, &
@@ -941,6 +955,10 @@ contains
     call this%dim_bounds(index)%SetThreadBounds(thread_index, &
          thread_bounds%cdamage_begin, thread_bounds%cdamage_end)
 
+    index = this%levcdcd_index()
+    call this%dim_bounds(index)%SetThreadBounds(thread_index, &
+         thread_bounds%cdcd_begin, thread_bounds%cdcd_end)
+
     index = this%levcdpf_index()
     call this%dim_bounds(index)%SetThreadBounds(thread_index, &
          thread_bounds%cdpf_begin, thread_bounds%cdpf_end)
@@ -999,6 +1017,7 @@ contains
     use FatesIOVariableKindMod, only : site_scagpft_r8, site_agepft_r8
     use FatesIOVariableKindMod, only : site_can_r8, site_cnlf_r8, site_cnlfpft_r8
     use FatesIOVariableKindMod, only : site_cdamage_r8, site_cdpf_r8, site_cdsc_r8
+    use FatesIOVariableKindMod, only : site_cdcd_r8
     use FatesIOVariableKindMod, only : site_height_r8
     use FatesIOVariableKindMod, only : site_elem_r8, site_elpft_r8
     use FatesIOVariableKindMod, only : site_elcwd_r8, site_elage_r8
@@ -1058,6 +1077,9 @@ contains
     call this%set_dim_indices(site_cdamage_r8, 1, this%column_index())
     call this%set_dim_indices(site_cdamage_r8, 2, this%levcdam_index())
 
+    call this%set_dim_indices(site_cdcd_r8, 1, this%column_index())
+    call this%set_dim_indices(site_cdcd_r8, 2, this%levcdcd_index())
+    
     call this%set_dim_indices(site_cdpf_r8, 1, this%column_index())
     call this%set_dim_indices(site_cdpf_r8, 2, this%levcdpf_index())
 
@@ -1342,7 +1364,22 @@ end function levcapf_index
    levcdam_index = this%levcdam_index_
  end function levcdam_index
 
+ 
  ! =======================================================================
+ subroutine set_levcdcd_index(this, index)
+   implicit none
+   class(fates_history_interface_type), intent(inout) :: this
+   integer, intent(in) :: index
+   this%levcdcd_index_ = index
+ end subroutine set_levcdcd_index
+
+ integer function levcdcd_index(this)
+   implicit none
+   class(fates_history_interface_type), intent(in) :: this
+   levcdcd_index = this%levcdcd_index_
+ end function levcdcd_index
+
+! =======================================================================
  subroutine set_levcdpf_index(this, index)
    implicit none
    class(fates_history_interface_type), intent(inout) :: this
@@ -1355,7 +1392,7 @@ end function levcapf_index
    class(fates_history_interface_type), intent(in) :: this
    levcdpf_index = this%levcdpf_index_
  end function levcdpf_index
-
+ 
  ! =======================================================================
  subroutine set_levcdsc_index(this, index)
    implicit none
@@ -1582,7 +1619,7 @@ end subroutine flush_hvars
     use FatesIOVariableKindMod, only : site_scagpft_r8, site_agepft_r8
     use FatesIOVariableKindMod, only : site_can_r8, site_cnlf_r8, site_cnlfpft_r8
     use FatesIOVariableKindMod, only : site_cdamage_r8, site_cdpf_r8, site_cdsc_r8
-    use FatesIOVariableKindMod, only : site_height_r8
+    use FatesIOVariableKindMod, only : site_cdcd_r8, site_height_r8
     use FatesIOVariableKindMod, only : site_elem_r8, site_elpft_r8
     use FatesIOVariableKindMod, only : site_elcwd_r8, site_elage_r8
 
@@ -1662,6 +1699,10 @@ end subroutine flush_hvars
     index = index + 1
     call this%dim_kinds(index)%Init(site_cdamage_r8, 2)
 
+    ! site x crown damage x crown damage class
+    index = index + 1
+    call this%dim_kinds(index)%Init(site_cdcd_r8, 2)
+    
     ! site x crown damage x pft x size class 
     index = index + 1
     call this%dim_kinds(index)%Init(site_cdpf_r8, 2)
@@ -1824,7 +1865,7 @@ end subroutine flush_hvars
     integer  :: iscagpft     ! size-class x age x pft index
     integer  :: iagepft      ! age x pft index
     integer  :: ican, ileaf, cnlf_indx  ! iterators for leaf and canopy level
-    integer  :: icdam, icdpf, icdsc     ! iterators for the crown damage level
+    integer  :: icdam, icdpf, icdsc, icdcd,icdi,icdj     ! iterators for the crown damage level
     integer  :: cdpf, cdsc
     integer  :: height_bin_max, height_bin_min   ! which height bin a given cohort's canopy is in
     integer  :: i_heightbin  ! iterator for height bins
@@ -2010,6 +2051,10 @@ end subroutine flush_hvars
                hio_nplant_understory_si_cdsc=>this%hvars(ih_nplant_understory_si_cdsc)%r82d, &
                hio_nplant_canopy_si_cdpf => this%hvars(ih_nplant_canopy_si_cdpf)%r82d, &
                hio_nplant_understory_si_cdpf=>this%hvars(ih_nplant_understory_si_cdpf)%r82d, &
+               hio_damage_cflux_si_cdcd      => this%hvars(ih_damage_cflux_si_cdcd)%r82d, &
+               hio_damage_rate_si_cdcd            => this%hvars(ih_damage_rate_si_cdcd)%r82d, & 
+               hio_recovery_cflux_si_cdcd => this%hvars(ih_recovery_cflux_si_cdcd)%r82d, &
+               hio_recovery_rate_si_cdcd => this%hvars(ih_recovery_rate_si_cdcd)%r82d, & 
                
                
                hio_m1_si_scls          => this%hvars(ih_m1_si_scls)%r82d, &
@@ -2565,6 +2610,8 @@ end subroutine flush_hvars
                        icdpf = get_cdamagesizepft_class_index(ccohort%dbh, ccohort%crowndamage, ccohort%pft)
                        hio_nplant_si_cdpf(io_si, icdpf) = hio_nplant_si_cdpf(io_si, icdpf) + ccohort%n
                        hio_m3_si_cdpf(io_si, icdpf) = hio_m3_si_cdpf(io_si, icdpf) + ccohort%cmort * ccohort%n
+
+
                     end if
 
 
@@ -3238,11 +3285,32 @@ end subroutine flush_hvars
             hio_demotion_rate_si_scls(io_si,i_scls) = sites(s)%demotion_rate(i_scls) * days_per_year
             hio_promotion_rate_si_scls(io_si,i_scls) = sites(s)%promotion_rate(i_scls) * days_per_year
          end do
+           
          !
          ! convert kg C / ha / day to gc / m2 / sec
          hio_demotion_carbonflux_si(io_si) = sites(s)%demotion_carbonflux * g_per_kg * ha_per_m2 * days_per_sec
          hio_promotion_carbonflux_si(io_si) = sites(s)%promotion_carbonflux * g_per_kg * ha_per_m2 * days_per_sec
          !
+
+         
+         ! pass damage carbon fluxes to history
+         icdcd = 1
+         do icdi = 1,ncrowndamage
+            do icdj = 1,ncrowndamage
+               hio_damage_cflux_si_cdcd(io_si,icdcd) = &
+                    sites(s)%damage_cflux(icdi,icdj) ! * g_per_kg * ha_per_m2 * days_per_sec
+               hio_damage_rate_si_cdcd(io_si,icdcd) = sites(s)%damage_rate(icdi,icdj) 
+               
+               
+               hio_recovery_cflux_si_cdcd(io_si,icdcd) = &
+                    sites(s)%recovery_cflux(icdi,icdj) ! * g_per_kg * ha_per_m2 * days_per_sec
+               hio_recovery_rate_si_cdcd(io_si,icdcd) = sites(s)%recovery_rate(icdi,icdj) 
+               icdcd = icdcd + 1
+            end do
+         end do
+
+            
+
          ! mortality-associated carbon fluxes
          
          hio_canopy_mortality_carbonflux_si(io_si) = hio_canopy_mortality_carbonflux_si(io_si) + &
@@ -4096,6 +4164,7 @@ end subroutine flush_hvars
     use FatesIOVariableKindMod, only : site_fuel_r8, site_cwdsc_r8, site_scag_r8
     use FatesIOVariableKindMod, only : site_can_r8, site_cnlf_r8, site_cnlfpft_r8
     use FatesIOVariableKindMod, only : site_cdamage_r8, site_cdsc_r8, site_cdpf_r8
+    use FatesIOVariableKindMod, only : site_cdcd_r8
     use FatesIOVariableKindMod, only : site_scagpft_r8, site_agepft_r8
     use FatesIOVariableKindMod, only : site_elem_r8, site_elpft_r8
     use FatesIOVariableKindMod, only : site_elcwd_r8, site_elage_r8
@@ -5649,6 +5718,26 @@ end subroutine flush_hvars
           avgflag='A', vtype=site_cdamage_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_si_cdam )
 
+    call this%set_history_var(vname='DAMAGE_CFLUX_CDCD', units = 'kg C / ha / day',         &
+          long='damage carbonflux between damage classes', use_default='inactive',   &
+          avgflag='A', vtype=site_cdcd_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
+          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_damage_cflux_si_cdcd )
+
+    call this%set_history_var(vname='DAMAGE_RATE_CDCD', units = 'N / ha / day',         &
+          long='damage rate between damage classes', use_default='inactive',   &
+          avgflag='A', vtype=site_cdcd_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
+          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_damage_rate_si_cdcd )
+
+    call this%set_history_var(vname='RECOVERY_CFLUX_CDCD', units = 'kg C / ha / day',         &
+          long='recovery carbonflux between damage classes', use_default='inactive',   &
+          avgflag='A', vtype=site_cdcd_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
+          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_recovery_cflux_si_cdcd )
+
+    call this%set_history_var(vname='RECOVERY_RATE_CDCD', units = 'N / ha / day',         &
+          long='recovery rate between damage classes', use_default='inactive',   &
+          avgflag='A', vtype=site_cdcd_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
+          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_recovery_rate_si_cdcd )
+    
     call this%set_history_var(vname='NPLANT_CDSC', units = 'N / damage x size class / ha / yr',    &
           long='N. plants per damage x size class', use_default='inactive',   &
           avgflag='A', vtype=site_cdsc_r8, hlms='CLM:ALM', flushval=0.0_r8,    &

@@ -190,25 +190,25 @@ contains
        ! normalise so they sum to 1
        transition_vec = transition_vec/sum(transition_vec)
        ! go from annual to daily
-       transition_vec = transition_vec * years_per_day
+!       transition_vec = transition_vec * years_per_day
        ! make sure they sum to one - so we don't lose cohorts - rate of staying in
        ! the same damage class is one minus rate of moving
-       transition_vec(1) = 1.0_r8 - sum(transition_vec(2:ncrowndamage))
-
+ !      transition_vec(1) = 1.0_r8 - sum(transition_vec(2:ncrowndamage))
+ 
        ! populate a matrix
        do i = 1, ncrowndamage
           do j = 1, ncrowndamage
              if(j > i) then
-                this%damage_transitions(i,j,ft) = 0.0_r8
+                this%damage_transitions(j,i,ft) = 0.0_r8
              else
-                this%damage_transitions(i,j,ft) = transition_vec(i - j + 1)
+                this%damage_transitions(j,i,ft) = transition_vec(i - j + 1)
              end if
           end do
        end do
 
-       do j = 1, ncrowndamage
-          this%damage_transitions(:,j,ft) = this%damage_transitions(:,j,ft)/ &
-               sum(this%damage_transitions(:,j,ft))
+       do i = 1, ncrowndamage
+          this%damage_transitions(i,:,ft) = this%damage_transitions(i,:,ft)/ &
+               sum(this%damage_transitions(i,:,ft))
        end do
 
        write(fates_log(),*) 'Transition matrix', this%damage_transitions

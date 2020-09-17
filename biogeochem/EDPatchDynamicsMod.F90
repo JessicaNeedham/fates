@@ -510,7 +510,7 @@ contains
     real(r8) :: struct_m_pre
     real(r8) :: struct_m_post
     real(r8) :: struct_loss_prt
-
+    
     real(r8) :: live_stock
     real(r8) :: litter_stock
     real(r8) :: litter_stock_new
@@ -529,8 +529,7 @@ contains
     real(r8) :: litter_stock_post
     
     logical  :: found_youngest_primary       ! logical for finding the first primary forest patch
-    !---------------------------------------------------------------------
-
+    !--------------------------------------------------------------------- 
     storesmallcohort => null() ! storage of the smallest cohort for insertion routine
     storebigcohort   => null() ! storage of the largest cohort for insertion routine 
 
@@ -555,6 +554,11 @@ contains
     currentSite%disturbance_rates_primary_to_secondary(1:N_DIST_TYPES) = 0._r8
     currentSite%disturbance_rates_secondary_to_secondary(1:N_DIST_TYPES) = 0._r8
 
+
+    ! zero the diagnostic damage carbon flux
+    currentSite%damage_cflux(:,:) = 0._r8
+    currentSite%damage_rate(:,:) = 0._r8
+    
     do while(associated(currentPatch))
 
     
@@ -781,7 +785,6 @@ contains
        live_stock_pre = 0.0_r8
        live_stock_post = 0.0_r8
 
-       
        currentPatch => currentSite%oldest_patch
        do while(associated(currentPatch))
 
@@ -1345,7 +1348,17 @@ contains
                             struct_m_post = nc_canopy_d%prt%GetState(struct_organ, all_carbon_elements)
                             struct_loss_prt = struct_loss_prt + (struct_m_pre - struct_m_post)* &
                                  nc_canopy_d%n
-                                      
+
+                            store_c = currentCohort%prt%GetState(store_organ,all_carbon_elements)
+                            fnrt_c = currentCohort%prt%GetState(fnrt_organ,all_carbon_elements)
+                            
+                            currentSite%damage_cflux(currentCohort%crowndamage, cd) = &
+                                 currentSite%damage_cflux(currentCohort%crowndamage, cd) + &
+                                 (leaf_m_post+sapw_m_post+struct_m_post+store_c+fnrt_c) * cd_n
+
+                            currentSite%damage_rate(currentCohort%crowndamage, cd) = &
+                                 currentSite%damage_rate(currentCohort%crowndamage, cd) + cd_n
+
                             storebigcohort   =>  currentPatch%tallest
                             storesmallcohort =>  currentPatch%shortest 
                             if(associated(currentPatch%tallest))then
@@ -1412,8 +1425,6 @@ contains
 
                 endif
 
-                write(fates_log(),*) '2. crowndamage: ', currentCohort%crowndamage
-                
                 currentCohort => currentCohort%taller      
              enddo ! currentCohort 
 
@@ -1461,8 +1472,9 @@ contains
 
        write(fates_log(),*) 'Site level pre damage live stock : ', live_stock_pre
        write(fates_log(),*) 'Site level post damage live stock: ', live_stock_post 
+       write(fates_log(),*) 'Site level damage transitions    : ', sum(currentSite%damage_rate(:,:))
        
-       !*************************/
+      !*************************/
       !**  INSERT NEW PATCH(ES) INTO LINKED LIST    
       !*************************/
        

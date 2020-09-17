@@ -767,8 +767,13 @@ module EDTypesMod
      real(r8), allocatable :: growthflux_fusion(:,:)             ! rate of individuals moving into a given size class bin
      ! due to fusion in a given day. on size x pft array 
 
+     ! Damage fluxes
+     real(r8), allocatable :: damage_cflux(:,:)         ! carbon flux into each damage class each timestep
+     real(r8), allocatable :: damage_rate(:,:)               ! number of individuals moving into a damage class
+     real(r8), allocatable :: recovery_cflux(:,:) ! carbon flux recovering from each damage class each timestep
+     real(r8), allocatable :: recovery_rate(:,:)       ! number of individuals recovering into a damage class
 
-
+     
      ! Canopy Spread
      real(r8) ::  spread                                          ! dynamic canopy allometric term [unitless]
 

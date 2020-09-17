@@ -749,6 +749,7 @@ module FatesInterfaceMod
        integer :: ifuel
        integer :: ican
        integer :: icdam
+       integer :: icdcd
        integer :: ileaf
        integer :: iage
        integer :: iheight
@@ -768,11 +769,13 @@ module FatesInterfaceMod
        allocate( fates_hdim_camap_levcapf(1:nlevcoage*numpft))
 
        allocate( fates_hdim_levcdam(ncrowndamage ))
-       allocate( fates_hdim_scmap_levcdsc(1:nlevsclass*ncrowndamage))
-       allocate( fates_hdim_cdmap_levcdsc(1:nlevsclass*ncrowndamage))
-       allocate( fates_hdim_scmap_levcdpf(1:nlevsclass*ncrowndamage * numpft))
-       allocate( fates_hdim_cdmap_levcdpf(1:nlevsclass*ncrowndamage * numpft))
-       allocate( fates_hdim_pftmap_levcdpf(1:nlevsclass*ncrowndamage * numpft))
+       allocate( fates_hdim_cdimap_levcdcd(ncrowndamage*ncrowndamage))
+       allocate( fates_hdim_cdjmap_levcdcd(ncrowndamage*ncrowndamage))
+       allocate( fates_hdim_scmap_levcdsc(nlevsclass*ncrowndamage))
+       allocate( fates_hdim_cdmap_levcdsc(nlevsclass*ncrowndamage))
+       allocate( fates_hdim_scmap_levcdpf(nlevsclass*ncrowndamage * numpft))
+       allocate( fates_hdim_cdmap_levcdpf(nlevsclass*ncrowndamage * numpft))
+       allocate( fates_hdim_pftmap_levcdpf(nlevsclass*ncrowndamage * numpft))
 
        allocate( fates_hdim_levcan(nclmax))
        allocate( fates_hdim_levelem(num_elements))
@@ -827,7 +830,7 @@ module FatesInterfaceMod
        do icdam = 1,ncrowndamage
           fates_hdim_levcdam(icdam) = icdam
        end do
-       
+      
 
        ! Make an element array, each index is the PARTEH global identifier index
 
@@ -905,6 +908,15 @@ module FatesInterfaceMod
              i=i+1
              fates_hdim_scmap_levcdsc(i) = isc
              fates_hdim_cdmap_levcdsc(i) = icdam
+          end do
+       end do
+
+        i=0
+       do icdam=1,ncrowndamage
+          do icdcd=1,ncrowndamage
+             i=i+1
+             fates_hdim_cdimap_levcdcd(i) = icdcd
+             fates_hdim_cdjmap_levcdcd(i) = icdam
           end do
        end do
 
