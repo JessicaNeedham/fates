@@ -122,7 +122,8 @@ module FatesAllometryMod
   public :: CheckIntegratedAllometries
   public :: CrownDepth
   public :: set_root_fraction  ! Generic wrapper to calculate normalized
-                               ! root profiles
+  ! root profiles
+  
 
   logical         , parameter :: verbose_logging = .false.
   character(len=*), parameter :: sourcefile = __FILE__
@@ -2417,4 +2418,6 @@ contains
     return
   end subroutine cspline
   
+
+
 end module FatesAllometryMod

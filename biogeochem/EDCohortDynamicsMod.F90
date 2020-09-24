@@ -112,6 +112,7 @@ module EDCohortDynamicsMod
   public :: UpdateCohortBioPhysRates
   public :: DeallocateCohort
   public :: EvaluateAndCorrectDBH
+  public :: damage_recovery
 
   logical, parameter :: debug  = .false. ! local debug flag
 
@@ -2034,6 +2035,64 @@ contains
     end if
     return
   end subroutine EvaluateAndCorrectDBH
+
+
+  !--------------------------------------------------------------------------------
   
+  subroutine damage_recovery(currentCohort, currentSite)
+    ! This subroutine back calculates damage class following the allocation scheme                                                                            
+    ! It should really go in DamageMainMod but to avoid circular dependicies I have put it here                                                               
+
+    use DamageMainMod , only : get_crown_damage
+    use FatesAllometryMod, only : bleaf
+    use FatesAllometryMod, only : carea_allom
+    
+    ! arguments                                                                                                                                               
+    type(ed_cohort_type),intent(inout) :: currentCohort
+    type(ed_site_type),intent(inout)   :: currentSite
+
+    ! locals                                                                                                                                                  
+    real(r8) :: leaf_c
+    real(r8) :: target_leaf_c
+    real(r8) :: pre_recovery
+    real(r8) :: sapw_c
+    real(r8) :: struct_c
+    real(r8) :: fnrt_c
+    real(r8) :: store_c
+    real(r8) ::  repro_c
+
+
+    leaf_c = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
+    call bleaf(currentCohort%dbh, currentCohort%pft,currentCohort%canopy_trim,&
+         target_leaf_c)
+
+    pre_recovery = currentCohort%crowndamage
+    call get_crown_damage(leaf_c, target_leaf_c, currentCohort%crowndamage)
+    call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread,currentCohort%pft, &
+         currentCohort%crowndamage, currentCohort%c_area)
+
+    ! Keep track of recovery rate and carbon flux                                                                                                             
+    if(pre_recovery /= currentCohort%crowndamage) then
+
+       sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
+       struct_c = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
+       leaf_c   = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
+       fnrt_c   = currentCohort%prt%GetState(fnrt_organ, all_carbon_elements)
+       store_c  = currentCohort%prt%GetState(store_organ, all_carbon_elements)
+       repro_c  = currentCohort%prt%GetState(repro_organ, all_carbon_elements)
+
+       currentSite%recovery_rate(pre_recovery, currentCohort%crowndamage) &
+            = currentSite%recovery_rate(pre_recovery, currentCohort%crowndamage) + &
+            currentCohort%n
+       currentSite%recovery_cflux(pre_recovery, currentCohort%crowndamage) &
+            = currentSite%recovery_cflux(pre_recovery, currentCohort%crowndamage) + &
+            (leaf_c + sapw_c + struct_c + store_c + fnrt_c + repro_c) * currentCohort%n
+    end if
+
+
+    return
+  end subroutine damage_recovery
+
+
 
 end module EDCohortDynamicsMod
