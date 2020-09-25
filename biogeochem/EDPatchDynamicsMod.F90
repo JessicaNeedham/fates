@@ -492,6 +492,7 @@ contains
     real(r8) :: sapw_c                       ! sapwood carbon [kg]
     real(r8) :: store_c                      ! storage carbon [kg]
     real(r8) :: struct_c                     ! structure carbon [kg]
+    real(r8) :: repro_c                      ! reproductive carbon [kg]
     real(r8) :: total_c                      ! total carbon of plant [kg]
     real(r8) :: leaf_burn_frac               ! fraction of leaves burned in fire
                                              ! for both woody and grass species
