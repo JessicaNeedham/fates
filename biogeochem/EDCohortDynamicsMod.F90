@@ -2072,7 +2072,7 @@ contains
          currentCohort%crowndamage, currentCohort%c_area)
 
     ! Keep track of recovery rate and carbon flux                                                                                                             
-    if(pre_recovery /= currentCohort%crowndamage) then
+!    if(pre_recovery /= currentCohort%crowndamage) then   ! JN also useful to know how many stayed the same?
 
        sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
        struct_c = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
@@ -2087,7 +2087,7 @@ contains
        currentSite%recovery_cflux(pre_recovery, currentCohort%crowndamage) &
             = currentSite%recovery_cflux(pre_recovery, currentCohort%crowndamage) + &
             (leaf_c + sapw_c + struct_c + store_c + fnrt_c + repro_c) * currentCohort%n
-    end if
+ !   end if
 
 
     return

@@ -1384,11 +1384,28 @@ contains
                             currentPatch%shortest => storesmallcohort   
 
                          end if ! end if new n is large enough
-
+                         
                       end do ! end crowndamage loop
 
                       ! Reduce currentCohort%n now based on sum of all new damage classes  
                       currentCohort%n = currentCohort%n * (1.0_r8-cd_frac_total)
+
+                      ! Keep track of number and carbon that stayed in the same damage class
+                      sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
+                      struct_c = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
+                      leaf_c   = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
+                      fnrt_c   = currentCohort%prt%GetState(fnrt_organ, all_carbon_elements)
+                      store_c  = currentCohort%prt%GetState(store_organ, all_carbon_elements)
+                      repro_c  = currentCohort%prt%GetState(repro_organ, all_carbon_elements)
+
+                      currentSite%damage_cflux(currentCohort%crowndamage, currentCohort%crowndamage) = &
+                           currentSite%damage_cflux(currentCohort%crowndamage, currentCohort%crowndamage) + &
+                           (leaf_m_post+sapw_m_post+struct_m_post+store_c+fnrt_c) * cd_n
+
+                      currentSite%damage_rate(currentCohort%crowndamage, currentCohort%crowndamage) = &
+                           currentSite%damage_rate(currentCohort%crowndamage, currentCohort%crowndamage) + cd_n
+
+                      
                    end if  ! end if canopy and woody              
                 end if ! end if canopy damage is on
 
