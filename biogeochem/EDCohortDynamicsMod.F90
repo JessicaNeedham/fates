@@ -2040,6 +2040,7 @@ contains
   !--------------------------------------------------------------------------------
   
   subroutine damage_recovery(currentCohort, currentSite)
+
     ! This subroutine back calculates damage class following the allocation scheme                                                                            
     ! It should really go in DamageMainMod but to avoid circular dependicies I have put it here                                                               
 
@@ -2093,6 +2094,8 @@ contains
     return
   end subroutine damage_recovery
 
+
+  !------------------------------------------------------------------------------------
 
 
 end module EDCohortDynamicsMod

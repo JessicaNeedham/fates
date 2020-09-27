@@ -189,16 +189,11 @@ contains
        end do
        ! normalise so they sum to 1
        transition_vec = transition_vec/sum(transition_vec)
-       ! go from annual to daily
-!       transition_vec = transition_vec * years_per_day
-       ! make sure they sum to one - so we don't lose cohorts - rate of staying in
-       ! the same damage class is one minus rate of moving
- !      transition_vec(1) = 1.0_r8 - sum(transition_vec(2:ncrowndamage))
- 
+
        ! populate a matrix
-       do i = 1, ncrowndamage
-          do j = 1, ncrowndamage
-             if(j > i) then
+       do i = 1, ncrowndamage     ! new
+          do j = 1, ncrowndamage  ! current
+             if(j > i) then       ! can't move to less damaged
                 this%damage_transitions(j,i,ft) = 0.0_r8
              else
                 this%damage_transitions(j,i,ft) = transition_vec(i - j + 1)

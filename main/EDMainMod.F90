@@ -439,12 +439,7 @@ contains
           if(hlm_use_canopy_damage .eq. itrue .or. &
                hlm_use_understory_damage .eq. itrue) then
 
-             leaf_c = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
-             call bleaf(currentCohort%dbh, currentCohort%pft,currentCohort%canopy_trim,&
-                  target_leaf_c)
-             call get_crown_damage(leaf_c, target_leaf_c, currentCohort%crowndamage)
-             call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread,currentCohort%pft, &
-                  currentCohort%crowndamage, currentCohort%c_area)               
+             call damage_recovery(currentCohort, currentSite)
           end if
 
 

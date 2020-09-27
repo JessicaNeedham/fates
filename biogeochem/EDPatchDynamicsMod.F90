@@ -530,7 +530,13 @@ contains
     real(r8) :: litter_stock_post
     
     logical  :: found_youngest_primary       ! logical for finding the first primary forest patch
+
+    real(r8), allocatable :: nplant_cdam(:)
+    integer               :: icdam
+    
     !--------------------------------------------------------------------- 
+    allocate(nplant_cdam(ncrowndamage))
+
     storesmallcohort => null() ! storage of the smallest cohort for insertion routine
     storebigcohort   => null() ! storage of the largest cohort for insertion routine 
 
@@ -1390,24 +1396,26 @@ contains
 
                       ! Reduce currentCohort%n now based on sum of all new damage classes  
                       currentCohort%n = currentCohort%n * (1.0_r8-cd_frac_total)
-
-                      ! Keep track of number and carbon that stayed in the same damage class
-                      sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
-                      struct_c = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
-                      leaf_c   = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
-                      fnrt_c   = currentCohort%prt%GetState(fnrt_organ, all_carbon_elements)
-                      store_c  = currentCohort%prt%GetState(store_organ, all_carbon_elements)
-                      repro_c  = currentCohort%prt%GetState(repro_organ, all_carbon_elements)
-
-                      currentSite%damage_cflux(currentCohort%crowndamage, currentCohort%crowndamage) = &
-                           currentSite%damage_cflux(currentCohort%crowndamage, currentCohort%crowndamage) + &
-                           (leaf_m_post+sapw_m_post+struct_m_post+store_c+fnrt_c) * cd_n
-
-                      currentSite%damage_rate(currentCohort%crowndamage, currentCohort%crowndamage) = &
-                           currentSite%damage_rate(currentCohort%crowndamage, currentCohort%crowndamage) + cd_n
-
                       
                    end if  ! end if canopy and woody              
+
+                   ! Keep track of number and carbon that stayed in the same damage class
+                   ! This can include understory trees that stay in undamaged 
+                   sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
+                   struct_c = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
+                   leaf_c   = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
+                   fnrt_c   = currentCohort%prt%GetState(fnrt_organ, all_carbon_elements)
+                   store_c  = currentCohort%prt%GetState(store_organ, all_carbon_elements)
+                   repro_c  = currentCohort%prt%GetState(repro_organ, all_carbon_elements)
+
+                   currentSite%damage_cflux(currentCohort%crowndamage, currentCohort%crowndamage) = &
+                        currentSite%damage_cflux(currentCohort%crowndamage, currentCohort%crowndamage) + &
+                        (leaf_m_post+sapw_m_post+struct_m_post+store_c+fnrt_c) * currentCohort%n
+
+                   currentSite%damage_rate(currentCohort%crowndamage, currentCohort%crowndamage) = &
+                        currentSite%damage_rate(currentCohort%crowndamage, currentCohort%crowndamage) + currentCohort%n
+
+
                 end if ! end if canopy damage is on
 
                 ! Put new undamaged cohorts in the correct place in the linked list
@@ -1483,14 +1491,23 @@ contains
           currentPatch%disturbance_rates = 0._r8
           currentPatch%fract_ldist_not_harvested = 0._r8
 
+          currentCohort => currentPatch%tallest
+          do while(associated(currentCohort))
+             icdam = currentCohort%crowndamage
+             nplant_cdam(icdam) = nplant_cdam(icdam) + currentCohort%n
+             currentCohort => currentCohort%shorter
+          enddo
+
           currentPatch => currentPatch%younger
 
-          
        enddo ! currentPatch patch loop.
 
-       write(fates_log(),*) 'Site level pre damage live stock : ', live_stock_pre
-       write(fates_log(),*) 'Site level post damage live stock: ', live_stock_post 
-       write(fates_log(),*) 'Site level damage transitions    : ', sum(currentSite%damage_rate(:,:))
+       !write(fates_log(),*) 'Site level pre damage live stock : ', live_stock_pre
+       !write(fates_log(),*) 'Site level post damage live stock: ', live_stock_post 
+       !write(fates_log(),*) 'Site level damage transitions    : ', sum(currentSite%damage_rate(:,:))
+
+       !write(fates_log(),*) 'nplant_cdam: ', nplant_cdam
+       !write(fates_log(),*) 'damage_rate: ', currentSite%damage_rate(:,:)
        
       !*************************/
       !**  INSERT NEW PATCH(ES) INTO LINKED LIST    
