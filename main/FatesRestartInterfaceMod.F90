@@ -1078,7 +1078,7 @@ contains
 
     call this%set_restart_var(vname='fates_damage_cflux', vtype=cohort_r8, &
          long_name='fates diagnostic rate of damage carbonflux', &
-         units='g C/m/sec', flushval = flushzero, &
+         units='kg C/ha/day', flushval = flushzero, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_damage_cflux_sicd)
 
     call this%set_restart_var(vname='fates_damage_rate', vtype=cohort_r8, &
@@ -1088,7 +1088,7 @@ contains
 
     call this%set_restart_var(vname='fates_recovery_cflux', vtype=cohort_r8, &
          long_name='fates diagnostic rate of damage recovery carbonflux', &
-         units='g C/m/sec', flushval = flushzero, &
+         units='kg C/ha/day', flushval = flushzero, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_recovery_cflux_sicd)
 
     call this%set_restart_var(vname='fates_damage_recovery_rate', vtype=cohort_r8, &
@@ -1489,7 +1489,7 @@ contains
     integer  :: io_idx_si_cacls ! each cohort age class index within site
     integer  :: io_idx_si_cdsc ! each damage-class x size class within site
     integer  :: io_idx_si_cdpf ! each damage x size x pft class within site
-    integer  :: io_idx_si_cdcd ! each damage x damage within site 
+    integer  :: io_idx_si_cdcd ! each damage x damage within site (plus mortality) 
     integer  :: io_idx_si_cwd  ! each site-cwd index
     integer  :: io_idx_si_pft  ! each site-pft index
     integer  :: io_idx_si_vtmem ! indices for veg-temp memory at site
@@ -1932,15 +1932,16 @@ contains
              io_idx_si_sc = io_idx_si_sc + 1
           end do
 
+          ! JN - this only copies live portions of transitions - but that's ok because the mortality
+          ! bit only needs to be added for history outputs
           do icdi = 1,ncrowndamage
-             do icdj = 1,ncrowndamage
+             do icdj = 1,ncrowndamage+1
                 rio_damage_cflux_sicd(io_idx_si_cdcd) = &
                      sites(s)%damage_cflux(icdi,icdj)
 
                 rio_damage_rate_sicd(io_idx_si_cdcd) = &
                      sites(s)%damage_rate(icdi,icdj)
-                io_idx_si_cdcd = io_idx_si_cdcd + 1
-
+          
                 rio_recovery_cflux_sicd(io_idx_si_cdcd) = &
                      sites(s)%recovery_cflux(icdi,icdj)
 
@@ -2277,7 +2278,7 @@ contains
      integer  :: io_idx_si_sc   ! each size-class index within site
      integer  :: io_idx_si_cacls ! each coage class index within site
      integer  :: io_idx_si_capf ! each cohort age class x pft index within site
-     integer  :: io_idx_si_cdcd ! each damage x damage class within site
+     integer  :: io_idx_si_cdcd ! each damage x damage class within site + mortality
      integer  :: io_idx_si_cwd
      integer  :: io_idx_si_pft
 

@@ -769,8 +769,8 @@ module FatesInterfaceMod
        allocate( fates_hdim_camap_levcapf(1:nlevcoage*numpft))
 
        allocate( fates_hdim_levcdam(ncrowndamage ))
-       allocate( fates_hdim_cdimap_levcdcd(ncrowndamage*ncrowndamage))
-       allocate( fates_hdim_cdjmap_levcdcd(ncrowndamage*ncrowndamage))
+       allocate( fates_hdim_cdimap_levcdcd(ncrowndamage*(ncrowndamage+1)))
+       allocate( fates_hdim_cdjmap_levcdcd(ncrowndamage*(ncrowndamage+1)))
        allocate( fates_hdim_scmap_levcdsc(nlevsclass*ncrowndamage))
        allocate( fates_hdim_cdmap_levcdsc(nlevsclass*ncrowndamage))
        allocate( fates_hdim_scmap_levcdpf(nlevsclass*ncrowndamage * numpft))
@@ -913,10 +913,14 @@ module FatesInterfaceMod
 
         i=0
        do icdam=1,ncrowndamage
-          do icdcd=1,ncrowndamage
+          do icdcd=1,ncrowndamage+1
              i=i+1
              fates_hdim_cdimap_levcdcd(i) = icdcd
              fates_hdim_cdjmap_levcdcd(i) = icdam
+             write(fates_log(),*) 'i : ', i
+             write(fates_log(),*) 'icdam : ', icdam
+             write(fates_log(),*) 'icdcd : ', icdcd
+
           end do
        end do
 

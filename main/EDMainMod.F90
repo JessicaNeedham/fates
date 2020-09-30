@@ -131,9 +131,11 @@ contains
     !
     ! !LOCAL VARIABLES:
     type(ed_patch_type), pointer :: currentPatch
+    type(ed_cohort_type), pointer :: currentCohort
     integer :: el              ! Loop counter for elements
     !-----------------------------------------------------------------------
 
+    
     if ( hlm_masterproc==itrue ) write(fates_log(),'(A,I4,A,I2.2,A,I2.2)') 'FATES Dynamics: ',&
           hlm_current_year,'-',hlm_current_month,'-',hlm_current_day
 
@@ -361,7 +363,6 @@ contains
        currentCohort => currentPatch%shortest
        do while(associated(currentCohort)) 
 
-      
           ft = currentCohort%pft
 
           ! Calculate the mortality derivatives
@@ -414,14 +415,14 @@ contains
              is_drought = .true.
           end if
 
-               
           call PRTMaintTurnover(currentCohort%prt,ft,is_drought)
 
+          
           if(hlm_use_canopy_damage .eq. itrue .or. &
                hlm_use_understory_damage .eq. itrue) then
              
              call damage_recovery(currentCohort, currentSite)
-
+             
           end if  ! end if damage is on
 
               
@@ -440,10 +441,8 @@ contains
                hlm_use_understory_damage .eq. itrue) then
 
              call damage_recovery(currentCohort, currentSite)
-          end if
-
-
-          
+                         
+          end if          
 
           ! JN Tempory code to increase damage with size - just to test
           ! all the other damage code works. Replace this with

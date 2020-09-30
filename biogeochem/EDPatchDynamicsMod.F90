@@ -532,10 +532,12 @@ contains
     logical  :: found_youngest_primary       ! logical for finding the first primary forest patch
 
     real(r8), allocatable :: nplant_cdam(:)
-    integer               :: icdam
+    integer               :: cdam
+    real(r8) :: tmp
+    
     
     !--------------------------------------------------------------------- 
-    allocate(nplant_cdam(ncrowndamage))
+    allocate(nplant_cdam(ncrowndamage+1))
 
     storesmallcohort => null() ! storage of the smallest cohort for insertion routine
     storebigcohort   => null() ! storage of the largest cohort for insertion routine 
@@ -1325,6 +1327,10 @@ contains
                             ! undamaged at the end of the cohort loop once we know how many damaged to
                             ! subtract
 
+                            if (cd > 5) then
+                               write(fates_log(),*) 'urgh - cd : ', cd
+                            end if
+                            
                             nc_canopy_d%n = cd_n
                             nc_canopy_d%crowndamage = cd
 
@@ -1491,12 +1497,15 @@ contains
           currentPatch%disturbance_rates = 0._r8
           currentPatch%fract_ldist_not_harvested = 0._r8
 
-          currentCohort => currentPatch%tallest
-          do while(associated(currentCohort))
-             icdam = currentCohort%crowndamage
-             nplant_cdam(icdam) = nplant_cdam(icdam) + currentCohort%n
-             currentCohort => currentCohort%shorter
-          enddo
+          ! currentCohort => currentPatch%tallest
+          ! do while(associated(currentCohort))
+          !    cdam = currentCohort%crowndamage
+          !    write(fates_log(),*) 'cdam       : ', cdam
+          !    write(fates_log(),*) 'nplant_cdam: ', nplant_cdam(:)
+          !    write(fates_log(),*) 'ccohort%n  : ', currentCohort%n
+          !    nplant_cdam(cdam) = nplant_cdam(cdam) + currentCohort%n
+          !    currentCohort => currentCohort%shorter
+          ! enddo
 
           currentPatch => currentPatch%younger
 
@@ -1504,10 +1513,15 @@ contains
 
        !write(fates_log(),*) 'Site level pre damage live stock : ', live_stock_pre
        !write(fates_log(),*) 'Site level post damage live stock: ', live_stock_post 
-       !write(fates_log(),*) 'Site level damage transitions    : ', sum(currentSite%damage_rate(:,:))
+       write(fates_log(),*) 'patch damage_rate : ', sum(currentSite%damage_rate(:,:))
 
        !write(fates_log(),*) 'nplant_cdam: ', nplant_cdam
-       !write(fates_log(),*) 'damage_rate: ', currentSite%damage_rate(:,:)
+      ! tmp = 0.0_r8
+      ! do cdam = 1,ncrowndamage+1
+      !    tmp = tmp + sum(currentSite%damage_rate, dim =cdam)
+      ! end do
+          
+      ! write(fates_log(),*) 'ed patch dynamics damage_rate: ', tmp
        
       !*************************/
       !**  INSERT NEW PATCH(ES) INTO LINKED LIST    
