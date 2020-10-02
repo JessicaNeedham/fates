@@ -1870,6 +1870,7 @@ end subroutine flush_hvars
     integer  :: ican, ileaf, cnlf_indx  ! iterators for leaf and canopy level
     integer  :: icdpf, icdsc, icdcd, icdi, icdj, icdam      ! iterators for the crown damage level
     integer  :: cdpf, cdsc
+    integer  :: counter 
     integer  :: height_bin_max, height_bin_min   ! which height bin a given cohort's canopy is in
     integer  :: i_heightbin  ! iterator for height bins
     integer  :: el           ! Loop index for elements
@@ -2232,6 +2233,34 @@ end subroutine flush_hvars
                   sites(s)%mass_balance(el)%burn_flux_to_atm * &
                   g_per_kg * ha_per_m2 * days_per_sec
 
+               ! damage variables - site level - this needs to be OUT of the patch loop 
+            if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+
+               ! not mortality which is the absorbing state - last row still zero here
+               ! i.e. every ncrowndamage + 1 th value
+               ! this needs to come before mortality gets added to the array
+               icdcd = 1
+               do icdi = 1,ncrowndamage
+                  do icdj = 1,ncrowndamage+1
+
+                     hio_damage_cflux_si_cdcd(io_si,icdcd) = &
+                          sites(s)%damage_cflux(icdi,icdj) ! kg/ha/day
+
+                     hio_damage_rate_si_cdcd(io_si,icdcd) = &
+                          sites(s)%damage_rate(icdi,icdj)  ! N/ha/year
+
+                     hio_recovery_cflux_si_cdcd(io_si,icdcd) = &
+                          sites(s)%recovery_cflux(icdi,icdj) ! kg/ha/day
+
+                     hio_recovery_rate_si_cdcd(io_si,icdcd) =  &
+                          sites(s)%recovery_rate(icdi,icdj) ! N/ha/year 
+
+                     icdcd = icdcd + 1
+                  end do
+               end do 
+               !write(fates_log(),'(a/,5(F12.6,1x))') 'JN damage_rate 2: ', hio_damage_rate_si_cdcd(io_si,:)
+            end if
+
          end do
 
          hio_canopy_spread_si(io_si)        = sites(s)%spread
@@ -2370,31 +2399,7 @@ end subroutine flush_hvars
             hio_area_trees_si(io_si) = hio_area_trees_si(io_si) + min(cpatch%total_tree_area,cpatch%area) * AREA_INV
 
 
-            ! damage variables - site level 
-            if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
-
-               ! not mortality which is the absorbing state - last row still zero here
-               ! this needs to come before mortality gets added to the array
-               icdcd = 1
-               do icdi = 1,ncrowndamage
-                  do icdj = 1,ncrowndamage+1
-
-                     hio_damage_cflux_si_cdcd(io_si,icdcd) = &
-                          sites(s)%damage_cflux(icdi,icdj) ! kg/ha/day
-                     hio_damage_rate_si_cdcd(io_si,icdcd) = &
-                          sites(s)%damage_rate(icdi,icdj)  ! N/ha/year
-
-                     hio_recovery_cflux_si_cdcd(io_si,icdcd) = &
-                          sites(s)%recovery_cflux(icdi,icdj) ! kg/ha/day
-                     hio_recovery_rate_si_cdcd(io_si,icdcd) =  &
-                          sites(s)%recovery_rate(icdi,icdj) ! N/ha/year 
-
-                     icdcd = icdcd + 1
-                  end do
-               end do
-
-            end if
-
+          
             ccohort => cpatch%shortest
             do while(associated(ccohort))
                
@@ -2630,6 +2635,7 @@ end subroutine flush_hvars
 
                     ! damage variables - cohort level 
                     if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+
                        
                        cdpf = get_cdamagesizepft_class_index(ccohort%dbh, ccohort%crowndamage, ccohort%pft)
                        cdsc = get_cdamagesize_class_index(ccohort%dbh, ccohort%crowndamage)
@@ -2654,8 +2660,8 @@ end subroutine flush_hvars
                        hio_m3_si_cdpf(io_si, cdpf) = hio_m3_si_cdpf(io_si, cdpf) + ccohort%cmort * ccohort%n
 
                        ! add mortality to the damage and recovery rates    
+                      
                        icdam = (ncrowndamage + 1)  * cdam  ! to fill in the last row
-                       write(fates_log(),*) 'icdam : ', icdam
                        
                        hio_damage_rate_si_cdcd(io_si,icdam) = hio_damage_rate_si_cdcd(io_si,icdam) + &
                             (ccohort%bmort + ccohort%hmort + ccohort%cmort + &
@@ -2682,19 +2688,7 @@ end subroutine flush_hvars
                             total_c * ccohort%n * g_per_kg * days_per_sec * years_per_day * ha_per_m2 + &
                             (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * total_c * &
                             ccohort%n * g_per_kg * ha_per_m2
-
-                        t_dead = 0.0_r8
-                        do icdam = 1, 30
-                           if(mod(icdam, 6) == 0) then
-                              t_dead = t_dead + hio_damage_rate_si_cdcd(io_si,icdam)
-                           end if
-                        end do
-
-                        
-                        write(fates_log(),*) 'sum mortality cdam : ', sum(hio_mortality_si_cdam(:,:))
-                        write(fates_log(),*) 'sum damage rate    : ', t_dead 
-                       
-                        
+ 
                     end if  ! end if damage
 
                    
@@ -3104,8 +3098,13 @@ end subroutine flush_hvars
             ipa = ipa + 1
             cpatch => cpatch%younger
          end do !patch loop
+
          
-         
+       
+         !write(fates_log(),'(a/,5(F12.6,1x))') 'JN damage_rate 3: ', hio_damage_rate_si_cdcd(io_si,:)
+        
+
+
          ! divide so-far-just-summed but to-be-averaged patch-age-class variables by patch-age-class area to get mean values
          do ipa2 = 1, nlevage
             if (hio_area_si_age(io_si, ipa2) .gt. tiny) then
@@ -3198,6 +3197,9 @@ end subroutine flush_hvars
                
                hio_understory_mortality_carbonflux_si(io_si) = hio_understory_mortality_carbonflux_si(io_si) + &
                      sites(s)%fmort_carbonflux_ustory
+
+               !JN  add mortality m4,5,6 to damage fluxes
+
                
                !
                ! for scag variables, also treat as happening in the newly-disurbed patch
@@ -3258,11 +3260,11 @@ end subroutine flush_hvars
 
          t_alive = 0.0_r8
          t_dead = 0.0_r8
-         do icdam = 1, 30
-            if(mod(icdam, 6) == 0) then
-               t_dead = t_dead + hio_damage_rate_si_cdcd(io_si,icdam)
+         do counter = 1, 30
+            if (mod(counter, ncrowndamage+1) == 0) then
+            t_dead = t_dead + hio_damage_rate_si_cdcd(io_si,counter)
             else
-               t_alive = t_alive + hio_damage_rate_si_cdcd(io_si,icdam)
+               t_alive = t_alive + hio_damage_rate_si_cdcd(io_si,counter)
             end if
          end do
          

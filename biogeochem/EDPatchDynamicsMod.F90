@@ -1421,6 +1421,8 @@ contains
 
                 end if ! end if canopy damage is on
 
+            
+                
                 ! Put new undamaged cohorts in the correct place in the linked list
                 if (nc%n > 0.0_r8) then   
                    storebigcohort   =>  new_patch%tallest
@@ -1507,10 +1509,12 @@ contains
 
        enddo ! currentPatch patch loop.
 
-       !write(fates_log(),*) 'Site level pre damage live stock : ', live_stock_pre
-       !write(fates_log(),*) 'Site level post damage live stock: ', live_stock_post 
-       write(fates_log(),*) 'patch damage_rate : ', sum(currentSite%damage_rate(:,:))
-       write(fates_log(),*) 'patch total plants: ', nplant_counter
+      ! write(fates_log(),'(a/,5(F12.6,1x))') 'JN spawn patches damage rate : ', currentSite%damage_rate 
+
+       !write(fates_log(),*) 'JN Site level pre damage live stock : ', live_stock_pre
+       !write(fates_log(),*) 'JN Site level post damage live stock: ', live_stock_post 
+      ! write(fates_log(),*) 'JN patch damage_rate : ', sum(currentSite%damage_rate(:,:))
+      ! write(fates_log(),*) 'JN patch total plants: ', nplant_counter
        
       !*************************/
       !**  INSERT NEW PATCH(ES) INTO LINKED LIST    
