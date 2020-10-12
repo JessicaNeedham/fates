@@ -772,6 +772,10 @@ module EDTypesMod
      real(r8), allocatable :: damage_rate(:,:)               ! number of individuals moving into a damage class
      real(r8), allocatable :: recovery_cflux(:,:) ! carbon flux recovering from each damage class each timestep
      real(r8), allocatable :: recovery_rate(:,:)       ! number of individuals recovering into a damage class
+     real(r8), allocatable :: imort_rate_damage(:)     ! number of individuals per damage class that die from impact mortality
+     real(r8), allocatable :: term_nindivs_damage(:) ! number of individuals per damage class that die from termination mortality - understory
+     real(r8), allocatable :: imort_cflux_damage(:)         ! carbon flux from impact mortality by damage class
+     real(r8), allocatable :: term_cflux_damage(:)          ! carbon flux from termination mortality by damage class
 
      
      ! Canopy Spread

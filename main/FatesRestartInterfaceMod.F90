@@ -159,6 +159,8 @@ module FatesRestartInterfaceMod
   integer :: ir_fmortrate_cano_siscpf
   integer :: ir_fmortrate_usto_siscpf
   integer :: ir_imortrate_siscpf
+  integer :: ir_imortrate_sicdam
+  integer :: ir_termnindiv_sicdam
   integer :: ir_fmortrate_crown_siscpf
   integer :: ir_fmortrate_cambi_siscpf
   integer :: ir_termnindiv_cano_siscpf
@@ -175,6 +177,8 @@ module FatesRestartInterfaceMod
   integer :: ir_democflux_si
   integer :: ir_promcflux_si
   integer :: ir_imortcflux_si
+  integer :: ir_imortcflux_sicdam
+  integer :: ir_termcflux_sicdam
   integer :: ir_fmortcflux_cano_si
   integer :: ir_fmortcflux_usto_si
   integer :: ir_cwdagin_flxdg
@@ -1041,6 +1045,16 @@ contains
          units='indiv/ha/year', flushval = flushzero, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_imortrate_siscpf)
 
+    call this%set_restart_var(vname='fates_imortrate_dam', vtype=cohort_r8, &
+         long_name='fates diagnostics on impact mortality by damage class', &
+         units='indiv/ha/year', flushval = flushzero, &
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_imortrate_sicdam)
+
+    call this%set_restart_var(vname='fates_termn_dam', vtype=cohort_r8, &
+         long_name='fates diagnostics on termination mortality by damage class', &
+         units='indiv/ha/year', flushval = flushzero, &
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_termnindiv_sicdam)
+    
     call this%set_restart_var(vname='fates_fmortrate_crown', vtype=cohort_r8, &
          long_name='fates diagnostics on crown fire mortality', &
          units='indiv/ha/year', flushval = flushzero, &
@@ -1100,7 +1114,17 @@ contains
          long_name='biomass of indivs killed due to impact mort', &
          units='kgC/ha/day', flushval = flushzero, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_imortcflux_si)
- 
+
+    call this%set_restart_var(vname='fates_imortcflux_dam', vtype=cohort_r8, &
+         long_name='biomass of indivs killed due to impact mort by damage class', &
+         units='kgC/ha/day', flushval = flushzero, &
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_imortcflux_sicdam)
+
+    call this%set_restart_var(vname='fates_termcflux_dam', vtype=cohort_r8, &
+         long_name='biomass of indivs killed due to termination  mort by damage class', &
+         units='kgC/ha/day', flushval = flushzero, &
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_termcflux_sicdam)
+    
    call this%set_restart_var(vname='fates_fmortcflux_canopy', vtype=site_r8, &
          long_name='fates diagnostic biomass of canopy fire', &
          units='gC/m2/sec', flushval = flushzero, &
@@ -1453,6 +1477,7 @@ contains
    use EDTypesMod, only : maxSWb
    use EDTypesMod, only : numWaterMem
    use EDTypesMod, only : num_vegtemp_mem
+   use FatesInterfaceTypesMod, only : ncrowndamage
 
     ! Arguments
     class(fates_restart_interface_type)             :: this
@@ -1490,6 +1515,7 @@ contains
     integer  :: io_idx_si_cdsc ! each damage-class x size class within site
     integer  :: io_idx_si_cdpf ! each damage x size x pft class within site
     integer  :: io_idx_si_cdcd ! each damage x damage within site (plus mortality) 
+    integer  :: io_idx_si_cdam ! each damage class within site
     integer  :: io_idx_si_cwd  ! each site-cwd index
     integer  :: io_idx_si_pft  ! each site-pft index
     integer  :: io_idx_si_vtmem ! indices for veg-temp memory at site
@@ -1586,6 +1612,10 @@ contains
            rio_fmortrate_cano_siscpf   => this%rvars(ir_fmortrate_cano_siscpf)%r81d, &
            rio_fmortrate_usto_siscpf   => this%rvars(ir_fmortrate_usto_siscpf)%r81d, &
            rio_imortrate_siscpf        => this%rvars(ir_imortrate_siscpf)%r81d, &
+           rio_imortrate_sicdam        => this%rvars(ir_imortrate_sicdam)%r81d, &
+           rio_imortcflux_sicdam       => this%rvars(ir_imortcflux_sicdam)%r81d, &
+           rio_termcflux_sicdam        => this%rvars(ir_termcflux_sicdam)%r81d, &
+           rio_termnindiv_sicdam       => this%rvars(ir_termnindiv_sicdam)%r81d, &
            rio_fmortrate_crown_siscpf  => this%rvars(ir_fmortrate_crown_siscpf)%r81d, &
            rio_fmortrate_cambi_siscpf  => this%rvars(ir_fmortrate_cambi_siscpf)%r81d, &
            rio_termnindiv_cano_siscpf  => this%rvars(ir_termnindiv_cano_siscpf)%r81d, &
@@ -1637,6 +1667,7 @@ contains
           io_idx_si_capf = io_idx_co_1st
           io_idx_si_cacls= io_idx_co_1st
           io_idx_si_cdcd = io_idx_co_1st
+          io_idx_si_cdam = io_idx_co_1st
           
           ! recruitment rate
           do i_pft = 1,numpft
@@ -1950,6 +1981,10 @@ contains
                 io_idx_si_cdcd = io_idx_si_cdcd + 1
            
              end do
+             rio_imortrate_sicdam(io_idx_si_cdam) = sites(s)%imort_rate_damage(i_cdam)
+             rio_termnindiv_sicdam(io_idx_si_cdam) = sites(s)%term_nindivs_damage(i_cdam)
+             rio_imortcflux_sicdam(io_idx_si_cdam) = sites(s)%imort_cflux_damage(i_cdam)
+             rio_termcflux_sicdam(io_idx_si_cdam) = sites(s)%term_cflux_damage(i_cdam)
           end do
           
           
@@ -2281,6 +2316,7 @@ contains
      integer  :: io_idx_si_cdcd ! each damage x damage class within site + mortality
      integer  :: io_idx_si_cwd
      integer  :: io_idx_si_pft
+     integer  :: io_idx_si_cdam  ! damage class 
 
      ! Some counters (for checking mostly)
      integer  :: totalcohorts   ! total cohort count on this thread (diagnostic)
@@ -2296,6 +2332,9 @@ contains
      integer  :: i_pft            ! loop counter for pft
      integer  :: i_scls           ! loop counter for size-clas
      integer  :: i_cacls          ! loop counter for cohort age class
+     integer  :: i_cdam           ! loop counter for damage class
+     integer  :: icdj             ! loop counter for damage class
+     integer  :: icdi             ! loop counter for damage class 
 
      associate( rio_npatch_si         => this%rvars(ir_npatch_si)%int1d, &
           rio_cd_status_si            => this%rvars(ir_cd_status_si)%int1d, &
@@ -2373,6 +2412,10 @@ contains
           rio_damage_rate_sicd        => this%rvars(ir_damage_rate_sicd)%r81d, & 
           rio_recovery_cflux_sicd     => this%rvars(ir_recovery_cflux_sicd)%r81d, &
           rio_recovery_rate_sicd      => this%rvars(ir_recovery_rate_sicd)%r81d, & 
+          rio_imortrate_sicdam        => this%rvars(ir_imortrate_sicdam)%r81d, &
+          rio_termnindiv_sicdam       => this%rvars(ir_termnindiv_sicdam)%r81d, &
+          rio_imortcflux_sicdam       => this%rvars(ir_imortcflux_sicdam)%r81d, &
+          rio_termcflux_sicdam        => this%rvars(ir_termcflux_sicdam)%r81d, &
           rio_termcflux_cano_si       => this%rvars(ir_termcflux_cano_si)%r81d, &
           rio_termcflux_usto_si       => this%rvars(ir_termcflux_usto_si)%r81d, &
           rio_democflux_si            => this%rvars(ir_democflux_si)%r81d, &
@@ -2402,6 +2445,7 @@ contains
           io_idx_si_capf = io_idx_co_1st
           io_idx_si_cacls= io_idx_co_1st
           io_idx_si_cdcd = io_idx_co_1st
+          io_idx_si_cdam = io_idx_co_1st
           
           ! read seed_bank info(site-level, but PFT-resolved)
           do i_pft = 1,numpft 
@@ -2733,6 +2777,27 @@ contains
                 
              io_idx_si_sc = io_idx_si_sc + 1
           end do
+
+          do i_cdam = 1, ncrowndamage
+             sites(s)%imort_rate_damage(i_cdam)   = rio_imortrate_sicdam(io_idx_si_cdam)
+             sites(s)%term_nindivs_damage(i_cdam) = rio_termnindiv_sicdam(io_idx_si_cdam)
+             sites(s)%imort_cflux_damage(i_cdam) = rio_imortcflux_sicdam(io_idx_si_cdam)
+             sites(s)%term_cflux_damage(i_cdam) = rio_termcflux_sicdam(io_idx_si_cdam)
+          end do
+
+           ! JN - this only copies live portions of transitions - but that's ok because the mortality
+          ! bit only needs to be added for history outputs
+          do icdi = 1,ncrowndamage
+             do icdj = 1,ncrowndamage+1
+                     sites(s)%damage_cflux(icdi,icdj) = rio_damage_cflux_sicd(io_idx_si_cdcd) 
+                     sites(s)%damage_rate(icdi,icdj) =  rio_damage_rate_sicd(io_idx_si_cdcd) 
+                     sites(s)%recovery_cflux(icdi,icdj) = rio_recovery_cflux_sicd(io_idx_si_cdcd)
+                     sites(s)%recovery_rate(icdi,icdj) = rio_recovery_rate_sicd(io_idx_si_cdcd) 
+                 io_idx_si_cdcd = io_idx_si_cdcd + 1
+              end do
+          end do
+         
+          
 
           sites(s)%term_carbonflux_canopy   = rio_termcflux_cano_si(io_idx_si)
           sites(s)%term_carbonflux_ustory   = rio_termcflux_usto_si(io_idx_si)

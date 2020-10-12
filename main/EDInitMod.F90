@@ -39,6 +39,8 @@ module EDInitMod
   use FatesInterfaceTypesMod         , only : hlm_use_planthydro
   use FatesInterfaceTypesMod         , only : hlm_use_inventory_init
   use FatesInterfaceTypesMod         , only : hlm_use_fixed_biogeog
+  use FatesInterfaceTypesMod         , only : hlm_use_canopy_damage
+  use FatesInterfaceTypesMod         , only : hlm_use_understory_damage
   use FatesInterfaceTypesMod         , only : numpft
   use FatesInterfaceTypesMod         , only : nleafage
   use FatesInterfaceTypesMod         , only : nlevsclass
@@ -110,10 +112,6 @@ contains
     allocate(site_in%term_nindivs_ustory(1:nlevsclass,1:numpft))
     allocate(site_in%demotion_rate(1:nlevsclass))
     allocate(site_in%promotion_rate(1:nlevsclass))
-    allocate(site_in%damage_cflux(1:ncrowndamage, 1:ncrowndamage+1))
-    allocate(site_in%damage_rate(1:ncrowndamage, 1:ncrowndamage+1))
-    allocate(site_in%recovery_cflux(1:ncrowndamage, 1:ncrowndamage+1))
-    allocate(site_in%recovery_rate(1:ncrowndamage, 1:ncrowndamage+1))
     allocate(site_in%imort_rate(1:nlevsclass,1:numpft))
     allocate(site_in%fmort_rate_canopy(1:nlevsclass,1:numpft))
     allocate(site_in%fmort_rate_ustory(1:nlevsclass,1:numpft))
@@ -122,7 +120,29 @@ contains
     allocate(site_in%growthflux_fusion(1:nlevsclass,1:numpft))
     allocate(site_in%mass_balance(1:num_elements))
     allocate(site_in%flux_diags(1:num_elements))
-   
+
+    if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then 
+       allocate(site_in%damage_cflux(1:ncrowndamage, 1:ncrowndamage+1))
+       allocate(site_in%damage_rate(1:ncrowndamage, 1:ncrowndamage+1))
+       allocate(site_in%recovery_cflux(1:ncrowndamage, 1:ncrowndamage+1))
+       allocate(site_in%recovery_rate(1:ncrowndamage, 1:ncrowndamage+1))
+       allocate(site_in%term_nindivs_damage(1:ncrowndamage))
+       allocate(site_in%imort_rate_damage(1:ncrowndamage))
+       allocate(site_in%imort_cflux_damage(1:ncrowndamage))
+       allocate(site_in%term_cflux_damage(1:ncrowndamage))
+    else
+       allocate(site_in%damage_cflux(1, 1))
+       allocate(site_in%damage_rate(1, 1))
+       allocate(site_in%recovery_cflux(1, 1))
+       allocate(site_in%recovery_rate(1, 1))
+       allocate(site_in%term_nindivs_damage(1))
+       allocate(site_in%imort_rate_damage(1))
+       allocate(site_in%imort_cflux_damage(1))
+       allocate(site_in%term_cflux_damage(1))
+    end if
+
+    
+    
     site_in%nlevsoil   = bc_in%nlevsoil
     allocate(site_in%rootfrac_scr(site_in%nlevsoil))
     allocate(site_in%zi_soil(0:site_in%nlevsoil))
@@ -225,6 +245,10 @@ contains
     site_in%damage_rate(:,:) = 0._r8
     site_in%recovery_cflux(:,:) = 0._r8
     site_in%recovery_rate(:,:) = 0._r8
+    site_in%imort_rate_damage(:) = 0._r8
+    site_in%term_nindivs_damage(:) = 0._r8
+    site_in%imort_cflux_damage(:) = 0._r8
+    site_in%term_cflux_damage(:) = 0._r8
     
     ! Resources management (logging/harvesting, etc)
     site_in%resources_management%trunk_product_site  = 0.0_r8

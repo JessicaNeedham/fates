@@ -1,4 +1,4 @@
-module EDCohortDynamicsMod
+Module EDCohortDynamicsMod
   !
   ! !DESCRIPTION:
   ! Cohort stuctures in ED. 
@@ -647,6 +647,8 @@ contains
     ! terminates cohorts when they get too small      
     !
     ! !USES:
+    use FatesInterfaceTypesMod   , only : hlm_use_canopy_damage
+    use FatesInterfaceTypesMod   , only : hlm_use_understory_damage
     
     !
     ! !ARGUMENTS    
@@ -754,15 +756,23 @@ contains
           if(levcan==ican_upper) then
              currentSite%term_nindivs_canopy(currentCohort%size_class,currentCohort%pft) = &
                    currentSite%term_nindivs_canopy(currentCohort%size_class,currentCohort%pft) + currentCohort%n
- 
+           
              currentSite%term_carbonflux_canopy = currentSite%term_carbonflux_canopy + &
                    currentCohort%n * (struct_c+sapw_c+leaf_c+fnrt_c+store_c+repro_c)
           else
              currentSite%term_nindivs_ustory(currentCohort%size_class,currentCohort%pft) = &
                    currentSite%term_nindivs_ustory(currentCohort%size_class,currentCohort%pft) + currentCohort%n
- 
+         
              currentSite%term_carbonflux_ustory = currentSite%term_carbonflux_ustory + &
                    currentCohort%n * (struct_c+sapw_c+leaf_c+fnrt_c+store_c+repro_c)
+          end if
+
+          if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+             currentSite%term_nindivs_damage(currentCohort%crowndamage) = &
+                  currentSite%term_nindivs_damage(currentCohort%crowndamage) + currentCohort%n
+             currentSite%term_cflux_damage(currentCohort%crowndamage) = &
+                  currentSite%term_cflux_damage(currentCohort%crowndamage) + &
+                  currentCohort%n * (struct_c+sapw_c+leaf_c+fnrt_c+store_c+repro_c)
           end if
 
           ! put the litter from the terminated cohorts 
@@ -799,7 +809,7 @@ contains
        endif
        currentCohort => tallerCohort
     enddo
-
+    
   end subroutine terminate_cohorts
 
   ! =====================================================================================
@@ -2055,25 +2065,23 @@ contains
     ! locals                                                                                                                                                  
     real(r8) :: leaf_c
     real(r8) :: target_leaf_c
-    real(r8) :: pre_recovery
+    integer  :: pre_recovery
     real(r8) :: sapw_c
     real(r8) :: struct_c
     real(r8) :: fnrt_c
     real(r8) :: store_c
     real(r8) ::  repro_c
 
-
+    pre_recovery = currentCohort%crowndamage
+   
+    
     leaf_c = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
     call bleaf(currentCohort%dbh, currentCohort%pft,currentCohort%canopy_trim,&
          target_leaf_c)
 
-    pre_recovery = currentCohort%crowndamage
     call get_crown_damage(leaf_c, target_leaf_c, currentCohort%crowndamage)
     call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread,currentCohort%pft, &
          currentCohort%crowndamage, currentCohort%c_area)
-
-    ! Keep track of recovery rate and carbon flux                                                                                                             
-!    if(pre_recovery /= currentCohort%crowndamage) then   ! JN also useful to know how many stayed the same?
 
        sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
        struct_c = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
@@ -2085,12 +2093,11 @@ contains
        currentSite%recovery_rate(pre_recovery, currentCohort%crowndamage) &
             = currentSite%recovery_rate(pre_recovery, currentCohort%crowndamage) + &
             currentCohort%n
+
        currentSite%recovery_cflux(pre_recovery, currentCohort%crowndamage) &
-            = currentSite%recovery_cflux(pre_recovery, currentCohort%crowndamage) + &
+            = currentSite%recovery_cflux(pre_recovery,currentCohort%crowndamage) + &
             (leaf_c + sapw_c + struct_c + store_c + fnrt_c + repro_c) * currentCohort%n
- !   end if
-
-
+ 
     return
   end subroutine damage_recovery
 

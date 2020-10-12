@@ -324,10 +324,12 @@ contains
 
     real(r8) :: target_leaf_c
     real(r8) :: frac_site_primary
+    real(r8) :: counter_n 
 
     !-----------------------------------------------------------------------
     leaf_loss = 0.0_r8
     leaf_loss_prt = 0.0_r8
+    counter_n = 0._r8
 
     currentSite%recovery_cflux(:,:) = 0._r8
     currentSite%recovery_rate(:,:) = 0._r8
@@ -416,16 +418,7 @@ contains
           end if
 
           call PRTMaintTurnover(currentCohort%prt,ft,is_drought)
-
-          
-          if(hlm_use_canopy_damage .eq. itrue .or. &
-               hlm_use_understory_damage .eq. itrue) then
-             
-             call damage_recovery(currentCohort, currentSite)
-             
-          end if  ! end if damage is on
-
-              
+    
           ! If the current diameter of a plant is somehow less than what is consistent
           ! with what is allometrically consistent with the stuctural biomass, then
           ! correct the dbh to match.
@@ -439,9 +432,8 @@ contains
           
           if(hlm_use_canopy_damage .eq. itrue .or. &
                hlm_use_understory_damage .eq. itrue) then
-
              call damage_recovery(currentCohort, currentSite)
-                         
+             counter_n = counter_n + currentCohort%n
           end if          
 
           ! JN Tempory code to increase damage with size - just to test
@@ -507,6 +499,11 @@ contains
        currentPatch => currentPatch%older
    end do
 
+  
+   write(fates_log(),*) 'recovery cflux : ', sum(currentSite%recovery_cflux(:,:))
+   write(fates_log(),*) 'ed main mod N  : ', counter_n
+   write(fates_log(),*) 'recovery N     : ', sum(currentSite%recovery_rate(:,:))
+   
     ! When plants die, the water goes with them.  This effects
     ! the water balance. 
 

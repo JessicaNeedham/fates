@@ -532,13 +532,14 @@ contains
     logical  :: found_youngest_primary       ! logical for finding the first primary forest patch
 
     real(r8) :: nplant_counter
-    
+    real(r8) :: nplant_counter_II
     !--------------------------------------------------------------------- 
    
     storesmallcohort => null() ! storage of the smallest cohort for insertion routine
     storebigcohort   => null() ! storage of the largest cohort for insertion routine 
 
     nplant_counter = 0._r8
+    nplant_counter_II = 0._r8
     ! calculate area of disturbed land, in this timestep, by summing contributions from each existing patch. 
     currentPatch => currentSite%youngest_patch
 
@@ -890,11 +891,23 @@ contains
                               currentSite%imort_rate(currentCohort%size_class, currentCohort%pft) + &
                               nc%n * ED_val_understorey_death / hlm_freq_day
 
+                         if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+                            currentSite%imort_rate_damage(currentCohort%crowndamage) = &
+                                 currentSite%imort_rate_damage(currentCohort%crowndamage) + &
+                                 nc%n * ED_val_understorey_death / hlm_freq_day
+                         end if
 
                          currentSite%imort_carbonflux = currentSite%imort_carbonflux + &
                               (nc%n * ED_val_understorey_death / hlm_freq_day ) * &
                               total_c * g_per_kg * days_per_sec * years_per_day * ha_per_m2
 
+                         if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue ) then
+                            currentSite%imort_cflux_damage(currentCohort%crowndamage) = &
+                                 currentSite%imort_cflux_damage(currentCohort%crowndamage) + &
+                                 (nc%n * ED_val_understorey_death / hlm_freq_day ) * &
+                                 total_c * g_per_kg * days_per_sec * years_per_day * ha_per_m2
+                         end if
+                         
                          ! Step 2:  Apply survivor ship function based on the understory death fraction
                          ! remaining of understory plants of those that are knocked over 
                          ! by the overstorey trees dying...  
@@ -1104,11 +1117,25 @@ contains
                               nc%n * currentPatch%fract_ldist_not_harvested * &
                               logging_coll_under_frac / hlm_freq_day
 
+                         if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then 
+                            currentSite%imort_rate_damage(currentCohort%crowndamage) = &
+                                 currentSite%imort_rate_damage(currentCohort%crowndamage) + &
+                                 nc%n * currentPatch%fract_ldist_not_harvested * &
+                                 logging_coll_under_frac / hlm_freq_day
+                         end if
+
                          currentSite%imort_carbonflux = currentSite%imort_carbonflux + &
                               (nc%n * currentPatch%fract_ldist_not_harvested * &
                               logging_coll_under_frac/ hlm_freq_day ) * &
                               total_c * g_per_kg * days_per_sec * years_per_day * ha_per_m2
 
+                         if ( hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue ) then
+                            currentSite%imort_cflux_damage(nc%crowndamage) = &
+                                 currentSite%imort_cflux_damage(nc%crowndamage) + &
+                                 (nc%n * currentPatch%fract_ldist_not_harvested * &
+                                 logging_coll_under_frac/ hlm_freq_day ) * &
+                                 total_c * g_per_kg * days_per_sec * years_per_day * ha_per_m2
+                          end if
 
                          ! Step 2:  Apply survivor ship function based on the understory death fraction
 
@@ -1323,10 +1350,6 @@ contains
                             ! new number densities - we just do damaged cohort here -
                             ! undamaged at the end of the cohort loop once we know how many damaged to
                             ! subtract
-
-                            if (cd > 5) then
-                               write(fates_log(),*) 'urgh - cd : ', cd
-                            end if
                             
                             nc_canopy_d%n = cd_n
                             nc_canopy_d%crowndamage = cd
@@ -1359,12 +1382,12 @@ contains
                             struct_loss_prt = struct_loss_prt + (struct_m_pre - struct_m_post)* &
                                  nc_canopy_d%n
 
-                            store_c = currentCohort%prt%GetState(store_organ,all_carbon_elements)
-                            fnrt_c = currentCohort%prt%GetState(fnrt_organ,all_carbon_elements)
-                            
+                            store_c  = nc_canopy_d%prt%GetState(store_organ, all_carbon_elements)
+                            fnrt_c  = nc_canopy_d%prt%GetState(fnrt_organ, all_carbon_elements)
+
                             currentSite%damage_cflux(currentCohort%crowndamage, cd) = &
                                  currentSite%damage_cflux(currentCohort%crowndamage, cd) + &
-                                 (leaf_m_post+sapw_m_post+struct_m_post+store_c+fnrt_c) * cd_n
+                                 (leaf_m_post + sapw_m_post + struct_m_post + fnrt_c + store_c) * cd_n
 
                             currentSite%damage_rate(currentCohort%crowndamage, cd) = &
                                  currentSite%damage_rate(currentCohort%crowndamage, cd) + cd_n
@@ -1413,13 +1436,12 @@ contains
 
                    currentSite%damage_cflux(currentCohort%crowndamage, currentCohort%crowndamage) = &
                         currentSite%damage_cflux(currentCohort%crowndamage, currentCohort%crowndamage) + &
-                        (leaf_m_post+sapw_m_post+struct_m_post+store_c+fnrt_c) * currentCohort%n
+                        (sapw_c + struct_c + leaf_c + fnrt_c + store_c + repro_c) * currentCohort%n
 
                    currentSite%damage_rate(currentCohort%crowndamage, currentCohort%crowndamage) = &
                         currentSite%damage_rate(currentCohort%crowndamage, currentCohort%crowndamage) + currentCohort%n
 
-
-                end if ! end if canopy damage is on
+                 end if ! end if canopy damage is on
 
             
                 
@@ -1474,6 +1496,8 @@ contains
                      currentCohort%prt%GetState(repro_organ, 1) ) &
                      * currentCohort%n
                 currentCohort => currentCohort%shorter
+
+                
              end do
 
           !update area of donor patch
@@ -1504,8 +1528,16 @@ contains
           currentPatch%disturbance_rates = 0._r8
           currentPatch%fract_ldist_not_harvested = 0._r8
           
-        
+
+          currentCohort => currentPatch%tallest
+          do while(associated(currentCohort))
+             nplant_counter_II = nplant_counter_II + currentCohort%n
+             currentCohort => currentCohort%shorter
+          enddo
+
+
           currentPatch => currentPatch%younger
+
 
        enddo ! currentPatch patch loop.
 
@@ -1514,7 +1546,12 @@ contains
        !write(fates_log(),*) 'JN Site level pre damage live stock : ', live_stock_pre
        !write(fates_log(),*) 'JN Site level post damage live stock: ', live_stock_post 
       ! write(fates_log(),*) 'JN patch damage_rate : ', sum(currentSite%damage_rate(:,:))
-      ! write(fates_log(),*) 'JN patch total plants: ', nplant_counter
+       ! write(fates_log(),*) 'JN patch total plants: ', nplant_counter
+
+       write(fates_log(),*) 'patch dyn  N : ', nplant_counter
+       write(fates_log(),*) 'patch dyn  N2: ', nplant_counter_II
+       write(fates_log(),*) 'damage N     : ', sum(currentSite%damage_rate(:,:))
+       write(fates_log(),*) 'damage cflux : ', sum(currentSite%damage_cflux(:,:))
        
       !*************************/
       !**  INSERT NEW PATCH(ES) INTO LINKED LIST    

@@ -55,6 +55,8 @@ Module FatesHistoryInterfaceMod
   use shr_log_mod              , only : errMsg => shr_log_errMsg
   use shr_infnan_mod           , only : isnan => shr_infnan_isnan
   use FatesConstantsMod        , only : g_per_kg
+  use FatesConstantsMod        , only : kg_per_g
+  use FatesConstantsMod        , only : m2_per_ha
   use FatesConstantsMod        , only : ha_per_m2
   use FatesConstantsMod        , only : days_per_sec
   use FatesConstantsMod        , only : sec_per_day
@@ -1868,7 +1870,7 @@ end subroutine flush_hvars
     integer  :: iscagpft     ! size-class x age x pft index
     integer  :: iagepft      ! age x pft index
     integer  :: ican, ileaf, cnlf_indx  ! iterators for leaf and canopy level
-    integer  :: icdpf, icdsc, icdcd, icdi, icdj, icdam      ! iterators for the crown damage level
+    integer  :: icdpf, icdsc, icdcd, icdi, icdj, icdam, imcdam      ! iterators for the crown damage level
     integer  :: cdpf, cdsc
     integer  :: counter 
     integer  :: height_bin_max, height_bin_min   ! which height bin a given cohort's canopy is in
@@ -1912,6 +1914,8 @@ end subroutine flush_hvars
 
     real(r8) :: t_alive
     real(r8) :: t_dead
+    real(r8) :: r_alive
+    real(r8) :: r_dead
 
     type(ed_patch_type),pointer  :: cpatch
     type(ed_cohort_type),pointer :: ccohort
@@ -2244,16 +2248,16 @@ end subroutine flush_hvars
                   do icdj = 1,ncrowndamage+1
 
                      hio_damage_cflux_si_cdcd(io_si,icdcd) = &
-                          sites(s)%damage_cflux(icdi,icdj) ! kg/ha/day
+                          sites(s)%damage_cflux(icdi,icdj) * g_per_kg * ha_per_m2 * days_per_sec
 
                      hio_damage_rate_si_cdcd(io_si,icdcd) = &
-                          sites(s)%damage_rate(icdi,icdj)  ! N/ha/year
+                          sites(s)%damage_rate(icdi,icdj)  
 
                      hio_recovery_cflux_si_cdcd(io_si,icdcd) = &
-                          sites(s)%recovery_cflux(icdi,icdj) ! kg/ha/day
+                          sites(s)%recovery_cflux(icdi,icdj) * g_per_kg * ha_per_m2 * days_per_sec
 
                      hio_recovery_rate_si_cdcd(io_si,icdcd) =  &
-                          sites(s)%recovery_rate(icdi,icdj) ! N/ha/year 
+                          sites(s)%recovery_rate(icdi,icdj) 
 
                      icdcd = icdcd + 1
                   end do
@@ -2649,7 +2653,8 @@ end subroutine flush_hvars
                             (ccohort%bmort + ccohort%hmort + ccohort%cmort + &
                             ccohort%frmort + ccohort%smort + ccohort%asmort) * ccohort%n + &
                             (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * &
-                            ccohort%n * sec_per_day * days_per_year
+                            ccohort%n * sec_per_day * days_per_year 
+                           
                        
                        ! crown damage by size
                        hio_nplant_si_cdsc(io_si, cdsc) = hio_nplant_si_cdsc(io_si, cdsc) + ccohort%n
@@ -2667,25 +2672,25 @@ end subroutine flush_hvars
                             (ccohort%bmort + ccohort%hmort + ccohort%cmort + &
                             ccohort%frmort + ccohort%smort + ccohort%asmort) * ccohort%n + &
                             (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * &
-                            ccohort%n * sec_per_day * days_per_year
-                      
+                            ccohort%n * sec_per_day * days_per_year 
+                           
                        hio_recovery_rate_si_cdcd(io_si,icdam) =  hio_recovery_rate_si_cdcd(io_si,icdam) + &
                             (ccohort%bmort + ccohort%hmort + ccohort%cmort + &
                             ccohort%frmort + ccohort%smort + ccohort%asmort) * ccohort%n + &
                             (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * &
-                            ccohort%n * sec_per_day * days_per_year
-                      
+                            ccohort%n * sec_per_day * days_per_year 
+                           
                        hio_damage_cflux_si_cdcd(io_si,icdam) = hio_damage_cflux_si_cdcd(io_si,icdam) + &
                             (ccohort%bmort + ccohort%hmort + ccohort%cmort + & 
                             ccohort%frmort + ccohort%smort + ccohort%asmort) * &
-                            total_c * ccohort%n * g_per_kg * days_per_sec * years_per_day * ha_per_m2 + &
+                            total_c * ccohort%n  * g_per_kg * days_per_sec * years_per_day * ha_per_m2 + &
                             (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * total_c * &
                             ccohort%n * g_per_kg * ha_per_m2
 
                         hio_recovery_cflux_si_cdcd(io_si,icdam) = hio_recovery_cflux_si_cdcd(io_si,icdam) + &
                             (ccohort%bmort + ccohort%hmort + ccohort%cmort + & 
                             ccohort%frmort + ccohort%smort + ccohort%asmort) * &
-                            total_c * ccohort%n * g_per_kg * days_per_sec * years_per_day * ha_per_m2 + &
+                            total_c * ccohort%n  * g_per_kg * days_per_sec * years_per_day * ha_per_m2 + &
                             (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * total_c * &
                             ccohort%n * g_per_kg * ha_per_m2
  
@@ -3197,10 +3202,7 @@ end subroutine flush_hvars
                
                hio_understory_mortality_carbonflux_si(io_si) = hio_understory_mortality_carbonflux_si(io_si) + &
                      sites(s)%fmort_carbonflux_ustory
-
-               !JN  add mortality m4,5,6 to damage fluxes
-
-               
+  
                !
                ! for scag variables, also treat as happening in the newly-disurbed patch
 
@@ -3215,10 +3217,37 @@ end subroutine flush_hvars
             end do
          end do
          !
-         
          ! treat carbon flux from imort the same way
          hio_understory_mortality_carbonflux_si(io_si) = hio_understory_mortality_carbonflux_si(io_si) + &
               sites(s)%imort_carbonflux
+
+         ! impact and termination mortality to damage
+         do icdam = 1, ncrowndamage
+            hio_mortality_si_cdam(io_si, icdam) = hio_mortality_si_cdam(io_si, icdam) + &
+                 (sites(s)%term_nindivs_damage(icdam) * days_per_year) + &
+                 sites(s)%imort_rate_damage(icdam)
+
+            imcdam = icdam * (ncrowndamage + 1)
+            hio_damage_rate_si_cdcd(io_si, imcdam) = hio_damage_rate_si_cdcd(io_si, imcdam) + &
+                 (sites(s)%term_nindivs_damage(icdam) * days_per_year) + &
+                 sites(s)%imort_rate_damage(icdam)
+
+            hio_recovery_rate_si_cdcd(io_si, imcdam) = hio_recovery_rate_si_cdcd(io_si, imcdam) + &
+                 (sites(s)%term_nindivs_damage(icdam) * days_per_year) + &
+                 sites(s)%imort_rate_damage(icdam)
+
+            hio_damage_cflux_si_cdcd(io_si, imcdam) = hio_damage_cflux_si_cdcd(io_si, imcdam) + &
+                 sites(s)%imort_cflux_damage(icdam) + &
+                 sites(s)%term_cflux_damage(icdam) * g_per_kg * days_per_sec * ha_per_m2
+            hio_recovery_cflux_si_cdcd(io_si, imcdam) = hio_recovery_cflux_si_cdcd(io_si, imcdam) + &
+                 sites(s)%imort_cflux_damage(icdam) + & 
+                 sites(s)%term_cflux_damage(icdam) * g_per_kg * days_per_sec * ha_per_m2
+            
+         end do
+         
+         
+
+
          !
          sites(s)%term_nindivs_canopy(:,:) = 0._r8
          sites(s)%term_nindivs_ustory(:,:) = 0._r8
@@ -3232,12 +3261,21 @@ end subroutine flush_hvars
          sites(s)%fmort_rate_crown(:,:) = 0._r8
          sites(s)%growthflux_fusion(:,:) = 0._r8
 
+         sites(s)%imort_rate_damage(:) = 0._r8
+         sites(s)%term_nindivs_damage(:) = 0._r8
+         sites(s)%damage_rate(:,:) = 0._r8
+         sites(s)%damage_cflux(:,:) = 0._r8
+         sites(s)%recovery_rate(:,:) = 0._r8
+         sites(s)%recovery_cflux(:,:) = 0._r8
+         sites(s)%imort_cflux_damage(:) = 0._r8
+         sites(s)%term_cflux_damage(:) = 0._r8
+         
          ! pass the recruitment rate as a flux to the history, and then reset the recruitment buffer
          do i_pft = 1, numpft
             hio_recruitment_si_pft(io_si,i_pft) = sites(s)%recruitment_rate(i_pft) * days_per_year
          end do
          sites(s)%recruitment_rate(:) = 0._r8
-
+         
          ! summarize all of the mortality fluxes by PFT
          do i_pft = 1, numpft
             do i_scls = 1,nlevsclass
@@ -3257,27 +3295,6 @@ end subroutine flush_hvars
 
             end do
          end do
-
-         t_alive = 0.0_r8
-         t_dead = 0.0_r8
-         do counter = 1, 30
-            if (mod(counter, ncrowndamage+1) == 0) then
-            t_dead = t_dead + hio_damage_rate_si_cdcd(io_si,counter)
-            else
-               t_alive = t_alive + hio_damage_rate_si_cdcd(io_si,counter)
-            end if
-         end do
-         
-         
-
-         write(fates_log(),*) 'N by size           : ', sum(hio_nplant_si_scls(:,:))
-         write(fates_log(),*) 'N by damage         : ', sum(hio_nplant_si_cdam(:,:))
-         write(fates_log(),*) 'damage_rate alive   : ', t_alive
-         write(fates_log(),*) 'damage_rate dead    : ', t_dead
-         write(fates_log(),*) 'mortality sum by pft: ', sum(hio_mortality_si_pft(:,:))
-         write(fates_log(),*) 'mortality sum by damage: ', sum(hio_mortality_si_cdam(:,:))
-
-
          
          ! ------------------------------------------------------------------------------
          ! Some carbon only litter diagnostics (legacy)
@@ -3440,6 +3457,7 @@ end subroutine flush_hvars
          sites(s)%term_carbonflux_canopy = 0._r8
          sites(s)%term_carbonflux_ustory = 0._r8
          !
+         
 
          ! add the site-level disturbance-associated cwd and litter input fluxes to thir respective flux fields
 
@@ -3451,6 +3469,72 @@ end subroutine flush_hvars
                    flux_diags_c%cwd_bg_input(i_cwd) * g_per_kg
 
          end do
+
+
+
+         t_alive = 0.0_r8
+         t_dead = 0.0_r8
+         do counter = 1, 30
+            if (mod(counter, ncrowndamage+1) == 0) then
+            t_dead = t_dead + hio_damage_rate_si_cdcd(io_si,counter)
+            else
+               t_alive = t_alive + hio_damage_rate_si_cdcd(io_si,counter)
+            end if
+         end do
+
+         r_alive = 0.0_r8
+         r_dead = 0.0_r8
+         do counter = 1, 30
+            if (mod(counter, ncrowndamage+1) == 0) then
+            r_dead = r_dead + hio_recovery_rate_si_cdcd(io_si,counter)
+            else
+               r_alive = r_alive + hio_recovery_rate_si_cdcd(io_si,counter)
+            end if
+         end do
+         
+         
+
+         write(fates_log(),*) 'N by size           : ', sum(hio_nplant_si_scls(:,:))
+         write(fates_log(),*) 'N by damage         : ', sum(hio_nplant_si_cdam(:,:))
+         write(fates_log(),*) 'damage_rate alive   : ', t_alive
+         write(fates_log(),*) 'recovery rate alive : ', r_alive
+         write(fates_log(),*) 'damage_rate dead        : ', t_dead
+         write(fates_log(),*) 'mortality sum by pft    : ', sum(hio_mortality_si_pft(:,:))
+         write(fates_log(),*) 'mortality sum by damage : ', sum(hio_mortality_si_cdam(:,:))
+         write(fates_log(),*) 'recovery rate dead      : ', r_dead 
+         
+         t_alive = 0.0_r8
+         t_dead = 0.0_r8
+         do counter = 1, 30
+            if (mod(counter, ncrowndamage+1) == 0) then
+            t_dead = t_dead + hio_damage_cflux_si_cdcd(io_si,counter)
+            else
+               t_alive = t_alive + hio_damage_cflux_si_cdcd(io_si,counter)
+            end if
+         end do
+
+         
+         r_alive = 0.0_r8
+         r_dead = 0.0_r8
+         do counter = 1, 30
+            if (mod(counter, ncrowndamage+1) == 0) then
+            r_dead = r_dead + hio_recovery_cflux_si_cdcd(io_si,counter)
+            else
+               r_alive = r_alive + hio_recovery_cflux_si_cdcd(io_si,counter)
+            end if
+         end do
+        
+
+         
+         write(fates_log(),*) 'recovery_cflux alive           : ', r_alive
+         write(fates_log(),*) 'damage_cflux alive             : ', t_alive
+         write(fates_log(),*) 'carbon flux dead               : ', hio_canopy_mortality_carbonflux_si(io_si) +&
+              hio_understory_mortality_carbonflux_si(io_si)
+         write(fates_log(),*) 'damage_cflux dead              : ', t_dead
+         write(fates_log(),*) 'recovery_cflux dead            : ', r_dead
+
+
+
 
          ! and reset the disturbance-related field buffers
 
@@ -5845,7 +5929,7 @@ end subroutine flush_hvars
           avgflag='A', vtype=site_cdamage_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_nplant_canopy_si_cdam )
   
-    call this%set_history_var(vname='DAMAGE_CFLUX_CDCD', units = 'kg C / ha / year',         &
+    call this%set_history_var(vname='DAMAGE_CFLUX_CDCD', units = 'g C / m2 / sec',         &
           long='damage carbonflux between damage classes', use_default='inactive',   &
           avgflag='A', vtype=site_cdcd_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_damage_cflux_si_cdcd )
@@ -5855,7 +5939,7 @@ end subroutine flush_hvars
           avgflag='A', vtype=site_cdcd_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_damage_rate_si_cdcd )
 
-    call this%set_history_var(vname='RECOVERY_CFLUX_CDCD', units = 'kg C / ha / year',         &
+    call this%set_history_var(vname='RECOVERY_CFLUX_CDCD', units = 'g C / m2 / sec',         &
           long='recovery carbonflux between damage classes', use_default='inactive',   &
           avgflag='A', vtype=site_cdcd_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_recovery_cflux_si_cdcd )
