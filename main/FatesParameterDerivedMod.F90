@@ -155,7 +155,7 @@ contains
   
   subroutine InitDamageTransitions(this, ncrowndamage, numpft)
 
-    use FatesConstantsMod,      only : years_per_day
+    use FatesConstantsMod,      only : days_per_year
     use EDPftvarcon, only: EDPftvarcon_inst
 
 
@@ -200,14 +200,19 @@ contains
              end if
           end do
        end do
-
+       
+       ! The above is for background small damage - it results in gradual build up of damage
+       ! Below we account for catastrophic damage - which shifts trees to high damage classes
+       ! regardless of starting damage level
+       this%damage_transitions(1:ncrowndamage-2,ncrowndamage-1,ft) = 0.05/days_per_year
+       this%damage_transitions(1:ncrowndamage-1,ncrowndamage,ft)   = 0.025/days_per_year
+       
        do i = 1, ncrowndamage
           this%damage_transitions(i,:,ft) = this%damage_transitions(i,:,ft)/ &
                sum(this%damage_transitions(i,:,ft))
        end do
 
-       write(fates_log(),*) 'Transition matrix', this%damage_transitions
-
+       write(fates_log(),'(a/,5(F12.6,1x))') 'JN transition matrix : ', this%damage_transitions(:,:,ft)
     end do
 
     return
