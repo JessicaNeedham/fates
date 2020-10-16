@@ -1092,22 +1092,22 @@ contains
 
     call this%set_restart_var(vname='fates_damage_cflux', vtype=cohort_r8, &
          long_name='fates diagnostic rate of damage carbonflux', &
-         units='kg C/ha/year', flushval = flushzero, &
+         units='kgC/ha/day', flushval = flushzero, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_damage_cflux_sicd)
 
     call this%set_restart_var(vname='fates_damage_rate', vtype=cohort_r8, &
          long_name='fates diagnostic rate of damage transitions', &
-         units='indiv / ha/ year', flushval = flushzero, &
+         units='indiv / ha/ day', flushval = flushzero, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_damage_rate_sicd)
 
     call this%set_restart_var(vname='fates_recovery_cflux', vtype=cohort_r8, &
          long_name='fates diagnostic rate of damage recovery carbonflux', &
-         units='kg C/ha/year', flushval = flushzero, &
+         units='kg C/ha/day', flushval = flushzero, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_recovery_cflux_sicd)
 
     call this%set_restart_var(vname='fates_recovery_rate', vtype=cohort_r8, &
          long_name='fates diagnostic rate of damage transitions', &
-         units='indiv / ha/ year', flushval = flushzero, &
+         units='indiv / ha/ day', flushval = flushzero, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_recovery_rate_sicd)
     
     call this%set_restart_var(vname='fates_imortcflux', vtype=site_r8, &
