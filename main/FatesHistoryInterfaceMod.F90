@@ -2243,6 +2243,7 @@ end subroutine flush_hvars
                ! not mortality which is the absorbing state - last row still zero here
                ! i.e. every ncrowndamage + 1 th value
                ! this needs to come before mortality gets added to the array
+               ! these live pools DAILY
                icdcd = 1
                do icdi = 1,ncrowndamage
                   do icdj = 1,ncrowndamage+1
@@ -2670,13 +2671,13 @@ end subroutine flush_hvars
                        
                        hio_damage_rate_si_cdcd(io_si,icdam) = hio_damage_rate_si_cdcd(io_si,icdam) + &
                             (ccohort%bmort + ccohort%hmort + ccohort%cmort + &
-                            ccohort%frmort + ccohort%smort + ccohort%asmort) * ccohort%n + &
-                            (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * &
-                            ccohort%n * sec_per_day * days_per_year 
+                            ccohort%frmort + ccohort%smort + ccohort%asmort) * ccohort%n * years_per_day &
+                            + (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * &
+                            ccohort%n * sec_per_day  
                            
                        hio_recovery_rate_si_cdcd(io_si,icdam) =  hio_recovery_rate_si_cdcd(io_si,icdam) + &
                             (ccohort%bmort + ccohort%hmort + ccohort%cmort + &
-                            ccohort%frmort + ccohort%smort + ccohort%asmort) * ccohort%n + &
+                            ccohort%frmort + ccohort%smort + ccohort%asmort) * ccohort%n * years_per_day + &
                             (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * &
                             ccohort%n * sec_per_day * days_per_year 
                            
@@ -3229,12 +3230,12 @@ end subroutine flush_hvars
 
             imcdam = icdam * (ncrowndamage + 1)
             hio_damage_rate_si_cdcd(io_si, imcdam) = hio_damage_rate_si_cdcd(io_si, imcdam) + &
-                 (sites(s)%term_nindivs_damage(icdam) * days_per_year) + &
-                 sites(s)%imort_rate_damage(icdam)
+                 sites(s)%term_nindivs_damage(icdam)  + &
+                 (sites(s)%imort_rate_damage(icdam) * years_per_day)
 
             hio_recovery_rate_si_cdcd(io_si, imcdam) = hio_recovery_rate_si_cdcd(io_si, imcdam) + &
-                 (sites(s)%term_nindivs_damage(icdam) * days_per_year) + &
-                 sites(s)%imort_rate_damage(icdam)
+                 sites(s)%term_nindivs_damage(icdam)  + &
+                 (sites(s)%imort_rate_damage(icdam) * years_per_day)
 
             hio_damage_cflux_si_cdcd(io_si, imcdam) = hio_damage_cflux_si_cdcd(io_si, imcdam) + &
                  sites(s)%imort_cflux_damage(icdam) + &
