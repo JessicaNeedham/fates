@@ -61,7 +61,7 @@ contains
     integer, intent(in) :: pft
     real(r8), intent(out) :: dist_frac             ! probability of current cohort moving to new damage level
 
-    dist_frac = param_derived%damage_transitions(cc_cd, nc_cd, pft)
+    dist_frac = param_derived%damage_transitions(cc_cd, nc_cd, pft) * years_per_day
     
     
   end subroutine get_damage_frac

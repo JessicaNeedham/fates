@@ -177,40 +177,53 @@ contains
 
     do ft = 1, numpft
 
-       exponent = EDPftvarcon_inst%damage_exponent(ft)
+        exponent = EDPftvarcon_inst%damage_exponent(ft)
 
        ! make a look up matrix that holds transition rates between
        ! damage classes. 
        ! Transition rates of moving from one class to the next are integral of
        ! a negative exponential with exponent a parameter from param file
-       do i = 1, ncrowndamage
-          cd_real = real(i)
-          transition_vec(i) = damage_integral(cd_real-1.0_r8, cd_real, exponent)
-       end do
-       ! normalise so they sum to 1
-       transition_vec = transition_vec/sum(transition_vec)
+!       do i = 1, ncrowndamage
+!          cd_real = real(i)
+!          transition_vec(i) = damage_integral(cd_real-1.0_r8, cd_real, exponent)
+!       end do
+!        normalise so they sum to 1
+!       transition_vec = transition_vec/sum(transition_vec)
 
-       ! populate a matrix
-       do i = 1, ncrowndamage     ! new
-          do j = 1, ncrowndamage  ! current
-             if(j > i) then       ! can't move to less damaged
-                this%damage_transitions(j,i,ft) = 0.0_r8
+       ! ! populate a matrix
+       ! do i = 1, ncrowndamage     ! new
+       !    do j = 1, ncrowndamage  ! current
+       !       if(j > i) then       ! can't move to less damaged
+       !          this%damage_transitions(j,i,ft) = 0.0_r8
+       !       else
+       !          this%damage_transitions(j,i,ft) = transition_vec(i - j + 1)
+       !       end if
+       !    end do
+       ! end do
+       
+       ! ! The above is for background small damage - it results in gradual build up of damage
+       ! ! Below we account for catastrophic damage - which shifts trees to high damage classes
+       ! ! regardless of starting damage level
+       ! this%damage_transitions(1:ncrowndamage-2,ncrowndamage-1,ft) = 0.05/days_per_year
+       ! this%damage_transitions(1:ncrowndamage-1,ncrowndamage,ft)   = 0.025/days_per_year
+       
+       ! do i = 1, ncrowndamage
+       !    this%damage_transitions(i,:,ft) = this%damage_transitions(i,:,ft)/ &
+       !         sum(this%damage_transitions(i,:,ft))
+       ! end do
+
+       do i = 1, ncrowndamage
+          do j = 1, ncrowndamage
+             if (j .eq. i) then
+                this%damage_transitions(j,i,ft) = 1._r8
              else
-                this%damage_transitions(j,i,ft) = transition_vec(i - j + 1)
+                this%damage_transitions(j,i,ft) = 0._r8
              end if
           end do
        end do
+
+       this%damage_transitions(1,:,ft) = 0.1
        
-       ! The above is for background small damage - it results in gradual build up of damage
-       ! Below we account for catastrophic damage - which shifts trees to high damage classes
-       ! regardless of starting damage level
-       this%damage_transitions(1:ncrowndamage-2,ncrowndamage-1,ft) = 0.05/days_per_year
-       this%damage_transitions(1:ncrowndamage-1,ncrowndamage,ft)   = 0.025/days_per_year
-       
-       do i = 1, ncrowndamage
-          this%damage_transitions(i,:,ft) = this%damage_transitions(i,:,ft)/ &
-               sum(this%damage_transitions(i,:,ft))
-       end do
 
        write(fates_log(),'(a/,5(F12.6,1x))') 'JN transition matrix : ', this%damage_transitions(:,:,ft)
     end do
