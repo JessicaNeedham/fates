@@ -571,6 +571,8 @@ Module FatesHistoryInterfaceMod
   integer :: ih_nplant_understory_si_cdpf
   integer :: ih_nplant_canopy_si_cdsc
   integer :: ih_nplant_understory_si_cdsc
+  integer :: ih_trimming_damage_si_cdsc
+  
   ! damage carbonflux
   integer :: ih_damage_cflux_si_cdcd
   integer :: ih_damage_rate_si_cdcd
@@ -2044,31 +2046,32 @@ end subroutine flush_hvars
                hio_fire_c_to_atm_si  => this%hvars(ih_fire_c_to_atm_si)%r81d, &
                hio_burn_flux_elem    => this%hvars(ih_burn_flux_elem)%r82d, &
 
-               hio_nplant_si_cdam => this%hvars(ih_nplant_si_cdam)%r82d, &
-               hio_nplant_si_cdpf => this%hvars(ih_nplant_si_cdpf)%r82d, &
-               hio_nplant_si_cdsc => this%hvars(ih_nplant_si_cdsc)%r82d, &
-               hio_mortality_si_cdam => this%hvars(ih_mortality_si_cdam)%r82d, &
-               hio_m3_si_cdam => this%hvars(ih_m3_si_cdam)%r82d, &
-               hio_m3_si_cdpf => this%hvars(ih_m3_si_cdpf)%r82d, &
-               hio_m3_si_cdsc => this%hvars(ih_m3_si_cdsc)%r82d, &
-               hio_mortality_canopy_si_cdsc => this%hvars(ih_mortality_canopy_si_cdsc)%r82d, &
-               hio_mortality_understory_si_cdsc=>this%hvars(ih_mortality_understory_si_cdsc)%r82d, &
-               hio_mortality_canopy_si_cdpf => this%hvars(ih_mortality_canopy_si_cdpf)%r82d, &
-               hio_mortality_understory_si_cdpf=>this%hvars(ih_mortality_understory_si_cdpf)%r82d, &
-               hio_m3mortality_canopy_si_cdsc => this%hvars(ih_m3mortality_canopy_si_cdsc)%r82d, &
-               hio_m3mortality_understory_si_cdsc=>this%hvars(ih_m3mortality_understory_si_cdsc)%r82d, &
-               hio_m3mortality_canopy_si_cdpf => this%hvars(ih_m3mortality_canopy_si_cdpf)%r82d, &
-               hio_m3mortality_understory_si_cdpf=>this%hvars(ih_m3mortality_understory_si_cdpf)%r82d, &
-               hio_nplant_canopy_si_cdsc => this%hvars(ih_nplant_canopy_si_cdsc)%r82d, &
-               hio_nplant_understory_si_cdsc=>this%hvars(ih_nplant_understory_si_cdsc)%r82d, &
-               hio_nplant_canopy_si_cdpf => this%hvars(ih_nplant_canopy_si_cdpf)%r82d, &
-               hio_nplant_understory_si_cdpf=>this%hvars(ih_nplant_understory_si_cdpf)%r82d, &
-               hio_nplant_canopy_si_cdam => this%hvars(ih_nplant_canopy_si_cdam)%r82d, &
-               hio_nplant_understory_si_cdam => this%hvars(ih_nplant_understory_si_cdam)%r82d, &
-               hio_damage_cflux_si_cdcd      => this%hvars(ih_damage_cflux_si_cdcd)%r82d, &
+               hio_nplant_si_cdam                 => this%hvars(ih_nplant_si_cdam)%r82d, &
+               hio_nplant_si_cdpf                 => this%hvars(ih_nplant_si_cdpf)%r82d, &
+               hio_nplant_si_cdsc                 => this%hvars(ih_nplant_si_cdsc)%r82d, &
+               hio_mortality_si_cdam              => this%hvars(ih_mortality_si_cdam)%r82d, &
+               hio_m3_si_cdam                     => this%hvars(ih_m3_si_cdam)%r82d, &
+               hio_m3_si_cdpf                     => this%hvars(ih_m3_si_cdpf)%r82d, &
+               hio_m3_si_cdsc                     => this%hvars(ih_m3_si_cdsc)%r82d, &
+               hio_mortality_canopy_si_cdsc       => this%hvars(ih_mortality_canopy_si_cdsc)%r82d, &
+               hio_mortality_understory_si_cdsc   =>this%hvars(ih_mortality_understory_si_cdsc)%r82d, &
+               hio_mortality_canopy_si_cdpf       => this%hvars(ih_mortality_canopy_si_cdpf)%r82d, &
+               hio_mortality_understory_si_cdpf   =>this%hvars(ih_mortality_understory_si_cdpf)%r82d, &
+               hio_m3mortality_canopy_si_cdsc     => this%hvars(ih_m3mortality_canopy_si_cdsc)%r82d, &
+               hio_m3mortality_understory_si_cdsc => this%hvars(ih_m3mortality_understory_si_cdsc)%r82d, &
+               hio_m3mortality_canopy_si_cdpf     => this%hvars(ih_m3mortality_canopy_si_cdpf)%r82d, &
+               hio_m3mortality_understory_si_cdpf =>this%hvars(ih_m3mortality_understory_si_cdpf)%r82d, &
+               hio_nplant_canopy_si_cdsc          => this%hvars(ih_nplant_canopy_si_cdsc)%r82d, &
+               hio_nplant_understory_si_cdsc      =>this%hvars(ih_nplant_understory_si_cdsc)%r82d, &
+               hio_nplant_canopy_si_cdpf          => this%hvars(ih_nplant_canopy_si_cdpf)%r82d, &
+               hio_nplant_understory_si_cdpf      =>this%hvars(ih_nplant_understory_si_cdpf)%r82d, &
+               hio_nplant_canopy_si_cdam          => this%hvars(ih_nplant_canopy_si_cdam)%r82d, &
+               hio_nplant_understory_si_cdam      => this%hvars(ih_nplant_understory_si_cdam)%r82d, &
+               hio_damage_cflux_si_cdcd           => this%hvars(ih_damage_cflux_si_cdcd)%r82d, &
                hio_damage_rate_si_cdcd            => this%hvars(ih_damage_rate_si_cdcd)%r82d, & 
-               hio_recovery_cflux_si_cdcd => this%hvars(ih_recovery_cflux_si_cdcd)%r82d, &
-               hio_recovery_rate_si_cdcd => this%hvars(ih_recovery_rate_si_cdcd)%r82d, & 
+               hio_recovery_cflux_si_cdcd         => this%hvars(ih_recovery_cflux_si_cdcd)%r82d, &
+               hio_recovery_rate_si_cdcd          => this%hvars(ih_recovery_rate_si_cdcd)%r82d, & 
+               hio_trimming_damage_si_cdsc        => this%hvars(ih_trimming_damage_si_cdsc)%r82d, &
                
                
                hio_m1_si_scls          => this%hvars(ih_m1_si_scls)%r82d, &
@@ -2654,8 +2657,11 @@ end subroutine flush_hvars
                             (ccohort%bmort + ccohort%hmort + ccohort%cmort + &
                             ccohort%frmort + ccohort%smort + ccohort%asmort) * ccohort%n + &
                             (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * &
-                            ccohort%n * sec_per_day * days_per_year 
-                           
+                            ccohort%n * sec_per_day * days_per_year
+
+                       ! canopy trim by damage
+                       hio_trimming_damage_si_cdsc(io_si,cdsc) = hio_trimming_damage_si_scls(io_si,cdsc) + &
+                            ccohort%n * ccohort%canopy_trim
                        
                        ! crown damage by size
                        hio_nplant_si_cdsc(io_si, cdsc) = hio_nplant_si_cdsc(io_si, cdsc) + ccohort%n
@@ -6039,7 +6045,12 @@ end subroutine flush_hvars
           long='C starvation mortality of understory trees by damage/size class', use_default='inactive',   &
           avgflag='A', vtype=site_cdsc_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m3mortality_understory_si_cdsc)
-    
+
+    call this%set_history_var(vname='TRIMMING_DAMAGE_CDSC', units = 'indiv/ha',               &
+          long='trimming term of plants by size class by damage class', use_default='inactive',   &
+          avgflag='A', vtype=site_cdsc_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
+          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_trimming_damage_si_cdsc )
+
 
     ! CARBON BALANCE VARIABLES THAT DEPEND ON HLM BGC INPUTS
 
