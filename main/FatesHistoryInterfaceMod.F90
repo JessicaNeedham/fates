@@ -2660,7 +2660,10 @@ end subroutine flush_hvars
                             ccohort%n * sec_per_day * days_per_year
 
                        ! canopy trim by damage
-                       hio_trimming_damage_si_cdsc(io_si,cdsc) = hio_trimming_damage_si_scls(io_si,cdsc) + &
+                       if(ccohort%canopy_trim .ne. 1) then
+                          write(fates_log(),*) 'JN: canopy trim: ', ccohort%canopy_trim, 'damage: ', ccohort%crowndamage 
+                       end if
+                       hio_trimming_damage_si_cdsc(io_si,cdsc) = hio_trimming_damage_si_cdsc(io_si,cdsc) + &
                             ccohort%n * ccohort%canopy_trim
                        
                        ! crown damage by size
@@ -2784,7 +2787,10 @@ end subroutine flush_hvars
                        hio_sai_canopy_si_scls(io_si,scls) = hio_sai_canopy_si_scls(io_si,scls) + &
                                                             ccohort%treesai*ccohort%c_area * AREA_INV
                        hio_trimming_canopy_si_scls(io_si,scls) = hio_trimming_canopy_si_scls(io_si,scls) + &
-                            ccohort%n * ccohort%canopy_trim
+                            ccohort%canopy_trim * ccohort%n
+
+                      ! write(fates_log(),*) 'JN: canopy_trim: ', ccohort%canopy_trim
+                       
                        hio_crown_area_canopy_si_scls(io_si,scls) = hio_crown_area_canopy_si_scls(io_si,scls) + &
                             ccohort%c_area
                        hio_gpp_canopy_si_scpf(io_si,scpf)      = hio_gpp_canopy_si_scpf(io_si,scpf)      + &
@@ -3227,32 +3233,32 @@ end subroutine flush_hvars
          ! treat carbon flux from imort the same way
          hio_understory_mortality_carbonflux_si(io_si) = hio_understory_mortality_carbonflux_si(io_si) + &
               sites(s)%imort_carbonflux
-
-         ! impact and termination mortality to damage
-         do icdam = 1, ncrowndamage
-            hio_mortality_si_cdam(io_si, icdam) = hio_mortality_si_cdam(io_si, icdam) + &
-                 (sites(s)%term_nindivs_damage(icdam) * days_per_year) + &
-                 sites(s)%imort_rate_damage(icdam)
-
-            imcdam = icdam * (ncrowndamage + 1)
-            hio_damage_rate_si_cdcd(io_si, imcdam) = hio_damage_rate_si_cdcd(io_si, imcdam) + &
-                 sites(s)%term_nindivs_damage(icdam)  + &
-                 (sites(s)%imort_rate_damage(icdam) * years_per_day)
-
-            hio_recovery_rate_si_cdcd(io_si, imcdam) = hio_recovery_rate_si_cdcd(io_si, imcdam) + &
-                 sites(s)%term_nindivs_damage(icdam)  + &
-                 (sites(s)%imort_rate_damage(icdam) * years_per_day)
-
-            hio_damage_cflux_si_cdcd(io_si, imcdam) = hio_damage_cflux_si_cdcd(io_si, imcdam) + &
-                 sites(s)%imort_cflux_damage(icdam) + &
-                 sites(s)%term_cflux_damage(icdam) * g_per_kg * days_per_sec * ha_per_m2
-            hio_recovery_cflux_si_cdcd(io_si, imcdam) = hio_recovery_cflux_si_cdcd(io_si, imcdam) + &
-                 sites(s)%imort_cflux_damage(icdam) + & 
-                 sites(s)%term_cflux_damage(icdam) * g_per_kg * days_per_sec * ha_per_m2
-            
-         end do
          
          
+         if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+            ! impact and termination mortality to damage
+            do icdam = 1, ncrowndamage
+               hio_mortality_si_cdam(io_si, icdam) = hio_mortality_si_cdam(io_si, icdam) + &
+                    (sites(s)%term_nindivs_damage(icdam) * days_per_year) + &
+                    sites(s)%imort_rate_damage(icdam)
+
+               imcdam = icdam * (ncrowndamage + 1)
+               hio_damage_rate_si_cdcd(io_si, imcdam) = hio_damage_rate_si_cdcd(io_si, imcdam) + &
+                    sites(s)%term_nindivs_damage(icdam)  + &
+                    (sites(s)%imort_rate_damage(icdam) * years_per_day)
+
+               hio_recovery_rate_si_cdcd(io_si, imcdam) = hio_recovery_rate_si_cdcd(io_si, imcdam) + &
+                    sites(s)%term_nindivs_damage(icdam)  + &
+                    (sites(s)%imort_rate_damage(icdam) * years_per_day)
+
+               hio_damage_cflux_si_cdcd(io_si, imcdam) = hio_damage_cflux_si_cdcd(io_si, imcdam) + &
+                    sites(s)%imort_cflux_damage(icdam) + &
+                    sites(s)%term_cflux_damage(icdam) * g_per_kg * days_per_sec * ha_per_m2
+               hio_recovery_cflux_si_cdcd(io_si, imcdam) = hio_recovery_cflux_si_cdcd(io_si, imcdam) + &
+                    sites(s)%imort_cflux_damage(icdam) + & 
+                    sites(s)%term_cflux_damage(icdam) * g_per_kg * days_per_sec * ha_per_m2
+            end do
+         end if
 
 
          !

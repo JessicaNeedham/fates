@@ -222,7 +222,8 @@ contains
           end do
        end do
 
-       this%damage_transitions(1,:,ft) = 0.1
+       ! This is now annual - so each year 10% of trees will get some amount of damage
+       this%damage_transitions(1,:,ft) = 0.025_r8
        
 
        write(fates_log(),'(a/,5(F12.6,1x))') 'JN transition matrix : ', this%damage_transitions(:,:,ft)

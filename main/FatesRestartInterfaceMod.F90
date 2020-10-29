@@ -1469,6 +1469,8 @@ contains
 
  subroutine set_restart_vectors(this,nc,nsites,sites)
 
+   use FatesInterfaceTypesMod, only : hlm_use_canopy_damage
+   use FatesInterfaceTypesMod, only : hlm_use_understory_damage
    use FatesInterfaceTypesMod, only : fates_maxElementsPerPatch
    use FatesInterfaceTypesMod, only : numpft
    use EDTypesMod, only : ed_site_type
@@ -1965,28 +1967,30 @@ contains
 
           ! JN - this only copies live portions of transitions - but that's ok because the mortality
           ! bit only needs to be added for history outputs
-          do icdi = 1,ncrowndamage
-             do icdj = 1,ncrowndamage+1
-                rio_damage_cflux_sicd(io_idx_si_cdcd) = &
-                     sites(s)%damage_cflux(icdi,icdj)
+          if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+             do icdi = 1,ncrowndamage
+                do icdj = 1,ncrowndamage+1
+                   rio_damage_cflux_sicd(io_idx_si_cdcd) = &
+                        sites(s)%damage_cflux(icdi,icdj)
 
-                rio_damage_rate_sicd(io_idx_si_cdcd) = &
-                     sites(s)%damage_rate(icdi,icdj)
-          
-                rio_recovery_cflux_sicd(io_idx_si_cdcd) = &
-                     sites(s)%recovery_cflux(icdi,icdj)
+                   rio_damage_rate_sicd(io_idx_si_cdcd) = &
+                        sites(s)%damage_rate(icdi,icdj)
 
-                rio_recovery_rate_sicd(io_idx_si_cdcd) = &
-                     sites(s)%recovery_rate(icdi,icdj)
-                io_idx_si_cdcd = io_idx_si_cdcd + 1
-           
+                   rio_recovery_cflux_sicd(io_idx_si_cdcd) = &
+                        sites(s)%recovery_cflux(icdi,icdj)
+
+                   rio_recovery_rate_sicd(io_idx_si_cdcd) = &
+                        sites(s)%recovery_rate(icdi,icdj)
+                   io_idx_si_cdcd = io_idx_si_cdcd + 1
+
+                end do
+                rio_imortrate_sicdam(io_idx_si_cdam) = sites(s)%imort_rate_damage(i_cdam)
+                rio_termnindiv_sicdam(io_idx_si_cdam) = sites(s)%term_nindivs_damage(i_cdam)
+                rio_imortcflux_sicdam(io_idx_si_cdam) = sites(s)%imort_cflux_damage(i_cdam)
+                rio_termcflux_sicdam(io_idx_si_cdam) = sites(s)%term_cflux_damage(i_cdam)
              end do
-             rio_imortrate_sicdam(io_idx_si_cdam) = sites(s)%imort_rate_damage(i_cdam)
-             rio_termnindiv_sicdam(io_idx_si_cdam) = sites(s)%term_nindivs_damage(i_cdam)
-             rio_imortcflux_sicdam(io_idx_si_cdam) = sites(s)%imort_cflux_damage(i_cdam)
-             rio_termcflux_sicdam(io_idx_si_cdam) = sites(s)%term_cflux_damage(i_cdam)
-          end do
-          
+          end if
+
           
           rio_termcflux_cano_si(io_idx_si)  = sites(s)%term_carbonflux_canopy
           rio_termcflux_usto_si(io_idx_si)  = sites(s)%term_carbonflux_ustory
