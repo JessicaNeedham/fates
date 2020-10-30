@@ -2659,10 +2659,6 @@ end subroutine flush_hvars
                             (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * &
                             ccohort%n * sec_per_day * days_per_year
 
-                       ! canopy trim by damage
-                       if(ccohort%canopy_trim .ne. 1) then
-                          write(fates_log(),*) 'JN: canopy trim: ', ccohort%canopy_trim, 'damage: ', ccohort%crowndamage 
-                       end if
                        hio_trimming_damage_si_cdsc(io_si,cdsc) = hio_trimming_damage_si_cdsc(io_si,cdsc) + &
                             ccohort%n * ccohort%canopy_trim
                        
@@ -2789,8 +2785,6 @@ end subroutine flush_hvars
                        hio_trimming_canopy_si_scls(io_si,scls) = hio_trimming_canopy_si_scls(io_si,scls) + &
                             ccohort%canopy_trim * ccohort%n
 
-                      ! write(fates_log(),*) 'JN: canopy_trim: ', ccohort%canopy_trim
-                       
                        hio_crown_area_canopy_si_scls(io_si,scls) = hio_crown_area_canopy_si_scls(io_si,scls) + &
                             ccohort%c_area
                        hio_gpp_canopy_si_scpf(io_si,scpf)      = hio_gpp_canopy_si_scpf(io_si,scpf)      + &
