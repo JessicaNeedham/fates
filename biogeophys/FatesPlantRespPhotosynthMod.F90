@@ -32,7 +32,7 @@ module FATESPlantRespPhotosynthMod
    use EDTypesMod,        only : maxpft
    use EDTypesMod,        only : nlevleaf
    use EDTypesMod,        only : nclmax
-   use EDTypesMod,        only : max_nleafage
+   use PRTGenericMod,     only : max_nleafage
    use EDTypesMod,        only : do_fates_salinity 
    use EDParamsMod,       only : q10_mr
    use PRTGenericMod,     only : prt_carbon_allom_hyp
@@ -45,7 +45,8 @@ module FATESPlantRespPhotosynthMod
    use PRTGenericMod,     only : store_organ
    use PRTGenericMod,     only : repro_organ
    use PRTGenericMod,     only : struct_organ
-   use EDParamsMod, only :  ED_val_base_mr_20, stomatal_model
+   use EDParamsMod,       only : ED_val_base_mr_20, stomatal_model
+   use PRTParametersMod,  only : prt_params
 
    ! CIME Globals
    use shr_log_mod , only      : errMsg => shr_log_errMsg
@@ -105,7 +106,7 @@ contains
     use FatesConstantsMod, only : tfrz => t_water_freeze_k_1atm
     use FatesParameterDerivedMod, only : param_derived
     
-    use FatesAllometryMod, only : bleaf
+    use FatesAllometryMod, only : bleaf, bstore_allom
     use FatesAllometryMod, only : storage_fraction_of_target
     use FatesAllometryMod, only : set_root_fraction
     use FatesAllometryMod, only : decay_coeff_kn
@@ -185,6 +186,7 @@ contains
     real(r8) :: live_croot_n       ! Live coarse root (below-ground sapwood) 
                                    ! nitrogen content (kgN/plant)
     real(r8) :: sapw_c             ! Sapwood carbon (kgC/plant)
+    real(r8) :: store_c_target     ! Target storage carbon (kgC/plant)
     real(r8) :: fnrt_c             ! Fine root carbon (kgC/plant)
     real(r8) :: fnrt_n             ! Fine root nitrogen content (kgN/plant)
     real(r8) :: leaf_c             ! Leaf carbon (kgC/plant)
@@ -222,6 +224,8 @@ contains
     real(r8) :: agb_frac
     real(r8) :: crown_reduction
     real(r8) :: sapw_c_predamage
+    real(r8) :: sapw_n
+    real(r8) :: sapw_n_predamage
     
     ! -----------------------------------------------------------------------------------
     ! Keeping these two definitions in case they need to be added later
@@ -254,10 +258,11 @@ contains
 
     associate(  &
          c3psn     => EDPftvarcon_inst%c3psn  , &
-         slatop    => EDPftvarcon_inst%slatop , & ! specific leaf area at top of canopy, 
-                                                  ! projected area basis [m^2/gC]
-         woody     => EDPftvarcon_inst%woody  , & ! Is vegetation woody or not?
+         slatop    => prt_params%slatop , &  ! specific leaf area at top of canopy, 
+                                             ! projected area basis [m^2/gC]
+         woody     => prt_params%woody,   &  ! Is vegetation woody or not? 
          stomatal_intercept   => EDPftvarcon_inst%stomatal_intercept ) !Unstressed minimum stomatal conductance
+
 
       do s = 1,nsites
 
@@ -367,9 +372,11 @@ contains
                      ft = currentCohort%pft
                      cl = currentCohort%canopy_layer
                      
-                     call bleaf(currentCohort%dbh,currentCohort%pft,&
-                          currentCohort%canopy_trim,b_leaf)
-                     call storage_fraction_of_target(b_leaf, &
+                     call bleaf(currentCohort%dbh,currentCohort%pft,currentCohort%canopy_trim,store_c_target)
+!                     call bstore_allom(currentCohort%dbh,currentCohort%pft, &
+!                                       currentCohort%canopy_trim,store_c_target)
+
+                     call storage_fraction_of_target(store_c_target, & 
                            currentCohort%prt%GetState(store_organ, all_carbon_elements), &
                            frac)
                      call lowstorage_maintresp_reduction(frac,currentCohort%pft, &
@@ -457,14 +464,22 @@ contains
                               select case(hlm_parteh_mode)
                               case (prt_carbon_allom_hyp)
 
-                                 lnc_top  = EDPftvarcon_inst%prt_nitr_stoich_p1(ft,leaf_organ)/slatop(ft)
+                                 lnc_top  = prt_params%nitr_stoich_p1(ft,leaf_organ)/slatop(ft)
                                  
                               case (prt_cnp_flex_allom_hyp)
 
                                  leaf_c  = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
-                                 leaf_n  = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
-                                 lnc_top = leaf_n / (slatop(ft) * leaf_c )
-
+                                 if( (leaf_c*slatop(ft)) > nearzero) then
+                                    leaf_n  = currentCohort%prt%GetState(leaf_organ, nitrogen_element)
+                                    lnc_top = leaf_n / (slatop(ft) * leaf_c )
+                                 else
+                                    lnc_top  = prt_params%nitr_stoich_p1(ft,leaf_organ)/slatop(ft)
+                                 end if
+                                    
+                                 ! If one wants to break coupling with dynamic N conentrations,
+                                 ! use the stoichiometry parameter
+                                 ! lnc_top  = prt_params%nitr_stoich_p1(ft,leaf_organ)/slatop(ft)
+                                 
                               end select
 
                               lmr25top = 2.525e-6_r8 * (1.5_r8 ** ((25._r8 - 20._r8)/10._r8))
@@ -606,10 +621,11 @@ contains
                      sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
                      fnrt_c   = currentCohort%prt%GetState(fnrt_organ, all_carbon_elements)
 
-                     agb_frac = EDPftvarcon_inst%allom_agb_frac(currentCohort%pft)
+                     agb_frac = prt_params%allom_agb_frac(currentCohort%pft)
                      branch_frac = currentCohort%branch_frac
                      call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
-                     
+
+                     ! need the undamaged version if using ratios with roots
                      sapw_c_predamage = sapw_c / &
                           (1.0_r8 - (agb_frac * branch_frac * (1.0_r8-crown_reduction)))
 
@@ -617,25 +633,40 @@ contains
                      select case(hlm_parteh_mode)
                      case (prt_carbon_allom_hyp)
 
-                        live_stem_n = (sapw_c_predamage*agb_frac) * &
-                             (1.0_r8 - branch_frac*(1.0_r8-crown_reduction)) * &
-                             EDPftvarcon_inst%prt_nitr_stoich_p1(ft,sapw_organ)
-
-                        live_croot_n = sapw_c_predamage * (1.0_r8 - agb_frac) * &
-                             EDPftvarcon_inst%prt_nitr_stoich_p1(ft,sapw_organ)
+                    
+                        live_stem_n = (sapw_c_predamage * agb_frac) * &
+                             (1._r8 - branch_frac * (1._r8 - crown_reduction)) * 
+                               prt_params%nitr_stoich_p1(ft,sapw_organ)
                         
-                        fnrt_n = fnrt_c * EDPftvarcon_inst%prt_nitr_stoich_p1(ft,fnrt_organ)
+                        live_croot_n = (1._r8 - agb_frac) * &
+                              sapw_c_predamage * prt_params%nitr_stoich_p1(ft,sapw_organ)
 
-                     case(prt_cnp_flex_allom_hyp) 
+                        fnrt_n = fnrt_c * prt_params%nitr_stoich_p1(ft,fnrt_organ)
+
+                     case(prt_cnp_flex_allom_hyp)
+
+                        sapw_n = currentCohort%prt%GetState(sapw_organ, nitrogen_element)
+                        sapw_n_predamage = sapw_n / &
+                             (1._r8 - (agb_frac * branch_frac * (1._r8-crown_reduction)))
                      
-                        live_stem_n = EDPftvarcon_inst%allom_agb_frac(currentCohort%pft) * &
+                        live_stem_n = prt_params%allom_agb_frac(currentCohort%pft) * &
                              currentCohort%prt%GetState(sapw_organ, nitrogen_element)
-
-                        live_croot_n = (1.0_r8-EDPftvarcon_inst%allom_agb_frac(currentCohort%pft)) * &
-                             currentCohort%prt%GetState(sapw_organ, nitrogen_element)
+                        
+                        live_croot_n = (1.0_r8-prt_params%allom_agb_frac(currentCohort%pft)) * &
+                             sapw_n_predamage
 
                         fnrt_n = currentCohort%prt%GetState(fnrt_organ, nitrogen_element)
 
+                        ! If one wants to break coupling with dynamic N conentrations,
+                        ! use the stoichiometry parameter
+                        !
+                        ! live_stem_n = prt_params%allom_agb_frac(currentCohort%pft) * &
+                        !               sapw_c * prt_params%nitr_stoich_p1(ft,sapw_organ)
+                        ! live_croot_n = (1.0_r8-prt_params%allom_agb_frac(currentCohort%pft)) * &
+                        !               sapw_c * prt_params%nitr_stoich_p1(ft,sapw_organ)
+                        ! fnrt_n = fnrt_c * prt_params%nitr_stoich_p1(ft,fnrt_organ)
+
+                        
                      case default
                         
 
@@ -652,7 +683,7 @@ contains
                      
                      ! Live stem MR (kgC/plant/s) (above ground sapwood)
                      ! ------------------------------------------------------------------
-                     if (woody(ft) == 1) then
+                     if ( int(woody(ft)) == itrue) then
                         tcwood = q10_mr**((bc_in(s)%t_veg_pa(ifp)-tfrz - 20.0_r8)/10.0_r8) 
                         ! kgC/s = kgN * kgC/kgN/s
                         currentCohort%livestem_mr  = live_stem_n * ED_val_base_mr_20 * tcwood * maintresp_reduction_factor
@@ -672,7 +703,7 @@ contains
                      
                      ! Coarse Root MR (kgC/plant/s) (below ground sapwood)
                      ! ------------------------------------------------------------------
-                     if (woody(ft) == 1) then
+                     if ( int(woody(ft)) == itrue) then
                         currentCohort%livecroot_mr = 0._r8
                         do j = 1,bc_in(s)%nlevsoil
                            ! Soil temperature used to adjust base rate of MR
@@ -719,11 +750,13 @@ contains
                      if ( debug ) write(fates_log(),*) 'EDPhoto 912 ', currentCohort%resp_tstep
                      if ( debug ) write(fates_log(),*) 'EDPhoto 913 ', currentCohort%resp_m
                      
-                     currentCohort%resp_g     = EDPftvarcon_inst%grperc(ft) * &
-                                                (max(0._r8,currentCohort%gpp_tstep - &
-                                                currentCohort%resp_m))
+                     
+                     currentCohort%resp_g_tstep     = prt_params%grperc(ft) * &
+                             (max(0._r8,currentCohort%gpp_tstep - currentCohort%resp_m))
+                     
+                                                
                      currentCohort%resp_tstep = currentCohort%resp_m + &
-                                                currentCohort%resp_g ! kgC/indiv/ts
+                                                currentCohort%resp_g_tstep ! kgC/indiv/ts
                      currentCohort%npp_tstep  = currentCohort%gpp_tstep - &
                                                 currentCohort%resp_tstep  ! kgC/indiv/ts
                      
@@ -1294,7 +1327,7 @@ contains
     real(r8) :: cohort_layer_eleaf_area  ! the effective leaf area of the cohort's current layer [m2]
     
     cohort_eleaf_area = 0.0_r8
-    g_sb_laweight             = 0.0_r8
+    g_sb_laweight     = 0.0_r8
     gpp               = 0.0_r8
     rdark             = 0.0_r8
 
