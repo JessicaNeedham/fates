@@ -1321,9 +1321,7 @@ contains
                                          if( prt_params%woody(currentCohort%pft) == itrue ) then
 
                                             call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
-
-                                            write(iulog,*)'JN 2. crown_reduction: ', crown_reduction
-                                            
+ 
                                             call ForceDBH( currentCohort%pft, currentCohort%canopy_trim, &
                                                  currentCohort%dbh, currentCohort%hite, &
                                                  bdead = currentCohort%prt%GetState(struct_organ,all_carbon_elements,&
