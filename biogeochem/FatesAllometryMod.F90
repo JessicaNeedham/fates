@@ -749,12 +749,7 @@ contains
        write(fates_log(),*) 'pft: ',pft
        write(fates_log(),*) 'call id: ',call_id
        write(fates_log(),*) 'n: ',nplant
-<<<<<<< HEAD
-       write(fates_log(),*) 'dbh: ',dbh,' dbh_max: ',EDPftvarcon_inst%allom_dbh_maxheight(pft)
-=======
-       write(fates_log(),*) 'c_area: ',c_area
        write(fates_log(),*) 'dbh: ',dbh,' dbh_max: ',prt_params%allom_dbh_maxheight(pft)
->>>>>>> main
        write(fates_log(),*) 'h: ',h
        write(fates_log(),*) 'canopy_trim: ',canopy_trim
        write(fates_log(),*) 'canopy layer: ',cl
@@ -2231,9 +2226,7 @@ contains
   end function decay_coeff_kn
 
   ! =====================================================================================
-
-
-  subroutine ForceDBH( ipft, canopy_trim, d, h, bdead, bl, crown_reduction, branch_frac )
+subroutine ForceDBH( ipft, canopy_trim, d, h, bdead, bl, crown_reduction, branch_frac )
 
      ! =========================================================================
      ! This subroutine estimates the diameter based on either the structural biomass
@@ -2243,9 +2236,8 @@ contains
      ! Here, we keep searching until the difference between actual structure and
      ! the predicted structure based on the searched diameter is within a tolerance.
      ! ============================================================================
-
-    use FatesConstantsMod     , only : calloc_abs_error
-    use DamageMainMod         , only : adjust_bdead
+  use FatesConstantsMod     , only : calloc_abs_error
+  use DamageMainMod         , only : adjust_bdead
      ! Arguments
 
 
@@ -2257,6 +2249,7 @@ contains
      real(r8),intent(in),optional  :: bl    ! Leaf biomass
      real(r8),intent(in),optional  :: crown_reduction ! amount that target structure is reduced
      real(r8),intent(in),optional  :: branch_frac
+
      
      ! Locals
      real(r8)  :: bt_sap,dbt_sap_dd  ! target sap wood at current d
@@ -2276,6 +2269,7 @@ contains
      real(r8), parameter :: step_frac0  = 0.9_r8
      integer, parameter  :: max_counter = 200
      real(r8) :: agb_frac
+
      
      ! Do reduce "if" calls, we break this call into two parts
      if ( int(prt_params%woody(ipft)) == itrue ) then
@@ -2285,20 +2279,20 @@ contains
            call endrun(msg=errMsg(sourcefile, __LINE__))
         end if
 
-        agb_frac = EDPftvarcon_inst%allom_agb_frac(ipft)
+        agb_frac = prt_params%allom_agb_frac(ipft)
         
         call bsap_allom(d,ipft,canopy_trim,at_sap,bt_sap,dbt_sap_dd)
         call bagw_allom(d,ipft,bt_agw,dbt_agw_dd)
         call bbgw_allom(d,ipft,bt_bgw,dbt_bgw_dd)
-       
+        
         if(present(crown_reduction)) then
+          
            call adjust_bdead(bt_sap, dbt_sap_dd, bt_agw, dbt_agw_dd, &
                 agb_frac, branch_frac, crown_reduction)
         end if
 
         call bdead_allom(bt_agw,bt_bgw, bt_sap, ipft, bt_dead, dbt_agw_dd, &
              dbt_bgw_dd, dbt_sap_dd, dbt_dead_dd)
-
 
         ! This calculates a diameter increment based on the difference
         ! in structural mass and the target mass, and sets it to a fraction
@@ -2314,7 +2308,8 @@ contains
            call bsap_allom(d_try,ipft,canopy_trim,at_sap,bt_sap,dbt_sap_dd)
            call bagw_allom(d_try,ipft,bt_agw,dbt_agw_dd)
            call bbgw_allom(d_try,ipft,bt_bgw,dbt_bgw_dd)
-        
+
+
            if(present(crown_reduction)) then
               call adjust_bdead(bt_sap, dbt_sap_dd, bt_agw, dbt_agw_dd, &
                    agb_frac, branch_frac, crown_reduction)
@@ -2322,7 +2317,7 @@ contains
 
            call bdead_allom(bt_agw,bt_bgw, bt_sap, ipft, bt_dead, dbt_agw_dd, &
                 dbt_bgw_dd, dbt_sap_dd, dbt_dead_dd)
-
+           
            ! Prevent overshooting
            if(bt_dead_try > (bdead+calloc_abs_error)) then
               step_frac = step_frac*0.5_r8

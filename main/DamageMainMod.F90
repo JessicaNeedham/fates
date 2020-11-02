@@ -8,7 +8,6 @@ module DamageMainMod
 
   use EDPftvarcon           , only : EDPftvarcon_inst
 
-  use EDTypesMod            , only : element_pos
   use EDtypesMod            , only : ed_site_type
   use EDtypesMod            , only : ed_patch_type
   use EDtypesMod            , only : ed_cohort_type

@@ -1941,6 +1941,8 @@ end subroutine flush_hvars
 
     real(r8), parameter :: tiny = 1.e-5_r8      ! some small number
     real(r8), parameter :: reallytalltrees = 1000.   ! some large number (m)
+
+    real(r8) :: total_c ! for damage 
     
     integer :: tmp
 
@@ -2497,6 +2499,7 @@ end subroutine flush_hvars
                   ! Zero states, and set the fluxes
                   if( element_list(el).eq.carbon12_element )then
 
+                     total_c = total_m
                      this%hvars(ih_storec_si)%r81d(io_si)  = &
                           this%hvars(ih_storec_si)%r81d(io_si) + ccohort%n * store_m
                      this%hvars(ih_leafc_si)%r81d(io_si)   = &
