@@ -1019,7 +1019,7 @@ contains
          temp_cohort%canopy_trim = 1.0_r8
 
          call bagw_allom(temp_cohort%dbh,temp_cohort%pft, &
-              temp_cohort%branch_frac, b_agw)
+              temp_cohort%branch_frac, c_agw)
          ! Calculate coarse root biomass from allometry
          call bbgw_allom(temp_cohort%dbh,temp_cohort%pft,c_bgw)
          
@@ -1028,7 +1028,7 @@ contains
 
          ! JN: assume no damage - could potentially read in damage data down the line
          call bleaf(temp_cohort%dbh,temp_cohort%pft,&
-              temp_cohort%canopy_trim,b_leaf)
+              temp_cohort%canopy_trim,c_leaf)
          
          ! Calculate fine root biomass
          call bfineroot(temp_cohort%dbh,temp_cohort%pft,temp_cohort%canopy_trim,c_fnrt)

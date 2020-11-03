@@ -806,7 +806,7 @@ contains
              do while(associated(currentCohort))       
 
 
-                agb_frac = EDPftvarcon_inst%allom_agb_frac(currentCohort%pft)
+                agb_frac = prt_params%allom_agb_frac(currentCohort%pft)
                 
                 allocate(nc)  ! new cohort surviving
                 if(hlm_use_planthydro.eq.itrue) call InitHydrCohort(CurrentSite,nc)
@@ -1202,7 +1202,7 @@ contains
                 ! Regardless of disturbance type, reduce mass of damaged but surviving understory trees
                 if(hlm_use_understory_damage .eq. itrue) then
 
-                   if (EDPftvarcon_inst%woody(currentCohort%pft)==1  .and. &
+                   if (prt_params%woody(currentCohort%pft)==1  .and. &
                         currentCohort%canopy_layer > 1) then 
 
                       ! to keep track of how much nc%n needs to be reduced by after the loop
@@ -1319,7 +1319,7 @@ contains
 
                 ! Regardless of disturbance type, reduce mass of damaged canopy trees
                 if(hlm_use_canopy_damage .eq.itrue) then
-                   if (EDPftvarcon_inst%woody(currentCohort%pft)==1  .and. &
+                   if (prt_params%woody(currentCohort%pft)==1  .and. &
                         currentCohort%canopy_layer == 1) then 
 
                       ! to keep track of how much canopy n  needs to be reduced by after the loop
@@ -2522,7 +2522,7 @@ contains
 
        do while(associated(currentCohort))       
 
-          agb_frac = EDPftvarcon_inst%allom_agb_frac(currentCohort%pft)
+          agb_frac = prt_params%allom_agb_frac(currentCohort%pft)
           pft = currentCohort%pft
           ! Get mass in Kg of the element in the specified organ
           sapw_m   = currentCohort%prt%GetState(sapw_organ, element_id)
@@ -2532,7 +2532,7 @@ contains
 
           ! if we are in canopy damage mode skip understory trees
           if(hlm_use_canopy_damage .eq.itrue .and. &
-               EDPftvarcon_inst%woody(currentCohort%pft)==1 .and. &
+               prt_params%woody(currentCohort%pft)==1 .and. &
                currentCohort%canopy_layer ==1 ) then
 
              ! litter is called before damage - so we need to account for mortality here too
@@ -2597,7 +2597,7 @@ contains
 
           ! if we are in canopy damage mode skip understory trees
           if(hlm_use_understory_damage .eq.itrue .and. &
-               EDPftvarcon_inst%woody(currentCohort%pft)==1 .and. &
+               prt_params%woody(currentCohort%pft)==1 .and. &
                currentCohort%canopy_layer > 1 ) then
 
              ! litter is called before damage - so we need to account for mortality here too

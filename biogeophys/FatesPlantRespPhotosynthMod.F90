@@ -635,7 +635,7 @@ contains
 
                     
                         live_stem_n = (sapw_c_predamage * agb_frac) * &
-                             (1._r8 - branch_frac * (1._r8 - crown_reduction)) * 
+                             (1._r8 - branch_frac * (1._r8 - crown_reduction)) * & 
                                prt_params%nitr_stoich_p1(ft,sapw_organ)
                         
                         live_croot_n = (1._r8 - agb_frac) * &

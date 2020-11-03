@@ -527,7 +527,6 @@ contains
           end if
 
           ! And simultaneously add the input fluxes to mass balance accounting
->>>>>>> main
           site_cmass%gpp_acc   = site_cmass%gpp_acc + &
                 currentCohort%gpp_acc * currentCohort%n
           site_cmass%aresp_acc = site_cmass%aresp_acc + &

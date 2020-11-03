@@ -2286,10 +2286,11 @@ subroutine ForceDBH( ipft, canopy_trim, d, h, bdead, bl, crown_reduction, branch
         call bbgw_allom(d,ipft,bt_bgw,dbt_bgw_dd)
         
         if(present(crown_reduction)) then
-          
+           
            call adjust_bdead(bt_sap, dbt_sap_dd, bt_agw, dbt_agw_dd, &
                 agb_frac, branch_frac, crown_reduction)
-        end if
+
+          end if
 
         call bdead_allom(bt_agw,bt_bgw, bt_sap, ipft, bt_dead, dbt_agw_dd, &
              dbt_bgw_dd, dbt_sap_dd, dbt_dead_dd)
@@ -2312,7 +2313,7 @@ subroutine ForceDBH( ipft, canopy_trim, d, h, bdead, bl, crown_reduction, branch
 
            if(present(crown_reduction)) then
               call adjust_bdead(bt_sap, dbt_sap_dd, bt_agw, dbt_agw_dd, &
-                   agb_frac, branch_frac, crown_reduction)
+                  agb_frac, branch_frac, crown_reduction)
            end if
 
            call bdead_allom(bt_agw,bt_bgw, bt_sap, ipft, bt_dead, dbt_agw_dd, &

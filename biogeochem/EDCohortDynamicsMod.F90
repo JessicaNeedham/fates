@@ -1321,12 +1321,15 @@ contains
                                          if( prt_params%woody(currentCohort%pft) == itrue ) then
 
                                             call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
- 
-                                            call ForceDBH( currentCohort%pft, currentCohort%canopy_trim, &
-                                                 currentCohort%dbh, currentCohort%hite, &
-                                                 bdead = currentCohort%prt%GetState(struct_organ,all_carbon_elements,&
-                                                 crown_reduction = crown_reduction, branch_frac = currentCohort%branch_frac))
 
+                                            call ForceDBH( currentCohort%pft,&
+                                                    currentCohort%canopy_trim, &
+                                                    currentCohort%dbh, currentCohort%hite, &
+                                                    bdead = currentCohort%prt%GetState(struct_organ,all_carbon_elements), &
+                                                    crown_reduction = crown_reduction,&
+                                                    branch_frac = currentCohort%branch_frac)
+ 
+                                         
                                          end if
                                          !
                                          call carea_allom(currentCohort%dbh,newn,currentSite%spread,currentCohort%pft,&
