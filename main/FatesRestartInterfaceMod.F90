@@ -2419,7 +2419,10 @@ contains
      use EDTypesMod, only : numWaterMem
      use EDTypesMod, only : num_vegtemp_mem
      use FatesSizeAgeTypeIndicesMod, only : get_age_class_index
-
+     use FatesInterfaceTypesMod, only : hlm_use_canopy_damage
+     use FatesInterfaceTypesMod, only : hlm_use_understory_damage
+  
+     
      ! !ARGUMENTS:
      class(fates_restart_interface_type) , intent(inout) :: this
      integer                     , intent(in)            :: nc
@@ -2965,26 +2968,28 @@ contains
                 
              io_idx_si_sc = io_idx_si_sc + 1
           end do
+          
+          if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+             do i_cdam = 1, ncrowndamage
+                sites(s)%imort_rate_damage(i_cdam)   = rio_imortrate_sicdam(io_idx_si_cdam)
+                sites(s)%term_nindivs_damage(i_cdam) = rio_termnindiv_sicdam(io_idx_si_cdam)
+                sites(s)%imort_cflux_damage(i_cdam) = rio_imortcflux_sicdam(io_idx_si_cdam)
+                sites(s)%term_cflux_damage(i_cdam) = rio_termcflux_sicdam(io_idx_si_cdam)
+             end do
 
-          do i_cdam = 1, ncrowndamage
-             sites(s)%imort_rate_damage(i_cdam)   = rio_imortrate_sicdam(io_idx_si_cdam)
-             sites(s)%term_nindivs_damage(i_cdam) = rio_termnindiv_sicdam(io_idx_si_cdam)
-             sites(s)%imort_cflux_damage(i_cdam) = rio_imortcflux_sicdam(io_idx_si_cdam)
-             sites(s)%term_cflux_damage(i_cdam) = rio_termcflux_sicdam(io_idx_si_cdam)
-          end do
+             ! JN - this only copies live portions of transitions - but that's ok because the mortality
+             ! bit only needs to be added for history outputs
+             do icdi = 1,ncrowndamage
+                do icdj = 1,ncrowndamage+1
+                   sites(s)%damage_cflux(icdi,icdj) = rio_damage_cflux_sicd(io_idx_si_cdcd) 
+                   sites(s)%damage_rate(icdi,icdj) =  rio_damage_rate_sicd(io_idx_si_cdcd) 
+                   sites(s)%recovery_cflux(icdi,icdj) = rio_recovery_cflux_sicd(io_idx_si_cdcd)
+                   sites(s)%recovery_rate(icdi,icdj) = rio_recovery_rate_sicd(io_idx_si_cdcd) 
+                   io_idx_si_cdcd = io_idx_si_cdcd + 1
+                end do
+             end do
+          end if
 
-           ! JN - this only copies live portions of transitions - but that's ok because the mortality
-          ! bit only needs to be added for history outputs
-          do icdi = 1,ncrowndamage
-             do icdj = 1,ncrowndamage+1
-                     sites(s)%damage_cflux(icdi,icdj) = rio_damage_cflux_sicd(io_idx_si_cdcd) 
-                     sites(s)%damage_rate(icdi,icdj) =  rio_damage_rate_sicd(io_idx_si_cdcd) 
-                     sites(s)%recovery_cflux(icdi,icdj) = rio_recovery_cflux_sicd(io_idx_si_cdcd)
-                     sites(s)%recovery_rate(icdi,icdj) = rio_recovery_rate_sicd(io_idx_si_cdcd) 
-                 io_idx_si_cdcd = io_idx_si_cdcd + 1
-              end do
-          end do
-         
           
 
           sites(s)%term_carbonflux_canopy   = rio_termcflux_cano_si(io_idx_si)
