@@ -3171,7 +3171,7 @@ end subroutine flush_hvars
             hio_fire_fuel_sav_si(io_si)        = hio_fire_fuel_sav_si(io_si) + cpatch%fuel_sav * cpatch%area * AREA_INV
             hio_fire_fuel_mef_si(io_si)        = hio_fire_fuel_mef_si(io_si) + cpatch%fuel_mef * cpatch%area * AREA_INV
             hio_sum_fuel_si(io_si)             = hio_sum_fuel_si(io_si) + cpatch%sum_fuel * g_per_kg * cpatch%area * AREA_INV
-            hio_fragmentation_scaler_si(io_si) = hio_fragmentation_scaler_si(io_si) + cpatch%fragmentation_scaler * cpatch%area * AREA_INV
+            hio_fragmentation_scaler_si(io_si) = hio_fragmentation_scaler_si(io_si) + cpatch%fragmentation_scaler(1) * cpatch%area * AREA_INV
             
             do i_fuel = 1,nfsc
                hio_litter_moisture_si_fuel(io_si, i_fuel) = hio_litter_moisture_si_fuel(io_si, i_fuel) + &
@@ -6373,7 +6373,7 @@ end subroutine update_history_hifrq
           avgflag='A', vtype=site_cdcd_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_damage_cflux_si_cdcd )
 
-    call this%set_history_var(vname='DAMAGE_RATE_CDCD', units = 'N / ha / year',         &
+    call this%set_history_var(vname='DAMAGE_RATE_CDCD', units = 'N / ha / day',         &
           long='damage rate between damage classes', use_default='inactive',   &
           avgflag='A', vtype=site_cdcd_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_damage_rate_si_cdcd )
@@ -6383,7 +6383,7 @@ end subroutine update_history_hifrq
           avgflag='A', vtype=site_cdcd_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_recovery_cflux_si_cdcd )
 
-    call this%set_history_var(vname='RECOVERY_RATE_CDCD', units = 'N / ha / year',         &
+    call this%set_history_var(vname='RECOVERY_RATE_CDCD', units = 'N / ha / day',         &
           long='recovery rate between damage classes', use_default='inactive',   &
           avgflag='A', vtype=site_cdcd_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_recovery_rate_si_cdcd )
