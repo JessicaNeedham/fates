@@ -226,7 +226,7 @@ contains
        this%damage_transitions(1,:,ft) = 0.025_r8
        
 
-       write(fates_log(),'(a/,5(F12.6,1x))') 'JN transition matrix : ', this%damage_transitions(:,:,ft)
+       write(fates_log(),'(a/,5(F12.6,1x))') 'JN annual transition matrix : ', this%damage_transitions(:,:,ft)
     end do
 
     return

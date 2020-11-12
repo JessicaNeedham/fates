@@ -631,10 +631,6 @@ Module FatesHistoryInterfaceMod
   integer :: ih_m3_si_cdam
   integer :: ih_m3_si_cdpf
   integer :: ih_m3_si_cdsc
-  integer :: ih_mortality_canopy_si_cdsc
-  integer :: ih_mortality_understory_si_cdsc
-  integer :: ih_mortality_canopy_si_cdpf
-  integer :: ih_mortality_understory_si_cdpf
   integer :: ih_m3mortality_canopy_si_cdsc
   integer :: ih_m3mortality_understory_si_cdsc
   integer :: ih_m3mortality_canopy_si_cdpf
@@ -2074,10 +2070,6 @@ end subroutine flush_hvars
                hio_m3_si_cdam                     => this%hvars(ih_m3_si_cdam)%r82d, &
                hio_m3_si_cdpf                     => this%hvars(ih_m3_si_cdpf)%r82d, &
                hio_m3_si_cdsc                     => this%hvars(ih_m3_si_cdsc)%r82d, &
-               hio_mortality_canopy_si_cdsc       => this%hvars(ih_mortality_canopy_si_cdsc)%r82d, &
-               hio_mortality_understory_si_cdsc   =>this%hvars(ih_mortality_understory_si_cdsc)%r82d, &
-               hio_mortality_canopy_si_cdpf       => this%hvars(ih_mortality_canopy_si_cdpf)%r82d, &
-               hio_mortality_understory_si_cdpf   =>this%hvars(ih_mortality_understory_si_cdpf)%r82d, &
                hio_m3mortality_canopy_si_cdsc     => this%hvars(ih_m3mortality_canopy_si_cdsc)%r82d, &
                hio_m3mortality_understory_si_cdsc => this%hvars(ih_m3mortality_understory_si_cdsc)%r82d, &
                hio_m3mortality_canopy_si_cdpf     => this%hvars(ih_m3mortality_canopy_si_cdpf)%r82d, &
@@ -2906,20 +2898,6 @@ end subroutine flush_hvars
                        ! damage variables - canopy
                        if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
                        
-                          ! sum of all mortality in the canopy by size x damage
-                          hio_mortality_canopy_si_cdsc(io_si,cdsc) = hio_mortality_canopy_si_cdsc(io_si,cdsc) + &
-                               (ccohort%bmort + ccohort%hmort + ccohort%cmort + &
-                               ccohort%frmort + ccohort%smort + ccohort%asmort) * ccohort%n + &
-                               (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * &
-                               ccohort%n * sec_per_day * days_per_year
-                          
-                          ! mortality in the canopy by size x damage x pft
-                          hio_mortality_canopy_si_cdpf(io_si,cdpf) = hio_mortality_canopy_si_cdpf(io_si,cdpf)+ &
-                               (ccohort%bmort + ccohort%hmort + ccohort%cmort + ccohort%frmort + & 
-                               ccohort%smort + ccohort%asmort) * ccohort%n + &
-                               (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * &
-                               ccohort%n * sec_per_day * days_per_year
-
                           ! carbon starvation mortality in the canopy by size x damage x pft 
                           hio_m3mortality_canopy_si_cdpf(io_si,cdpf) = hio_m3mortality_canopy_si_cdpf(io_si,cdpf)+&
                                ccohort%cmort * ccohort%n
@@ -3041,21 +3019,7 @@ end subroutine flush_hvars
                        ! damage variables - understory
                        if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
 
-                          ! sum of all mortality in the understory by size x damage
-                          hio_mortality_understory_si_cdsc(io_si,cdsc) = hio_mortality_understory_si_cdsc(io_si,cdsc) + &
-                               (ccohort%bmort + ccohort%hmort + ccohort%cmort + &
-                               ccohort%frmort + ccohort%smort + ccohort%asmort) * ccohort%n + &
-                               (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * &
-                               ccohort%n * sec_per_day * days_per_year
-
-                          ! sum of all mortality in the understory by size x damage x pft                          
-                          hio_mortality_understory_si_cdpf(io_si,cdpf) = hio_mortality_understory_si_cdpf(io_si,cdpf)+ &
-                               (ccohort%bmort + ccohort%hmort + ccohort%cmort + &
-                               ccohort%frmort + ccohort%smort + ccohort%asmort) * ccohort%n + &
-                               (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * &
-                               ccohort%n * sec_per_day * days_per_year
-
-                            ! carbon starvation mortality in the understory by size and by size x damage
+                          ! carbon starvation mortality in the understory by size and by size x damage
                           hio_m3mortality_understory_si_cdsc(io_si,cdsc) = hio_m3mortality_understory_si_cdsc(io_si,cdsc)+&
                                ccohort%cmort * ccohort%n
 
@@ -6438,11 +6402,6 @@ end subroutine update_history_hifrq
           avgflag='A', vtype=site_cdamage_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_mortality_si_cdam )
     
-    call this%set_history_var(vname='MORTALITY_CANOPY_CDSC', units = 'indiv/ha/yr',               &
-          long='total mortality of canopy trees by damage/size class', use_default='inactive',   &
-          avgflag='A', vtype=site_cdsc_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
-          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_mortality_canopy_si_cdsc )
-
     call this%set_history_var(vname='M3MORTALITY_CANOPY_CDSC', units = 'indiv/ha/yr',               &
           long='C starviation mortality of canopy trees by damage/size class', use_default='inactive',   &
           avgflag='A', vtype=site_cdsc_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
@@ -6453,26 +6412,11 @@ end subroutine update_history_hifrq
           avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m3mortality_canopy_si_cdpf )
 
-    call this%set_history_var(vname='MORTALITY_CANOPY_CDPF', units = 'N/ha/yr',          &
-          long='Total mortality of canopy plants by pft/size', use_default='inactive', &
-          avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
-          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_mortality_canopy_si_cdpf )
-
-    call this%set_history_var(vname='MORTALITY_UNDERSTORY_CDPF', units = 'N/ha/yr',          &
-          long='total mortality of understory plants by damage/pft/size', use_default='inactive', &
-          avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
-          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_mortality_understory_si_cdpf )
-
     call this%set_history_var(vname='M3MORTALITY_UNDERSTORY_CDPF', units = 'N/ha/yr',          &
           long='C starvation mortality of understory plants by pft/size', use_default='inactive', &
           avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m3mortality_understory_si_cdpf )
     
-    call this%set_history_var(vname='MORTALITY_UNDERSTORY_CDSC', units = 'indiv/ha/yr',               &
-          long='total mortality of understory trees by damage/size class', use_default='inactive',   &
-          avgflag='A', vtype=site_cdsc_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
-          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_mortality_understory_si_cdsc)
-
     call this%set_history_var(vname='M3MORTALITY_UNDERSTORY_CDSC', units = 'indiv/ha/yr',               &
           long='C starvation mortality of understory trees by damage/size class', use_default='inactive',   &
           avgflag='A', vtype=site_cdsc_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
