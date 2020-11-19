@@ -533,6 +533,7 @@ contains
 
     real(r8) :: nplant_counter
     real(r8) :: nplant_counter_II
+
     !--------------------------------------------------------------------- 
    
     storesmallcohort => null() ! storage of the smallest cohort for insertion routine
@@ -1215,7 +1216,6 @@ contains
                          cd_n = nc%n * cd_frac
 
                          if(cd_n > nearzero) then
-
                             cd_frac_total = cd_frac_total + cd_frac
 
                             allocate(nc_d)  ! new cohort surviving but damaged
@@ -1324,7 +1324,7 @@ contains
 
                       ! to keep track of how much canopy n  needs to be reduced by after the loop
                       cd_frac_total = 0.0_r8
-  
+
                       ! for each damage class find the number density and if big enough allocate a new cohort
                       do cd = currentCohort%crowndamage+1, ncrowndamage
                         
@@ -1427,7 +1427,8 @@ contains
 
                       ! Reduce currentCohort%n now based on sum of all new damage classes  
                       currentCohort%n = currentCohort%n * (1.0_r8-cd_frac_total)
-                      
+
+                   
                    end if  ! end if canopy and woody              
 
                    ! Keep track of number and carbon that stayed in the same damage class
@@ -1553,10 +1554,10 @@ contains
       ! write(fates_log(),*) 'JN patch damage_rate : ', sum(currentSite%damage_rate(:,:))
        ! write(fates_log(),*) 'JN patch total plants: ', nplant_counter
 
-       write(fates_log(),*) 'patch dyn  N : ', nplant_counter
-       write(fates_log(),*) 'patch dyn  N2: ', nplant_counter_II
-       write(fates_log(),*) 'damage N     : ', sum(currentSite%damage_rate(:,:))
-       write(fates_log(),*) 'damage cflux : ', sum(currentSite%damage_cflux(:,:))
+      ! write(fates_log(),*) 'patch dyn  N : ', nplant_counter
+      ! write(fates_log(),*) 'patch dyn  N2: ', nplant_counter_II
+      ! write(fates_log(),*) 'damage N     : ', sum(currentSite%damage_rate(:,:))
+      ! write(fates_log(),*) 'damage cflux : ', sum(currentSite%damage_cflux(:,:))
        
       !*************************/
       !**  INSERT NEW PATCH(ES) INTO LINKED LIST    

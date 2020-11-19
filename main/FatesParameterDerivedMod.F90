@@ -183,12 +183,13 @@ contains
        ! damage classes. 
        ! Transition rates of moving from one class to the next are integral of
        ! a negative exponential with exponent a parameter from param file
-!       do i = 1, ncrowndamage
-!          cd_real = real(i)
-!          transition_vec(i) = damage_integral(cd_real-1.0_r8, cd_real, exponent)
-!       end do
-!        normalise so they sum to 1
-!       transition_vec = transition_vec/sum(transition_vec)
+      !  do i = 1, ncrowndamage
+!           cd_real = real(i)
+!           transition_vec(i) = damage_integral(cd_real-1.0_r8, cd_real, exponent)
+!        end do
+! !     
+      ! normalise so they sum to 1
+      ! transition_vec = transition_vec/sum(transition_vec)
 
        ! ! populate a matrix
        ! do i = 1, ncrowndamage     ! new
@@ -201,11 +202,6 @@ contains
        !    end do
        ! end do
        
-       ! ! The above is for background small damage - it results in gradual build up of damage
-       ! ! Below we account for catastrophic damage - which shifts trees to high damage classes
-       ! ! regardless of starting damage level
-       ! this%damage_transitions(1:ncrowndamage-2,ncrowndamage-1,ft) = 0.05/days_per_year
-       ! this%damage_transitions(1:ncrowndamage-1,ncrowndamage,ft)   = 0.025/days_per_year
        
        ! do i = 1, ncrowndamage
        !    this%damage_transitions(i,:,ft) = this%damage_transitions(i,:,ft)/ &
@@ -223,7 +219,7 @@ contains
        end do
 
        ! This is now annual - so each year 10% of trees will get some amount of damage
-       this%damage_transitions(1,:,ft) = 0.025_r8
+       this%damage_transitions(1,:,ft) = exponent
        
 
        write(fates_log(),'(a/,5(F12.6,1x))') 'JN annual transition matrix : ', this%damage_transitions(:,:,ft)
