@@ -27,10 +27,14 @@ module DamageMainMod
   implicit none
   private
 
+  logical, protected :: damage_time  ! if true then damage occurs during current time step
+
   public :: get_crown_reduction
   public :: get_crown_damage
   public :: adjust_bdead
   public :: get_damage_frac
+  public :: is_it_damage_time
+  public :: damage_time
   
   logical :: debug = .false.  ! for debugging
 
@@ -39,6 +43,30 @@ module DamageMainMod
 
 contains
 
+
+  subroutine is_it_damage_time(is_master, currentSite)
+
+    !----------------------------------------------------------------------------
+    ! This subroutine determines whether damage should occur (it is called daily)
+    !-----------------------------------------------------------------------------
+
+    use FatesInterfaceTypesMod , only : hlm_day_of_year
+
+    integer, intent(in) :: is_master
+    type(ed_site_type), intent(inout), target :: currentSite
+    
+    
+    damage_time = .false.
+
+    if (hlm_day_of_year .eq. 1) then
+       damage_time = .true.
+    end if
+
+    write(fates_log(),*) 'JN day of year', hlm_day_of_year, 'damage_time,', damage_time
+    
+  end subroutine is_it_damage_time
+  
+  !----------------------------------------------------------------------------
 
   subroutine get_damage_frac(cc_cd, nc_cd, pft, dist_frac)
 
@@ -60,7 +88,7 @@ contains
     integer, intent(in) :: pft
     real(r8), intent(out) :: dist_frac             ! probability of current cohort moving to new damage level
 
-    dist_frac = param_derived%damage_transitions(cc_cd, nc_cd, pft) * years_per_day
+    dist_frac = param_derived%damage_transitions(cc_cd, nc_cd, pft) !* years_per_day (if damage is occuring annually don't do this)
     
     
   end subroutine get_damage_frac

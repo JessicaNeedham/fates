@@ -155,7 +155,6 @@ contains
   
   subroutine InitDamageTransitions(this, ncrowndamage, numpft)
 
-    use FatesConstantsMod,      only : days_per_year
     use EDPftvarcon, only: EDPftvarcon_inst
 
 
@@ -165,62 +164,26 @@ contains
 
     ! local variables
     integer  :: ft                ! pft index
-    integer  :: i                 ! crowndamage index (rows)
-    integer  :: j                 ! crowndamage index (columns)
-    real(r8) :: exponent          ! in the function for damage transitions 
-    real(r8) :: cd_real           ! for in functions
-    real(r8), allocatable :: transition_vec(:)
-
-    allocate(transition_vec(ncrowndamage))
-
+    integer  :: i                 ! crowndamage index
+    real(r8) :: damage_frac       ! damage fraction 
+   
+   
     call this%InitAllocateDamageTransitions(ncrowndamage, numpft)
-
+    
     do ft = 1, numpft
 
-        exponent = EDPftvarcon_inst%damage_exponent(ft)
-
-       ! make a look up matrix that holds transition rates between
-       ! damage classes. 
-       ! Transition rates of moving from one class to the next are integral of
-       ! a negative exponential with exponent a parameter from param file
-      !  do i = 1, ncrowndamage
-!           cd_real = real(i)
-!           transition_vec(i) = damage_integral(cd_real-1.0_r8, cd_real, exponent)
-!        end do
-! !     
-      ! normalise so they sum to 1
-      ! transition_vec = transition_vec/sum(transition_vec)
-
-       ! ! populate a matrix
-       ! do i = 1, ncrowndamage     ! new
-       !    do j = 1, ncrowndamage  ! current
-       !       if(j > i) then       ! can't move to less damaged
-       !          this%damage_transitions(j,i,ft) = 0.0_r8
-       !       else
-       !          this%damage_transitions(j,i,ft) = transition_vec(i - j + 1)
-       !       end if
-       !    end do
-       ! end do
-       
-       
-       ! do i = 1, ncrowndamage
-       !    this%damage_transitions(i,:,ft) = this%damage_transitions(i,:,ft)/ &
-       !         sum(this%damage_transitions(i,:,ft))
-       ! end do
+       damage_frac = EDPftvarcon_inst%damage_frac(ft)
 
        do i = 1, ncrowndamage
-          do j = 1, ncrowndamage
-             if (j .eq. i) then
-                this%damage_transitions(j,i,ft) = 1._r8
-             else
-                this%damage_transitions(j,i,ft) = 0._r8
-             end if
-          end do
-       end do
 
-       ! This is now annual - so each year 10% of trees will get some amount of damage
-       this%damage_transitions(1,:,ft) = exponent
-       
+          ! zero the column
+          this%damage_transitions(i,:,ft) = 0._r8
+          ! 1 - damage rate stay the same
+          this%damage_transitions(i,i,ft) = 1.0_r8 - damage_frac
+          ! 10% get damaged - evenly split between higher damage classes
+          this%damage_transitions(i,i+1:ncrowndamage,ft) = damage_frac/(ncrowndamage - i)
+
+       end do
 
        write(fates_log(),'(a/,5(F12.6,1x))') 'JN annual transition matrix : ', this%damage_transitions(:,:,ft)
     end do

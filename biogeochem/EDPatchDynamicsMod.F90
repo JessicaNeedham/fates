@@ -55,6 +55,7 @@ module EDPatchDynamicsMod
   use EDLoggingMortalityMod, only : logging_time
   use EDLoggingMortalityMod, only : get_harvest_rate_area
   use EDParamsMod          , only : fates_mortality_disturbance_fraction
+  use DamageMainMod        , only : damage_time
   use FatesAllometryMod    , only : carea_allom
   use FatesAllometryMod    , only : set_root_fraction
   use FatesConstantsMod    , only : g_per_kg
@@ -735,8 +736,14 @@ contains
                 call mortality_litter_fluxes(currentSite, currentPatch, new_patch, patch_site_areadis)
              end if
 
+
+             
+             
              ! send mass lost from damaged but surviving trees to litter
-             if(hlm_use_understory_damage .eq. itrue) then 
+
+             write(fates_log(),*) 'JN: damage_time ', damage_time
+             
+             if(hlm_use_understory_damage .eq. itrue .and. damage_time ) then 
                 call damage_litter_fluxes(currentSite, currentPatch, new_patch, patch_site_areadis, &
                      total_damage_litter)
              end if
@@ -753,7 +760,7 @@ contains
              litter_stock_pre = litter_stock_pre + litter_stock + litter_stock_new
              
              ! and the damaged canopy trees
-             if(hlm_use_canopy_damage .eq. itrue) then 
+             if(hlm_use_canopy_damage .eq. itrue .and. damage_time ) then 
                 call damage_litter_fluxes(currentSite, currentPatch, new_patch, patch_site_areadis, &
                      total_canopy_damage_litter)
              end if
@@ -1201,7 +1208,7 @@ contains
 
 
                 ! Regardless of disturbance type, reduce mass of damaged but surviving understory trees
-                if(hlm_use_understory_damage .eq. itrue) then
+                if(hlm_use_understory_damage .eq. itrue .and. damage_time) then
 
                    if (prt_params%woody(currentCohort%pft)==1  .and. &
                         currentCohort%canopy_layer > 1) then 
@@ -1318,7 +1325,7 @@ contains
                      * currentCohort%n
 
                 ! Regardless of disturbance type, reduce mass of damaged canopy trees
-                if(hlm_use_canopy_damage .eq.itrue) then
+                if(hlm_use_canopy_damage .eq.itrue .and. damage_time) then
                    if (prt_params%woody(currentCohort%pft)==1  .and. &
                         currentCohort%canopy_layer == 1) then 
 

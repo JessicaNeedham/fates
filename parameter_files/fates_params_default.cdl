@@ -124,9 +124,9 @@ variables:
 	double fates_branch_turnover(fates_pft) ;
 		fates_branch_turnover:units = "yr" ;
 		fates_branch_turnover:long_name = "turnover time of branches" ;
-	double fates_damage_exponent(fates_pft) ;
-	        fates_damage_exponent:units = "unitless" ;
-		fates_damage_exponent:long_name = "exponent of exponential describing annual transitions between damage classes" ;
+	double fates_damage_frac(fates_pft) ;
+	        fates_damage_frac:units = "fraction" ;
+		fates_damage_frac:long_name = "annual fraction of trees that get damaged" ;
 	double fates_c2b(fates_pft) ;
 		fates_c2b:units = "ratio" ;
 		fates_c2b:long_name = "Carbon to biomass multiplier of bulk structural tissues" ;
@@ -804,8 +804,8 @@ data:
 
  fates_branch_turnover = 150, 150, 150, 150, 150, 150, 150, 150, 150, 0, 0, 0 ;
 
- fates_damage_exponent = -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0, -5.0,
- -5.0, -5.0, -5.0, -5.0 ;
+ fates_damage_frac = 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
+    0.1, 0.1, 0.1, 0.1 ;
 
  fates_c2b = 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 ;
 

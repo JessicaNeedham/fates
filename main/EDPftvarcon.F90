@@ -115,7 +115,7 @@ module EDPftvarcon
 
 
      ! Damage parameters
-     real(r8), allocatable :: damage_exponent(:)
+     real(r8), allocatable :: damage_frac(:)
 
      ! Fire Parameters (No PFT vector capabilities in their own routines)
      ! See fire/SFParamsMod.F90 for bulk of fire parameters
@@ -223,8 +223,6 @@ module EDPftvarcon
      procedure, private :: Receive_PFT_hydr_organs 
      procedure, private :: Register_PFT_leafage
      procedure, private :: Receive_PFT_leafage
-     !JN procedure, private :: Register_PFT_damage
-     !JN procedure, private :: Receive_PFT_damage
      procedure, private :: Register_PFT_numrad
      procedure, private :: Receive_PFT_numrad
   end type EDPftvarcon_type
@@ -267,7 +265,6 @@ contains
     call this%Register_PFT_numrad(fates_params)
     call this%Register_PFT_hydr_organs(fates_params)
     call this%Register_PFT_leafage(fates_params)
-    !JN call this%Register_PFT_damage(fates_params)
    end subroutine Register
 
   !-----------------------------------------------------------------------
@@ -284,7 +281,6 @@ contains
     call this%Receive_PFT_numrad(fates_params)
     call this%Receive_PFT_hydr_organs(fates_params)
     call this%Receive_PFT_leafage(fates_params)
-    !JN call this%Receive_PFT_damage(fates_params)
    end subroutine Receive
 
   !-----------------------------------------------------------------------
@@ -538,7 +534,7 @@ contains
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
 
-    name = 'fates_damage_exponent'
+    name = 'fates_damage_frac'
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
 
@@ -885,9 +881,9 @@ contains
     call fates_params%RetreiveParameterAllocate(name=name, &
          data=this%seed_decay_rate)
 
-    name = 'fates_damage_exponent'
+    name = 'fates_damage_frac'
     call fates_params%RetreiveParameterAllocate(name=name, &
-         data=this%damage_exponent)
+         data=this%damage_frac)
     
     name = 'fates_trim_limit'
     call fates_params%RetreiveParameterAllocate(name=name, &
@@ -1305,60 +1301,9 @@ contains
 
   end subroutine Receive_PFT_hydr_organs
 
-  ! ===============================================================================================
+  !---------------------------------------------------------------------------
 
-  
-  ! subroutine Register_PFT_damage(this, fates_params)
-
- !    use FatesParametersInterface, only : fates_parameters_type, param_string_length
- !    use FatesParametersInterface, only : max_dimensions, dimension_name_damage
- !    use FatesParametersInterface, only : dimension_name_pft, dimension_shape_2d
-
- !    implicit none
-
- !    class(EDPftvarcon_type), intent(inout) :: this
- !    class(fates_parameters_type), intent(inout) :: fates_params
-
- !    integer, parameter :: dim_lower_bound(2) = (/ lower_bound_pft, lower_bound_general /)
- !    character(len=param_string_length) :: dim_names(2)
- !    character(len=param_string_length) :: name
-
- !    ! NOTE(bja, 2017-01) initialization doesn't seem to work correctly
- !    ! if dim_names has a parameter qualifier.
- !    dim_names(1) = dimension_name_pft
- !    dim_names(2) = dimension_name_damage
-
- !    name = 'fates_crowndamage_fracs'
- !    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_2d, &
- !         dimension_names=dim_names, lower_bounds=dim_lower_bound)
-  
- !    return
- ! end subroutine Register_PFT_damage
-
- !  ! =====================================================================================
-
- !  subroutine Receive_PFT_damage(this, fates_params)
-     
- !     use FatesParametersInterface, only : fates_parameters_type
- !     use FatesParametersInterface, only : param_string_length
-     
- !     implicit none
-     
- !     class(EDPftvarcon_type), intent(inout) :: this
- !     class(fates_parameters_type), intent(inout) :: fates_params
-     
- !     character(len=param_string_length) :: name
-
- !    name = 'fates_crowndamage_fracs'
- !    call fates_params%RetreiveParameterAllocate(name=name, &
- !         data=this%crowndamage_fracs)
-
- !    return
- !  end subroutine Receive_PFT_damage
-
-  ! -----------------------------------------------------------------------
-
-    subroutine FatesReportPFTParams(is_master)
+  subroutine FatesReportPFTParams(is_master)
      
      ! Argument
      logical, intent(in) :: is_master  ! Only log if this is the master proc
@@ -1424,7 +1369,7 @@ contains
         write(fates_log(),fmt0) 'vcmaxse = ',EDPftvarcon_inst%vcmaxse
         write(fates_log(),fmt0) 'jmaxse = ',EDPftvarcon_inst%jmaxse
         write(fates_log(),fmt0) 'tpuse = ',EDPftvarcon_inst%tpuse
-        write(fates_log(),fmt0) 'damage_exponent = ',EDPftvarcon_inst%damage_exponent
+        write(fates_log(),fmt0) 'damage_frac = ',EDPftvarcon_inst%damage_frac
         write(fates_log(),fmt0) 'germination_timescale = ',EDPftvarcon_inst%germination_rate
         write(fates_log(),fmt0) 'seed_decay_turnover = ',EDPftvarcon_inst%seed_decay_rate
         write(fates_log(),fmt0) 'trim_limit = ',EDPftvarcon_inst%trim_limit

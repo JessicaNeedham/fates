@@ -76,6 +76,7 @@ module EDMainMod
   use FatesAllometryMod        , only : h_allom,tree_sai,tree_lai
   use FatesPlantHydraulicsMod  , only : UpdateSizeDepRhizHydStates
   use EDLoggingMortalityMod    , only : IsItLoggingTime
+  use DamageMainMod            , only : is_it_damage_time
   use EDPatchDynamicsMod       , only : get_frac_site_primary
   use FatesGlobals             , only : endrun => fates_endrun
   use ChecksBalancesMod        , only : SiteMassStock
@@ -159,6 +160,9 @@ contains
     ! This is limited to a global event until more structured event handling is enabled
     call IsItLoggingTime(hlm_masterproc,currentSite)
 
+    ! Call a routine that identifies if damage should occur
+    call is_it_damage_time(hlm_masterproc, currentSite)
+    
     ! -----------------------------------------------------------------------------------
     ! Parse nutrient flux rates 
     ! The input boundary conditions from the HLM should now have a daily integrated
