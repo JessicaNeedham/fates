@@ -180,9 +180,10 @@ contains
           this%damage_transitions(i,:,ft) = 0._r8
           ! 1 - damage rate stay the same
           this%damage_transitions(i,i,ft) = 1.0_r8 - damage_frac
-          ! 10% get damaged - evenly split between higher damage classes
+          ! fraction damaged get evenly split between higher damage classes
           this%damage_transitions(i,i+1:ncrowndamage,ft) = damage_frac/(ncrowndamage - i)
-
+          ! Make sure it sums to one - they have to go somewhere
+          this%damage_transitions(i, :, ft) = this%damage_transitions(i, :, ft)/SUM(this%damage_transitions(i, :, ft))
        end do
 
        write(fates_log(),'(a/,5(F12.6,1x))') 'JN annual transition matrix : ', this%damage_transitions(:,:,ft)
