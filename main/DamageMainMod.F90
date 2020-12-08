@@ -71,10 +71,9 @@ contains
   subroutine get_damage_frac(cc_cd, nc_cd, pft, dist_frac)
 
 
-    ! There is a transition matrix describing the rates of cohorts
-    ! increasing in damage. Movement from one damage class to a higher
-    ! damage class is described by the negative exponential. Both functions are in
-    ! FatesParameterDerivedMod.
+    ! given current cohort damage class find the fraction of individuals
+    ! going to the new damage class.
+    ! Consults a look up table of transitions from param derived. 
     
     ! USES
     use FatesInterfaceTypesMod, only : ncrowndamage
@@ -109,7 +108,11 @@ contains
     integer(i4), intent(in)   :: crowndamage
     real(r8),    intent(out)  :: crown_reduction
 
-    crown_reduction = min(1.0_r8, (real(crowndamage) - 1.0_r8) * 0.2_r8)
+    ! local variables
+    real(r8) :: class_width
+
+    class_width = 1.0_r8/ncrowndamage
+    crown_reduction = min(1.0_r8, (real(crowndamage) - 1.0_r8) * class_width)
 
     return
   end subroutine get_crown_reduction
@@ -129,10 +132,12 @@ contains
 
     ! Local variables
     real(r8) :: frac
+    real(r8) :: class_width
 
     frac = min(leaf_c/target_leaf_c, 1.0_r8)
+    class_width = 1.0_r8/ncrowndamage
 
-    crowndamage = max(1.0_r8, real(ceiling((1.0_r8-frac)/0.2_r8)))
+    crowndamage = max(1.0_r8, real(ceiling((1.0_r8-frac)/class_width)))
 
     return
   end subroutine get_crown_damage
