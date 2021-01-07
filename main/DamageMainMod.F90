@@ -148,8 +148,11 @@ contains
   subroutine adjust_bdead(bt_sap, dbt_sapdd, bt_agb, dbt_agbdd, agb_frac, branch_frac, &
     crown_reduction)
 
-    ! This subroutine takes structural biomass from pft%GetState
-    ! and scales it up to give what it should be for an undamaged tree
+    ! This subroutine scales target allometries to the damaged state -
+    ! this is only for use in ForceDBH where we compare actual and target structural biomass
+    ! to find a dbh. Since actual structural biomass has been reduced target biomass needs to also
+    ! be reduced or the search algorimthm in ForceDBH will fail. This is only called when crown damage
+    ! is greater than 1. 
 
     real(r8), intent(inout) :: bt_sap
     real(r8), intent(inout) :: dbt_sapdd

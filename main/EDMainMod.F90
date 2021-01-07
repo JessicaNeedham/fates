@@ -304,8 +304,6 @@ contains
     use FatesInterfaceTypesMod, only : ncrowndamage
     use FatesAllometryMod    , only : bleaf
     use FatesAllometryMod    , only : carea_allom
-    use DamageMainMod        , only : get_crown_reduction
-    use DamageMainMod        , only : get_crown_damage
     use EDCohortDynamicsMod  , only : damage_recovery
     use PRTGenericMod        , only : leaf_organ
     use FatesInterfaceTypesMod, only : hlm_use_cohort_age_tracking

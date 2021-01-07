@@ -1044,7 +1044,6 @@ contains
      use FatesConstantsMod, only : days_per_year
      use EDTypesMod  , only : maxCohortsPerPatch
      use DamageMainMod, only : get_crown_reduction
-     use DamageMainMod, only : adjust_bdead
      !
      ! !ARGUMENTS   
      type (ed_site_type), intent(inout),  target :: currentSite 
@@ -1278,8 +1277,10 @@ contains
 
                                             if( prt_params%woody(currentCohort%pft) == itrue ) then
 
-                                               call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
-
+                                               if( currentCohort%crowndamage > 1) then
+                                                  call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
+                                               end if
+                                               
                                                call ForceDBH( currentCohort%pft,&
                                                     currentCohort%canopy_trim, &
                                                     currentCohort%dbh, currentCohort%hite, &
@@ -1320,8 +1321,10 @@ contains
                                          !
                                          if( prt_params%woody(currentCohort%pft) == itrue ) then
 
-                                            call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
-
+                                            if( currentCohort%crowndamage > 1) then
+                                               call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
+                                            end if
+                                            
                                             call ForceDBH( currentCohort%pft,&
                                                     currentCohort%canopy_trim, &
                                                     currentCohort%dbh, currentCohort%hite, &
@@ -2131,8 +2134,10 @@ contains
        
        if( (struct_c - target_struct_c ) > calloc_abs_error ) then
 
-          call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
-                                          
+          if( currentCohort%crowndamage > 1) then
+             call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
+          end if
+             
           call ForceDBH( ipft,canopy_trim, dbh, hite_out, bdead=struct_c, &
                crown_reduction = crown_reduction, &
                branch_frac = currentCohort%branch_frac)

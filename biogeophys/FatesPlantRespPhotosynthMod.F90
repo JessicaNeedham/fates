@@ -112,6 +112,9 @@ contains
     use FatesAllometryMod, only : decay_coeff_kn
 
     use DamageMainMod, only : get_crown_reduction
+
+    use FatesInterfaceTypesMod, only : hlm_use_canopy_damage
+    use FatesInterfaceTypesMod, only : hlm_use_understory_damage
     
     ! ARGUMENTS:
     ! -----------------------------------------------------------------------------------
@@ -621,40 +624,62 @@ contains
                      sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
                      fnrt_c   = currentCohort%prt%GetState(fnrt_organ, all_carbon_elements)
 
-                     agb_frac = prt_params%allom_agb_frac(currentCohort%pft)
-                     branch_frac = currentCohort%branch_frac
-                     call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
+                     if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+                        
+                        agb_frac = prt_params%allom_agb_frac(currentCohort%pft)
+                        branch_frac = currentCohort%branch_frac
+                        call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
 
-                     ! need the undamaged version if using ratios with roots
-                     sapw_c_predamage = sapw_c / &
-                          (1.0_r8 - (agb_frac * branch_frac * (1.0_r8-crown_reduction)))
-
+                        ! need the undamaged version if using ratios with roots
+                        sapw_c = sapw_c / &
+                             (1.0_r8 - (agb_frac * branch_frac * (1.0_r8-crown_reduction)))
+                     end if
+                     
                      
                      select case(hlm_parteh_mode)
                      case (prt_carbon_allom_hyp)
 
-                    
-                        live_stem_n = (sapw_c_predamage * agb_frac) * &
-                             (1._r8 - branch_frac * (1._r8 - crown_reduction)) * & 
-                               prt_params%nitr_stoich_p1(ft,sapw_organ)
-                        
+                        if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+
+                           live_stem_n = (sapw_c * agb_frac) * &
+                                (1._r8 - branch_frac * (1._r8 - crown_reduction)) * & 
+                                prt_params%nitr_stoich_p1(ft,sapw_organ)
+
+                        else
+
+                           live_stem_n = prt_params%allom_agb_frac(currentCohort%pft) * &
+                                sapw_c * prt_params%nitr_stoich_p1(ft,sapw_organ)
+
+                        end if
+
                         live_croot_n = (1._r8 - agb_frac) * &
-                              sapw_c_predamage * prt_params%nitr_stoich_p1(ft,sapw_organ)
+                              sapw_c * prt_params%nitr_stoich_p1(ft,sapw_organ)
 
                         fnrt_n = fnrt_c * prt_params%nitr_stoich_p1(ft,fnrt_organ)
 
                      case(prt_cnp_flex_allom_hyp)
-
-                        sapw_n = currentCohort%prt%GetState(sapw_organ, nitrogen_element)
-                        sapw_n_predamage = sapw_n / &
-                             (1._r8 - (agb_frac * branch_frac * (1._r8-crown_reduction)))
-                     
-                        live_stem_n = prt_params%allom_agb_frac(currentCohort%pft) * &
-                             currentCohort%prt%GetState(sapw_organ, nitrogen_element)
                         
-                        live_croot_n = (1.0_r8-prt_params%allom_agb_frac(currentCohort%pft)) * &
-                             sapw_n_predamage
 
+                        if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+
+                           ! JN if using above ground portion to estimate below ground portion we need
+                           ! to estimate the undamaged aboveground portion first
+                           sapw_c = currentCohort%prt%GetState(sapw_organ, nitrogen_element)
+                           sapw_c = sapw_c / &
+                                (1.0_r8 - (agb_frac * branch_frac * (1.0_r8-crown_reduction)))
+
+                           live_stem_n = prt_params%allom_agb_frac(currentCohort%pft) * sapw_c
+
+                           live_croot_n = (1.0_r8-prt_params%allom_agb_frac(currentCohort%pft)) * sapw_c
+                        else
+
+                           live_stem_n = prt_params%allom_agb_frac(currentCohort%pft) * &
+                                currentCohort%prt%GetState(sapw_organ, nitrogen_element)
+
+                           live_croot_n = (1.0_r8-prt_params%allom_agb_frac(currentCohort%pft)) * &
+                                currentCohort%prt%GetState(sapw_organ, nitrogen_element)
+
+                        end if
                         fnrt_n = currentCohort%prt%GetState(fnrt_organ, nitrogen_element)
 
                         ! If one wants to break coupling with dynamic N conentrations,
