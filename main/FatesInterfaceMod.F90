@@ -937,6 +937,8 @@ module FatesInterfaceMod
        allocate( fates_hdim_pftmap_levscagpft(nlevsclass * nlevage * numpft))
        allocate( fates_hdim_agmap_levagepft(nlevage * numpft))
        allocate( fates_hdim_pftmap_levagepft(nlevage * numpft))
+       allocate( fates_hdim_agmap_levagefuel(nlevage * nfsc))
+       allocate( fates_hdim_fscmap_levagefuel(nlevage * nfsc))
 
        allocate( fates_hdim_elmap_levelpft(num_elements*numpft))
        allocate( fates_hdim_elmap_levelcwd(num_elements*ncwd))
@@ -1116,6 +1118,14 @@ module FatesInterfaceMod
           end do
        end do
 
+       i=0
+       do iage=1,nlevage
+          do ifuel=1,NFSC
+             i=i+1
+             fates_hdim_agmap_levagefuel(i) = iage
+             fates_hdim_fscmap_levagefuel(i) = ifuel
+          end do
+       end do
 
     end subroutine fates_history_maps
 
