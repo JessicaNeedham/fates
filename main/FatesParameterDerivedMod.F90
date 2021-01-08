@@ -45,31 +45,6 @@ module FatesParameterDerivedMod
   
   type(param_derived_type), public :: param_derived
   
-contains
-
-  real(r8) function integral_exp(x, y)
-
-    real(r8), intent(in) :: x
-    real(r8), intent(in) :: y
-
-    integral_exp = (1/y) * exp(y*x)
-    return
-  end function integral_exp
-
-  real(r8) function damage_integral(l, u, y)
-
-    real(r8), intent(in) :: l
-    real(r8), intent(in) :: u
-    real(r8), intent(in) :: y
-
-    real(r8) :: lower
-    real(r8) :: upper
-
-    lower = integral_exp(l, y)
-    upper = integral_exp(u, y)
-    damage_integral = upper - lower
-    return
-  end function damage_integral
   
   ! ===================================================================================
   subroutine InitAllocate(this,numpft)

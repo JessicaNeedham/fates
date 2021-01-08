@@ -161,8 +161,9 @@ contains
     call IsItLoggingTime(hlm_masterproc,currentSite)
 
     ! Call a routine that identifies if damage should occur
-    call is_it_damage_time(hlm_masterproc, currentSite)
-    
+    if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+       call is_it_damage_time(hlm_masterproc, currentSite)
+    end if
     ! -----------------------------------------------------------------------------------
     ! Parse nutrient flux rates 
     ! The input boundary conditions from the HLM should now have a daily integrated
@@ -383,6 +384,12 @@ contains
        currentCohort => currentPatch%shortest
        do while(associated(currentCohort)) 
 
+          !JN
+          if(currentCohort%crowndamage > 1) then 
+             write(fates_log(),*) 'JN something is horribly wrong crown damage > 1'
+          end if
+          
+             
           ft = currentCohort%pft
 
           ! Calculate the mortality derivatives
@@ -579,8 +586,10 @@ contains
                   currentCohort%coage_class,currentCohort%coage_by_pft_class)
           end if
 
+        
           currentCohort => currentCohort%taller
-          
+
+         
        end do
 
        currentPatch => currentPatch%older

@@ -483,8 +483,8 @@ contains
           capped_allom = .false.
        case(3)
           dbh_eff = min(dbh,dbh_maxh)
-          call carea_2pwr(dbh_eff,site_spread,d2bl_p2,d2bl_ediff,d2ca_min,d2ca_max,c_area, &
-               do_inverse, crowndamage)
+          call carea_2pwr(dbh_eff,site_spread,d2bl_p2,d2bl_ediff,d2ca_min,d2ca_max, &
+               c_area,do_inverse, crowndamage)
           capped_allom = .true.
        case DEFAULT
           write(fates_log(),*) 'An undefined leaf allometry was specified: ', &

@@ -513,7 +513,6 @@ contains
     real(r8) :: c_agw      ! biomass above ground (non-leaf)     [kgC]
     real(r8) :: c_bgw      ! biomass below ground (non-fineroot) [kgC]
     real(r8) :: c_leaf     ! biomass in leaves [kgC]
-    real(r8) :: c_leaf_damage ! biomass in leaves after damage [kgC]
     real(r8) :: c_fnrt     ! biomass in fine roots [kgC]
     real(r8) :: c_sapw     ! biomass in sapwood [kgC]
     real(r8) :: c_struct   ! biomass in structure (dead) [kgC]

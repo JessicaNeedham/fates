@@ -739,10 +739,7 @@ contains
 
              
              
-             ! send mass lost from damaged but surviving trees to litter
-
-             write(fates_log(),*) 'JN: damage_time ', damage_time
-             
+             ! send mass lost from damaged but surviving trees to litter             
              if(hlm_use_understory_damage .eq. itrue .and. damage_time ) then 
                 call damage_litter_fluxes(currentSite, currentPatch, new_patch, patch_site_areadis, &
                      total_damage_litter)
