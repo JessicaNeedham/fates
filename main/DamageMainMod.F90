@@ -35,6 +35,7 @@ module DamageMainMod
   public :: get_damage_frac
   public :: is_it_damage_time
   public :: damage_time
+  public :: get_damage_mortality
   
   logical :: debug = .false.  ! for debugging
 
@@ -174,7 +175,27 @@ contains
   
 
   !----------------------------------------------------------------------------------------
-  
+
+  subroutine get_damage_mortality(crowndamage, dgmort)
+
+    use FatesInterfaceTypesMod     , only : ncrowndamage
+
+    integer(i4), intent(in) :: crowndamage
+    real(r8),    intent(out) :: dgmort
+
+    real(r8), allocatable :: dgmort_vec(:)
+
+    ! JN at some point these might be proper switches but for now just hardcode and comment out
+    allocate(dgmort_vec(1:ncrowndamage))
+    
+    
+    dgmort_vec  =  (/0.01916056, 0.08167124, 0.11914035, 0.39789607, 0.30564619/)
+
+    dgmort = dgmort_vec(crowndamage)
+    
+    return
+  end subroutine get_damage_mortality
+  !----------------------------------------------------------------------------------------
   
 end module DamageMainMod
 

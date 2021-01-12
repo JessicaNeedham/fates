@@ -354,6 +354,7 @@ module EDTypesMod
      real(r8) ::  frmort                                 ! freezing mortality               n/year
      real(r8) ::  smort                                  ! senesence mortality              n/year
      real(r8) ::  asmort                                 ! age senescence mortality         n/year
+     real(r8) ::  dgmort                                  ! damage mortality                 n/year
      
       ! Logging Mortality Rate 
       ! Yi Xu & M. Huang
@@ -1079,7 +1080,7 @@ module EDTypesMod
      write(fates_log(),*) 'co%livestem_mr            = ', ccohort%livestem_mr
      write(fates_log(),*) 'co%livecroot_mr           = ', ccohort%livecroot_mr
      write(fates_log(),*) 'co%froot_mr               = ', ccohort%froot_mr
-     write(fates_log(),*) 'co%dmort                  = ', ccohort%dmort
+     write(fates_log(),*) 'co%dgmort                 = ', ccohort%dgmort
      write(fates_log(),*) 'co%treelai                = ', ccohort%treelai
      write(fates_log(),*) 'co%treesai                = ', ccohort%treesai
      write(fates_log(),*) 'co%c_area                 = ', ccohort%c_area
@@ -1087,9 +1088,9 @@ module EDTypesMod
      write(fates_log(),*) 'co%bmort                  = ', ccohort%bmort
      write(fates_log(),*) 'co%smort                  = ', ccohort%smort
      write(fates_log(),*) 'co%asmort                 = ', ccohort%asmort
+     write(fates_log(),*) 'co%dgmort                 = ', ccohort%dgmort
      write(fates_log(),*) 'co%hmort                  = ', ccohort%hmort
      write(fates_log(),*) 'co%frmort                 = ', ccohort%frmort
-     write(fates_log(),*) 'co%asmort                 = ', ccohort%asmort
      write(fates_log(),*) 'co%isnew                  = ', ccohort%isnew
      write(fates_log(),*) 'co%dndt                   = ', ccohort%dndt
      write(fates_log(),*) 'co%dhdt                   = ', ccohort%dhdt

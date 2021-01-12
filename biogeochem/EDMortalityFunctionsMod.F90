@@ -17,6 +17,8 @@ module EDMortalityFunctionsMod
    use FatesInterfaceTypesMod     , only : hlm_use_ed_prescribed_phys
    use FatesInterfaceTypesMod     , only : hlm_freq_day
    use FatesInterfaceTypesMod     , only : hlm_use_planthydro
+   use FatesInterfaceTypesMod     , only : hlm_use_canopy_damage
+   use FatesInterfaceTypesMod     , only : hlm_use_understory_damage
    use EDLoggingMortalityMod , only : LoggingMortality_frac
    use EDParamsMod           , only : fates_mortality_disturbance_fraction
    use FatesInterfaceTypesMod     , only : bc_in_type
@@ -42,7 +44,7 @@ contains
 
 
 
-  subroutine mortality_rates( cohort_in,bc_in,cmort,hmort,bmort,frmort,smort,asmort )
+  subroutine mortality_rates( cohort_in,bc_in,cmort,hmort,bmort,frmort,smort,asmort,dgmort )
 
     ! ============================================================================
     !  Calculate mortality rates from carbon storage, hydraulic cavitation, 
@@ -52,6 +54,7 @@ contains
     use FatesConstantsMod,  only : tfrz => t_water_freeze_k_1atm
     use FatesInterfaceTypesMod        , only : hlm_hio_ignore_val   
     use FatesConstantsMod,  only : fates_check_param_set
+    use DamageMainMod,      only : get_damage_mortality
     
     type (ed_cohort_type), intent(in) :: cohort_in 
     type (bc_in_type), intent(in) :: bc_in
@@ -60,7 +63,8 @@ contains
     real(r8),intent(out) :: hmort  ! hydraulic failure mortality
     real(r8),intent(out) :: frmort ! freezing stress mortality
     real(r8),intent(out) :: smort  ! size dependent senescence term
-    real(r8),intent(out) :: asmort ! age dependent senescence term 
+    real(r8),intent(out) :: asmort ! age dependent senescence term
+    real(r8),intent(out) :: dgmort ! damage dependent mortality
 
     integer  :: ifp
     real(r8) :: frac  ! relativised stored carbohydrate
@@ -98,9 +102,6 @@ contains
     end if
 
     ! if param values have been set then calculate asmort
-
-    
-
     mort_r_age_senescence = EDPftvarcon_inst%mort_r_age_senescence(cohort_in%pft)
     mort_ip_age_senescence = EDPftvarcon_inst%mort_ip_age_senescence(cohort_in%pft)
     
@@ -114,8 +115,14 @@ contains
        asmort = 0.0_r8
     end if
 
-
+    ! JN Damage dependent mortality
+    if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+       call get_damage_mortality(cohort_in%crowndamage, dgmort)
+    else
+       dgmort = 0.0_r8
+    end if
     
+   
 if (hlm_use_ed_prescribed_phys .eq. ifalse) then
 
     ! 'Background' mortality (can vary as a function of 
@@ -201,6 +208,7 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
        bmort = 0.0_r8
        smort = 0.0_r8
        asmort = 0.0_r8
+       dgmort = 0.0_r8
     end if
        
     return
@@ -233,15 +241,17 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
     real(r8) :: frmort   ! freezing mortality rate (fraction per year)
     real(r8) :: smort    ! size dependent senescence mortality rate (fraction per year)
     real(r8) :: asmort   ! age dependent senescence mortality rate (fraction per year)
+    real(r8) :: dgmort   ! damage mortality (fraction per year0
     real(r8) :: dndt_logging      ! Mortality rate (per day) associated with the a logging event
     integer  :: ipft              ! local copy of the pft index
-    !----------------------------------------------------------------------
+   
+   !----------------------------------------------------------------------
 
     ipft = currentCohort%pft
     
     ! Mortality for trees in the understorey. 
     !if trees are in the canopy, then their death is 'disturbance'. This probably needs a different terminology
-    call mortality_rates(currentCohort,bc_in,cmort,hmort,bmort,frmort,smort, asmort)
+    call mortality_rates(currentCohort,bc_in,cmort,hmort,bmort,frmort,smort, asmort, dgmort)
     call LoggingMortality_frac(ipft, currentCohort%dbh, currentCohort%canopy_layer, &
                                currentCohort%lmort_direct,                       &
                                currentCohort%lmort_collateral,                    &
@@ -265,7 +275,7 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
 
        
        currentCohort%dndt = -1.0_r8 * &
-            (cmort+hmort+bmort+frmort+smort+asmort + dndt_logging) &
+            (cmort+hmort+bmort+frmort+smort+asmort+dgmort + dndt_logging) &
             * currentCohort%n
     else
 
@@ -274,7 +284,7 @@ if (hlm_use_ed_prescribed_phys .eq. ifalse) then
        ! Mortality from logging in the canopy is ONLY disturbance generating, don't
        ! update number densities via non-disturbance inducing death
        currentCohort%dndt= -(1.0_r8-fates_mortality_disturbance_fraction) &
-            * (cmort+hmort+bmort+frmort+smort+asmort) * &
+            * (cmort+hmort+bmort+frmort+smort+asmort+dgmort) * &
             currentCohort%n
 
     endif

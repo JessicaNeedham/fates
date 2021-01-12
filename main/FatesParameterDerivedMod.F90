@@ -45,7 +45,8 @@ module FatesParameterDerivedMod
   
   type(param_derived_type), public :: param_derived
   
-  
+contains 
+
   ! ===================================================================================
   subroutine InitAllocate(this,numpft)
     
