@@ -645,7 +645,6 @@ Module FatesHistoryInterfaceMod
   integer :: ih_m11_mortality_canopy_si_cdpf
   integer :: ih_m11_mortality_understory_si_cdpf
   integer :: ih_nplant_canopy_si_cdpf
-  integer :: ih_nplant_canopy_si_cdpf
   integer :: ih_nplant_understory_si_cdpf
   integer :: ih_nplant_canopy_si_cdsc
   integer :: ih_nplant_understory_si_cdsc

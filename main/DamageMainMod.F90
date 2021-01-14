@@ -176,20 +176,34 @@ contains
 
   !----------------------------------------------------------------------------------------
 
-  subroutine get_damage_mortality(crowndamage, dgmort)
+  subroutine get_damage_mortality(crowndamage,pft, dgmort)
 
     use FatesInterfaceTypesMod     , only : ncrowndamage
-
+    use EDPftvarcon                , only : EDPftvarcon_inst
+    
     integer(i4), intent(in) :: crowndamage
+    integer(i4), intent(in) :: pft
     real(r8),    intent(out) :: dgmort
 
+    ! local variables
+    integer(i4) :: i
     real(r8), allocatable :: dgmort_vec(:)
+    real(r8) :: damage_mort_p1
 
-    ! JN at some point these might be proper switches but for now just hardcode and comment out
+    ! parameter to determine slope of exponential
+    damage_mort_p1 = EDPftvarcon_inst%damage_mort_p1(pft)
+    
+    ! JN - set up a vector of damage mortality values 
     allocate(dgmort_vec(1:ncrowndamage))
+    do i = 1,ncrowndamage
+       dgmort_vec(i) = real(i)
+    end do
+
     
-    
-    dgmort_vec  =  (/0.01916056, 0.08167124, 0.11914035, 0.39789607, 0.30564619/)
+    ! JN should be an exponential - mortality gets higher with damage
+    dgmort_vec = dgmort_vec**damage_mort_p1
+    ! JN but must be bounded between 0 and 1
+    dgmort_vec = dgmort_vec/sum(dgmort_vec)
 
     dgmort = dgmort_vec(crowndamage)
     

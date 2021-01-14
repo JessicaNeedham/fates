@@ -117,7 +117,7 @@ contains
 
     ! JN Damage dependent mortality
     if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
-       call get_damage_mortality(cohort_in%crowndamage, dgmort)
+       call get_damage_mortality(cohort_in%crowndamage, cohort_in%pft, dgmort)
     else
        dgmort = 0.0_r8
     end if
