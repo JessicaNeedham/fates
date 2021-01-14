@@ -189,9 +189,11 @@ contains
     integer(i4) :: i
     real(r8), allocatable :: dgmort_vec(:)
     real(r8) :: damage_mort_p1
+    real(r8) :: damage_mort_p2
 
     ! parameter to determine slope of exponential
     damage_mort_p1 = EDPftvarcon_inst%damage_mort_p1(pft)
+    damage_mort_p2 = EDPftvarcon_inst%damage_mort_p2(pft)
     
     ! JN - set up a vector of damage mortality values 
     allocate(dgmort_vec(1:ncrowndamage))
@@ -199,12 +201,18 @@ contains
        dgmort_vec(i) = real(i)
     end do
 
+    ! JN - could make these proper cases?
     
-    ! JN should be an exponential - mortality gets higher with damage
-    dgmort_vec = dgmort_vec**damage_mort_p1
+    ! 1.  JN power function
+   ! dgmort_vec = dgmort_vec**damage_mort_p1
     ! JN but must be bounded between 0 and 1
-    dgmort_vec = dgmort_vec/sum(dgmort_vec)
+   ! dgmort_vec = dgmort_vec/sum(dgmort_vec)
 
+    ! 2. JN logistic function
+    dgmort_vec = 1.0_r8 / (1.0_r8 + exp(-1.0_r8 * damage_mort_p2 * &
+         (dgmort_vec - damage_mort_p1) ) )
+
+    
     dgmort = dgmort_vec(crowndamage)
     
     return
