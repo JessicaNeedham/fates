@@ -2969,14 +2969,14 @@ end subroutine flush_hvars
                                ccohort%cmort * ccohort%n
                           ! damage mortality in the canopy by size x damage x pft 
                           hio_m11_mortality_canopy_si_cdpf(io_si,cdpf) = hio_m11_mortality_canopy_si_cdpf(io_si,cdpf)+&
-                               ccohort%cmort * ccohort%n
+                               ccohort%dgmort * ccohort%n
 
                           ! carbon starvation mortality in the canopy by  size x damage
                           hio_m3_mortality_canopy_si_cdsc(io_si,cdsc) = hio_m3_mortality_canopy_si_cdsc(io_si,cdsc)+&
                                ccohort%cmort * ccohort%n
                           ! damage mortality in the canopy by  size x damage
                           hio_m11_mortality_canopy_si_cdsc(io_si,cdsc) = hio_m11_mortality_canopy_si_cdsc(io_si,cdsc)+&
-                               ccohort%cmort * ccohort%n
+                               ccohort%dgmort * ccohort%n
 
                           ! nplants by damage 
                           hio_nplant_canopy_si_cdpf(io_si,cdpf) = hio_nplant_canopy_si_cdpf(io_si,cdpf) + ccohort%n
@@ -3097,7 +3097,7 @@ end subroutine flush_hvars
 
                           ! damage mortality in the understory by size and by size x damage
                           hio_m11_mortality_understory_si_cdsc(io_si,cdsc) = hio_m11_mortality_understory_si_cdsc(io_si,cdsc)+&
-                               ccohort%cmort * ccohort%n  
+                               ccohort%dgmort * ccohort%n  
 
                           ! carbon mortality in the understory by damage x size x pft
                           hio_m3_mortality_understory_si_cdpf(io_si,cdpf) = hio_m3_mortality_understory_si_cdpf(io_si,cdpf)+&
@@ -3105,7 +3105,7 @@ end subroutine flush_hvars
 
                            ! damage in the understory by damage x size x pft
                           hio_m11_mortality_understory_si_cdpf(io_si,cdpf) = hio_m11_mortality_understory_si_cdpf(io_si,cdpf)+&
-                               ccohort%cmort * ccohort%n
+                               ccohort%dgmort * ccohort%n
 
                           ! number of plants in the understory by size x damage and size x damage x pft
                           hio_nplant_understory_si_cdsc(io_si,cdsc) = hio_nplant_understory_si_cdsc(io_si,cdsc) + ccohort%n
