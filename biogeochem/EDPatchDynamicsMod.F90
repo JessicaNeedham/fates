@@ -1,3 +1,4 @@
+
 module EDPatchDynamicsMod
 
   ! ============================================================================
@@ -206,10 +207,7 @@ contains
           call carea_allom(currentCohort%dbh,currentCohort%n,site_in%spread,currentCohort%pft, &
                currentCohort%crowndamage,currentCohort%c_area)
 
-          !JN
-          write(fates_log(),*)'JN: carea : ', currentCohort%c_area
-          write(fates_log(),*)'JN: site spread : ', site_in%spread 
-
+         
           ! Initialize diagnostic mortality rates
           currentCohort%cmort = cmort
           currentCohort%bmort = bmort
@@ -573,9 +571,14 @@ contains
 
 
     ! zero the diagnostic damage carbon flux
-    currentSite%damage_cflux(:,:) = 0._r8
-    currentSite%damage_rate(:,:) = 0._r8
-    
+    ! JN maybe this only needs to be done if it a damage day?
+    if(hlm_use_understory_damage .eq. itrue .or. hlm_use_canopy_damage .eq. itrue &
+         .and. damage_time ) then
+       
+       currentSite%damage_cflux(:,:) = 0._r8
+       currentSite%damage_rate(:,:) = 0._r8
+    end if
+
     do while(associated(currentPatch))
 
     
@@ -1566,7 +1569,7 @@ contains
 
        enddo ! currentPatch patch loop.
 
-      ! write(fates_log(),'(a/,5(F12.6,1x))') 'JN spawn patches damage rate : ', currentSite%damage_rate 
+!       write(fates_log(),'(a/,5(F12.6,1x))') 'JN spawn patches damage rate : ', currentSite%damage_rate 
 
        !write(fates_log(),*) 'JN Site level pre damage live stock : ', live_stock_pre
        !write(fates_log(),*) 'JN Site level post damage live stock: ', live_stock_post 

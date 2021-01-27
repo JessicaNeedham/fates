@@ -62,9 +62,7 @@ contains
     if (hlm_day_of_year .eq. 1) then
        damage_time = .true.
     end if
-
-    write(fates_log(),*) 'JN day of year', hlm_day_of_year, 'damage_time,', damage_time
-    
+   
   end subroutine is_it_damage_time
   
   !----------------------------------------------------------------------------
