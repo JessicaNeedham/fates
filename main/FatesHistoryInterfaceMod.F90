@@ -2782,16 +2782,18 @@ end subroutine flush_hvars
                        cdpf = get_cdamagesizepft_class_index(ccohort%dbh, ccohort%crowndamage, ccohort%pft)
                        cdsc = get_cdamagesize_class_index(ccohort%dbh, ccohort%crowndamage)
 
-                       ! crown damage 
-                       hio_nplant_si_cdam(io_si, cdam) = hio_nplant_si_cdam(io_si, cdam) + ccohort%n
-
+                       ! crown damage - only want cohorts > 1 cm dbh here so we can compare it with data
+                       if(ccohort%dbh > 1.0_r8) then
+                          hio_nplant_si_cdam(io_si, cdam) = hio_nplant_si_cdam(io_si, cdam) + ccohort%n
+                          hio_mortality_si_cdam(io_si,cdam) = hio_mortality_si_cdam(io_si,cdam) + &
+                               (ccohort%bmort + ccohort%hmort + ccohort%cmort + &
+                               ccohort%frmort + ccohort%smort + ccohort%asmort + ccohort%dgmort) * ccohort%n + &
+                               (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * &
+                               ccohort%n * sec_per_day * days_per_year
+                       end if
+                       
+                       
                        hio_m3_si_cdam(io_si, cdam) = hio_m3_si_cdam(io_si, cdam) + ccohort%cmort * ccohort%n
-
-                       hio_mortality_si_cdam(io_si,cdam) = hio_mortality_si_cdam(io_si,cdam) + &
-                            (ccohort%bmort + ccohort%hmort + ccohort%cmort + &
-                            ccohort%frmort + ccohort%smort + ccohort%asmort + ccohort%dgmort) * ccohort%n + &
-                            (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * &
-                            ccohort%n * sec_per_day * days_per_year
 
                        hio_trimming_damage_si_cdsc(io_si,cdsc) = hio_trimming_damage_si_cdsc(io_si,cdsc) + &
                             ccohort%n * ccohort%canopy_trim
