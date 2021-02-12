@@ -912,8 +912,8 @@ contains
                               nc%n * ED_val_understorey_death / hlm_freq_day
 
                          if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
-                            currentSite%imort_rate_damage(currentCohort%crowndamage) = &
-                                 currentSite%imort_rate_damage(currentCohort%crowndamage) + &
+                            currentSite%imort_rate_damage(currentCohort%crowndamage, currentCohort%size_class) = &
+                                 currentSite%imort_rate_damage(currentCohort%crowndamage, currentCohort%size_class) + &
                                  nc%n * ED_val_understorey_death / hlm_freq_day
                          end if
 
@@ -922,8 +922,8 @@ contains
                               total_c * g_per_kg * days_per_sec * years_per_day * ha_per_m2
 
                          if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue ) then
-                            currentSite%imort_cflux_damage(currentCohort%crowndamage) = &
-                                 currentSite%imort_cflux_damage(currentCohort%crowndamage) + &
+                            currentSite%imort_cflux_damage(currentCohort%crowndamage, currentCohort%size_class) = &
+                                 currentSite%imort_cflux_damage(currentCohort%crowndamage, currentCohort%size_class) + &
                                  (nc%n * ED_val_understorey_death / hlm_freq_day ) * &
                                  total_c * g_per_kg * days_per_sec * years_per_day * ha_per_m2
                          end if
@@ -1144,8 +1144,8 @@ contains
                               logging_coll_under_frac / hlm_freq_day
 
                          if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then 
-                            currentSite%imort_rate_damage(currentCohort%crowndamage) = &
-                                 currentSite%imort_rate_damage(currentCohort%crowndamage) + &
+                            currentSite%imort_rate_damage(currentCohort%crowndamage, currentCohort%size_class) = &
+                                 currentSite%imort_rate_damage(currentCohort%crowndamage, currentCohort%size_class) + &
                                  nc%n * currentPatch%fract_ldist_not_harvested * &
                                  logging_coll_under_frac / hlm_freq_day
                          end if
@@ -1156,8 +1156,8 @@ contains
                               total_c * g_per_kg * days_per_sec * years_per_day * ha_per_m2
 
                          if ( hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue ) then
-                            currentSite%imort_cflux_damage(nc%crowndamage) = &
-                                 currentSite%imort_cflux_damage(nc%crowndamage) + &
+                            currentSite%imort_cflux_damage(nc%crowndamage, nc%size_class) = &
+                                 currentSite%imort_cflux_damage(nc%crowndamage, nc%size_class) + &
                                  (nc%n * currentPatch%fract_ldist_not_harvested * &
                                  logging_coll_under_frac/ hlm_freq_day ) * &
                                  total_c * g_per_kg * days_per_sec * years_per_day * ha_per_m2

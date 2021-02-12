@@ -630,7 +630,7 @@ Module FatesHistoryInterfaceMod
   integer :: ih_nplant_understory_si_cdam
   integer :: ih_nplant_si_cdpf
   integer :: ih_nplant_si_cdsc
-  integer :: ih_mortality_si_cdam
+  integer :: ih_mortality_si_cdsc
   integer :: ih_m3_si_cdam
   integer :: ih_m3_si_cdpf
   integer :: ih_m3_si_cdsc
@@ -2117,7 +2117,7 @@ end subroutine flush_hvars
                hio_nplant_si_cdam                 => this%hvars(ih_nplant_si_cdam)%r82d, &
                hio_nplant_si_cdpf                 => this%hvars(ih_nplant_si_cdpf)%r82d, &
                hio_nplant_si_cdsc                 => this%hvars(ih_nplant_si_cdsc)%r82d, &
-               hio_mortality_si_cdam              => this%hvars(ih_mortality_si_cdam)%r82d, &
+               hio_mortality_si_cdsc              => this%hvars(ih_mortality_si_cdsc)%r82d, &
                hio_m3_si_cdam                     => this%hvars(ih_m3_si_cdam)%r82d, &
                hio_m3_si_cdpf                     => this%hvars(ih_m3_si_cdpf)%r82d, &
                hio_m3_si_cdsc                     => this%hvars(ih_m3_si_cdsc)%r82d, &
@@ -2783,14 +2783,13 @@ end subroutine flush_hvars
                        cdsc = get_cdamagesize_class_index(ccohort%dbh, ccohort%crowndamage)
 
                        ! crown damage - only want cohorts > 1 cm dbh here so we can compare it with data
-                       if(ccohort%dbh > 1.0_r8) then
-                          hio_nplant_si_cdam(io_si, cdam) = hio_nplant_si_cdam(io_si, cdam) + ccohort%n
-                          hio_mortality_si_cdam(io_si,cdam) = hio_mortality_si_cdam(io_si,cdam) + &
-                               (ccohort%bmort + ccohort%hmort + ccohort%cmort + &
-                               ccohort%frmort + ccohort%smort + ccohort%asmort + ccohort%dgmort) * ccohort%n + &
-                               (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * &
-                               ccohort%n * sec_per_day * days_per_year
-                       end if
+                       hio_nplant_si_cdam(io_si, cdam) = hio_nplant_si_cdam(io_si, cdam) + ccohort%n
+                       hio_mortality_si_cdsc(io_si,cdsc) = hio_mortality_si_cdsc(io_si,cdsc) + &
+                            (ccohort%bmort + ccohort%hmort + ccohort%cmort + &
+                            ccohort%frmort + ccohort%smort + ccohort%asmort + ccohort%dgmort) * ccohort%n + &
+                            (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * &
+                            ccohort%n * sec_per_day * days_per_year
+                      
                        
                        
                        hio_m3_si_cdam(io_si, cdam) = hio_m3_si_cdam(io_si, cdam) + ccohort%cmort * ccohort%n
@@ -3387,25 +3386,30 @@ end subroutine flush_hvars
          if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
             ! impact and termination mortality to damage
             do icdam = 1, ncrowndamage
-               hio_mortality_si_cdam(io_si, icdam) = hio_mortality_si_cdam(io_si, icdam) + &
-                    (sites(s)%term_nindivs_damage(icdam) * days_per_year) + &
-                    sites(s)%imort_rate_damage(icdam)
+               do i_scls = 1,nlevsclass
 
-               imcdam = icdam + (ncrowndamage * ncrowndamage)
-               hio_damage_rate_si_cdcd(io_si, imcdam) = hio_damage_rate_si_cdcd(io_si, imcdam) + &
-                    sites(s)%term_nindivs_damage(icdam) * days_per_year  + &
-                    (sites(s)%imort_rate_damage(icdam) )
+                  icdsc = (icdam-1)*nlevsclass + i_scls
 
-               hio_recovery_rate_si_cdcd(io_si, imcdam) = hio_recovery_rate_si_cdcd(io_si, imcdam) + &
-                    sites(s)%term_nindivs_damage(icdam) * days_per_year  + &
-                    (sites(s)%imort_rate_damage(icdam))
+                  hio_mortality_si_cdsc(io_si, icdsc) = hio_mortality_si_cdsc(io_si, icdsc) + &
+                       (sites(s)%term_nindivs_damage(icdam, i_scls) * days_per_year) + &
+                       sites(s)%imort_rate_damage(icdam, i_scls)
 
-               hio_damage_cflux_si_cdcd(io_si, imcdam) = hio_damage_cflux_si_cdcd(io_si, imcdam) + &
-                    sites(s)%imort_cflux_damage(icdam) + &
-                    sites(s)%term_cflux_damage(icdam) * g_per_kg * days_per_sec * ha_per_m2
-               hio_recovery_cflux_si_cdcd(io_si, imcdam) = hio_recovery_cflux_si_cdcd(io_si, imcdam) + &
-                    sites(s)%imort_cflux_damage(icdam) + & 
-                    sites(s)%term_cflux_damage(icdam) * g_per_kg * days_per_sec * ha_per_m2
+                  imcdam = icdam + (ncrowndamage * ncrowndamage)
+                  hio_damage_rate_si_cdcd(io_si, imcdam) = hio_damage_rate_si_cdcd(io_si, imcdam) + &
+                       sites(s)%term_nindivs_damage(icdam, i_scls) * days_per_year  + &
+                       (sites(s)%imort_rate_damage(icdam, i_scls) )
+
+                  hio_recovery_rate_si_cdcd(io_si, imcdam) = hio_recovery_rate_si_cdcd(io_si, imcdam) + &
+                       sites(s)%term_nindivs_damage(icdam, i_scls) * days_per_year  + &
+                       (sites(s)%imort_rate_damage(icdam, i_scls))
+
+                  hio_damage_cflux_si_cdcd(io_si, imcdam) = hio_damage_cflux_si_cdcd(io_si, imcdam) + &
+                       sites(s)%imort_cflux_damage(icdam, i_scls) + &
+                       sites(s)%term_cflux_damage(icdam, i_scls) * g_per_kg * days_per_sec * ha_per_m2
+                  hio_recovery_cflux_si_cdcd(io_si, imcdam) = hio_recovery_cflux_si_cdcd(io_si, imcdam) + &
+                       sites(s)%imort_cflux_damage(icdam, i_scls) + & 
+                       sites(s)%term_cflux_damage(icdam, i_scls) * g_per_kg * days_per_sec * ha_per_m2
+               end do
             end do
          end if
 
@@ -3422,10 +3426,10 @@ end subroutine flush_hvars
          sites(s)%fmort_rate_crown(:,:) = 0._r8
          sites(s)%growthflux_fusion(:,:) = 0._r8
 
-         sites(s)%imort_rate_damage(:) = 0._r8
-         sites(s)%term_nindivs_damage(:) = 0._r8
-         sites(s)%imort_cflux_damage(:) = 0._r8
-         sites(s)%term_cflux_damage(:) = 0._r8
+         sites(s)%imort_rate_damage(:,:) = 0._r8
+         sites(s)%term_nindivs_damage(:,:) = 0._r8
+         sites(s)%imort_cflux_damage(:,:) = 0._r8
+         sites(s)%term_cflux_damage(:,:) = 0._r8
 
          ! JN we don't zero damage rate or recovery rate/cflux because
          ! damage only occurs at a specified time - need to keep the transition
@@ -3785,7 +3789,7 @@ end subroutine flush_hvars
          write(fates_log(),*) 'N by recovery rate  : ', r_alive
          write(fates_log(),*) 'mortality sum by rate   : ', t_dead
          write(fates_log(),*) 'mortality sum by pft    : ', sum(hio_mortality_si_pft(:,:))
-         write(fates_log(),*) 'mortality sum by damage : ', sum(hio_mortality_si_cdam(:,:))
+         write(fates_log(),*) 'mortality sum by damage : ', sum(hio_mortality_si_cdsc(:,:))
          write(fates_log(),*) 'mortality sum by recovery ', r_dead 
          
          t_alive = 0.0_r8
@@ -6495,10 +6499,10 @@ end subroutine update_history_hifrq
           avgflag='A', vtype=site_cdamage_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m3_si_cdam )
 
-    call this%set_history_var(vname='MORTALITY_CDAM', units = 'N/ha/yr',          &
-          long='mortality by damage class', use_default='inactive', &
-          avgflag='A', vtype=site_cdamage_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
-          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_mortality_si_cdam )
+    call this%set_history_var(vname='MORTALITY_CDSC', units = 'N/ha/yr',          &
+          long='mortality by damage class by size', use_default='inactive', &
+          avgflag='A', vtype=site_cdsc_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
+          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_mortality_si_cdsc )
     
     call this%set_history_var(vname='M3_MORTALITY_CANOPY_CDSC', units = 'indiv/ha/yr',               &
           long='C starviation mortality of canopy trees by damage/size class', use_default='inactive',   &

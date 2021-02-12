@@ -127,19 +127,19 @@ contains
        allocate(site_in%damage_rate(1:ncrowndamage, 1:ncrowndamage+1))
        allocate(site_in%recovery_cflux(1:ncrowndamage, 1:ncrowndamage+1))
        allocate(site_in%recovery_rate(1:ncrowndamage, 1:ncrowndamage+1))
-       allocate(site_in%term_nindivs_damage(1:ncrowndamage))
-       allocate(site_in%imort_rate_damage(1:ncrowndamage))
-       allocate(site_in%imort_cflux_damage(1:ncrowndamage))
-       allocate(site_in%term_cflux_damage(1:ncrowndamage))
+       allocate(site_in%term_nindivs_damage(1:ncrowndamage, 1:nlevsclass))
+       allocate(site_in%imort_rate_damage(1:ncrowndamage, 1:nlevsclass))
+       allocate(site_in%imort_cflux_damage(1:ncrowndamage, 1:nlevsclass))
+       allocate(site_in%term_cflux_damage(1:ncrowndamage, 1:nlevsclass))
     else
        allocate(site_in%damage_cflux(1, 1))
        allocate(site_in%damage_rate(1, 1))
        allocate(site_in%recovery_cflux(1, 1))
        allocate(site_in%recovery_rate(1, 1))
-       allocate(site_in%term_nindivs_damage(1))
-       allocate(site_in%imort_rate_damage(1))
-       allocate(site_in%imort_cflux_damage(1))
-       allocate(site_in%term_cflux_damage(1))
+       allocate(site_in%term_nindivs_damage(1,1))
+       allocate(site_in%imort_rate_damage(1,1))
+       allocate(site_in%imort_cflux_damage(1,1))
+       allocate(site_in%term_cflux_damage(1,1))
     end if
 
     
@@ -250,10 +250,10 @@ contains
     site_in%damage_rate(:,:) = 0._r8
     site_in%recovery_cflux(:,:) = 0._r8
     site_in%recovery_rate(:,:) = 0._r8
-    site_in%imort_rate_damage(:) = 0._r8
-    site_in%term_nindivs_damage(:) = 0._r8
-    site_in%imort_cflux_damage(:) = 0._r8
-    site_in%term_cflux_damage(:) = 0._r8
+    site_in%imort_rate_damage(:,:) = 0._r8
+    site_in%term_nindivs_damage(:,:) = 0._r8
+    site_in%imort_cflux_damage(:,:) = 0._r8
+    site_in%term_cflux_damage(:,:) = 0._r8
     
     ! Resources management (logging/harvesting, etc)
     site_in%resources_management%trunk_product_site  = 0.0_r8

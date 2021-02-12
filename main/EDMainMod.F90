@@ -384,12 +384,6 @@ contains
        currentCohort => currentPatch%shortest
        do while(associated(currentCohort)) 
 
-          !JN
-          if(currentCohort%crowndamage > 1) then 
-             write(fates_log(),*) 'JN something is horribly wrong crown damage > 1'
-          end if
-          
-             
           ft = currentCohort%pft
 
           ! Calculate the mortality derivatives

@@ -121,8 +121,8 @@ contains
     else
        dgmort = 0.0_r8
     end if
-    
-   
+
+
 if (hlm_use_ed_prescribed_phys .eq. ifalse) then
 
     ! 'Background' mortality (can vary as a function of 
