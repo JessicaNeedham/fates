@@ -211,8 +211,12 @@ contains
          (dgmort_vec - damage_mort_p1) ) )
 
     
-    dgmort = dgmort_vec(crowndamage)
-    
+    if (crowndamage .eq. 1 ) then
+       dgmort = 0.0_r8
+    else
+       dgmort = dgmort_vec(crowndamage)
+    end if
+
     return
   end subroutine get_damage_mortality
   !----------------------------------------------------------------------------------------
