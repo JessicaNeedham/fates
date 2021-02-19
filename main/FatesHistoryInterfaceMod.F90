@@ -649,6 +649,7 @@ Module FatesHistoryInterfaceMod
   integer :: ih_nplant_canopy_si_cdsc
   integer :: ih_nplant_understory_si_cdsc
   integer :: ih_trimming_damage_si_cdsc
+  integer :: ih_ddbh_si_cdsc
   
   ! damage carbonflux
   integer :: ih_damage_cflux_si_cdcd
@@ -2142,7 +2143,7 @@ end subroutine flush_hvars
                hio_recovery_cflux_si_cdcd         => this%hvars(ih_recovery_cflux_si_cdcd)%r82d, &
                hio_recovery_rate_si_cdcd          => this%hvars(ih_recovery_rate_si_cdcd)%r82d, & 
                hio_trimming_damage_si_cdsc        => this%hvars(ih_trimming_damage_si_cdsc)%r82d, &
-               
+               hio_ddbh_si_cdsc                   => this%hvars(ih_ddbh_si_cdsc)%r82d, &
                
                hio_m1_si_scls          => this%hvars(ih_m1_si_scls)%r82d, &
                hio_m2_si_scls          => this%hvars(ih_m2_si_scls)%r82d, &
@@ -2810,6 +2811,9 @@ end subroutine flush_hvars
                        hio_m11_si_scls(io_si,scls) = hio_m11_si_scls(io_si,scls) + ccohort%dgmort*ccohort%n
                        hio_m11_si_cdpf(io_si,cdpf) = hio_m11_si_cdpf(io_si,cdpf) + ccohort%dgmort*ccohort%n
                        hio_m11_si_cdsc(io_si,cdsc) = hio_m11_si_cdsc(io_si,cdsc) + ccohort%dgmort*ccohort%n
+
+                       hio_ddbh_si_cdsc(io_si,cdsc) = hio_ddbh_si_cdsc(io_si,cdsc) + &
+                            ccohort%ddbhdt*ccohort%n
 
                        
                        ! add mortality to the damage and recovery rates    
@@ -6549,6 +6553,10 @@ end subroutine update_history_hifrq
           avgflag='A', vtype=site_cdsc_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_trimming_damage_si_cdsc )
 
+    call this%set_history_var(vname='DDBH_CDSC', units = 'cm/year/ha',               &
+          long='ddbh annual increment growth by damage and size', use_default='inactive',   &
+          avgflag='A', vtype=site_cdsc_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
+          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_ddbh_si_cdsc )
 
     ! CARBON BALANCE VARIABLES THAT DEPEND ON HLM BGC INPUTS
 
