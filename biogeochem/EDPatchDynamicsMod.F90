@@ -1,4 +1,3 @@
-
 module EDPatchDynamicsMod
 
   ! ============================================================================
@@ -572,11 +571,11 @@ contains
 
     ! zero the diagnostic damage carbon flux
     ! JN maybe this only needs to be done if it a damage day?
-    if(hlm_use_understory_damage .eq. itrue .or. hlm_use_canopy_damage .eq. itrue &
-         .and. damage_time ) then
-       
-       currentSite%damage_cflux(:,:) = 0._r8
-       currentSite%damage_rate(:,:) = 0._r8
+    if(hlm_use_understory_damage .eq. itrue .or. hlm_use_canopy_damage .eq. itrue) then
+       if( damage_time ) then
+          currentSite%damage_cflux(:,:) = 0._r8
+          currentSite%damage_rate(:,:) = 0._r8
+       end if
     end if
 
     do while(associated(currentPatch))
@@ -751,7 +750,7 @@ contains
              
              
              ! send mass lost from damaged but surviving trees to litter             
-             if(hlm_use_understory_damage .eq. itrue .and. damage_time ) then 
+             if(hlm_use_understory_damage .eq. itrue .and. damage_time ) then
                 call damage_litter_fluxes(currentSite, currentPatch, new_patch, patch_site_areadis, &
                      total_damage_litter)
              end if
@@ -814,7 +813,7 @@ contains
                
           ! This is the amount of patch area that is disturbed, and donated by the donor
           patch_site_areadis = currentPatch%area * currentPatch%disturbance_rate
-          
+ 
           if ( patch_site_areadis > nearzero ) then
 
            
@@ -932,7 +931,7 @@ contains
                          ! remaining of understory plants of those that are knocked over 
                          ! by the overstorey trees dying...  
                          nc%n = nc%n * (1.0_r8 - ED_val_understorey_death)
-
+                         
                          ! since the donor patch split and sent a fraction of its members
                          ! to the new patch and a fraction to be preserved in itself,
                          ! when reporting diagnostic rates, we must carry over the mortality rates from
@@ -1131,6 +1130,7 @@ contains
                          !          and cohort counts are absolute, reduce this number.
                          nc%n = currentCohort%n * patch_site_areadis/currentPatch%area
 
+                         
                          ! because the mortality rate due to impact for the cohorts which had 
                          ! been in the understory and are now in the newly-
                          ! disturbed patch is very high, passing the imort directly to 
@@ -1234,7 +1234,7 @@ contains
                       ! for each damage class find the number density and if big enough allocate a new cohort
                        do cd = nc%crowndamage+1, ncrowndamage 
                          call get_damage_frac(nc%crowndamage, cd, currentCohort%pft, cd_frac)
-                  
+
                          cd_n = nc%n * cd_frac
 
                          if(cd_n > nearzero) then
