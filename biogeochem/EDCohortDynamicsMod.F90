@@ -2204,39 +2204,61 @@ contains
     ! locals                                                                                                                                                  
     real(r8) :: leaf_c
     real(r8) :: target_leaf_c
+    real(r8) :: a_sapw_target
+    real(r8) :: c_sapw_target
     integer  :: pre_recovery
     real(r8) :: sapw_c
     real(r8) :: struct_c
     real(r8) :: fnrt_c
     real(r8) :: store_c
     real(r8) ::  repro_c
+    real(r8) :: biomass_crown
+    real(r8) :: target_crown
 
     pre_recovery = currentCohort%crowndamage
    
     
     leaf_c = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
+    sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
+ 
+    biomass_crown = leaf_c + sapw_c 
+    
     call bleaf(currentCohort%dbh, currentCohort%pft,currentCohort%canopy_trim,&
          target_leaf_c)
 
-    call get_crown_damage(leaf_c, target_leaf_c, currentCohort%crowndamage)
+    call bsap_allom(currentCohort%dbh, currentCohort%pft, currentCohort%canopy_trim, &
+         a_sapw_target, c_sapw_target) 
+    
+    target_crown = target_leaf_c + c_sapw_target
+    
+    call get_crown_damage(biomass_crown, target_crown, currentCohort%crowndamage)
     call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread,currentCohort%pft, &
          currentCohort%crowndamage, currentCohort%c_area)
+    
+    sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
+    struct_c = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
+    leaf_c   = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
+    fnrt_c   = currentCohort%prt%GetState(fnrt_organ, all_carbon_elements)
+    store_c  = currentCohort%prt%GetState(store_organ, all_carbon_elements)
+    repro_c  = currentCohort%prt%GetState(repro_organ, all_carbon_elements)
 
-       sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
-       struct_c = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
-       leaf_c   = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
-       fnrt_c   = currentCohort%prt%GetState(fnrt_organ, all_carbon_elements)
-       store_c  = currentCohort%prt%GetState(store_organ, all_carbon_elements)
-       repro_c  = currentCohort%prt%GetState(repro_organ, all_carbon_elements)
+    if(currentCohort%crowndamage < pre_recovery) then
 
-       currentSite%recovery_rate(pre_recovery, currentCohort%crowndamage) &
-            = currentSite%recovery_rate(pre_recovery, currentCohort%crowndamage) + &
+       currentSite%damage_rate(pre_recovery, currentCohort%crowndamage) &
+            = currentSite%damage_rate(pre_recovery, currentCohort%crowndamage) + &
             currentCohort%n
 
-       currentSite%recovery_cflux(pre_recovery, currentCohort%crowndamage) &
-            = currentSite%recovery_cflux(pre_recovery,currentCohort%crowndamage) + &
+       currentSite%damage_cflux(pre_recovery, currentCohort%crowndamage) &
+            = currentSite%damage_cflux(pre_recovery,currentCohort%crowndamage) + &
             (leaf_c + sapw_c + struct_c + store_c + fnrt_c + repro_c) * currentCohort%n
- 
+
+       write(fates_log(),*) 'JN crown damage pre: ', pre_recovery
+       write(fates_log(),*) 'JN crown damage post: ', currentCohort%crowndamage
+       write(fates_log(),*) 'JN target crown: ', target_crown
+       write(fates_log(),*) 'JN actual crown: ', biomass_crown
+    end if
+
+
     return
   end subroutine damage_recovery
 
