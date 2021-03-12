@@ -348,10 +348,7 @@ contains
     leaf_loss = 0.0_r8
     leaf_loss_prt = 0.0_r8
     counter_n = 0._r8
-
-    currentSite%recovery_cflux(:,:) = 0._r8
-    currentSite%recovery_rate(:,:) = 0._r8
-
+  
     call get_frac_site_primary(currentSite, frac_site_primary)
 
     ! Set a pointer to this sites carbon12 mass balance
@@ -582,10 +579,6 @@ contains
        currentPatch => currentPatch%older
    end do
 
-  
-   write(fates_log(),*) 'recovery cflux : ', sum(currentSite%recovery_cflux(:,:))
-   write(fates_log(),*) 'ed main mod N  : ', counter_n
-   write(fates_log(),*) 'recovery N     : ', sum(currentSite%recovery_rate(:,:))
    
     ! When plants die, the water goes with them.  This effects
     ! the water balance. 

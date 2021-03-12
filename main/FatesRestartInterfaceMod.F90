@@ -190,8 +190,6 @@ module FatesRestartInterfaceMod
   integer :: ir_promrate_sisc
   integer :: ir_damage_cflux_sicd
   integer :: ir_damage_rate_sicd
-  integer :: ir_recovery_cflux_sicd
-  integer :: ir_recovery_rate_sicd
   integer :: ir_termcflux_cano_si
   integer :: ir_termcflux_usto_si
   integer :: ir_democflux_si
@@ -1208,16 +1206,6 @@ contains
          units='indiv / ha/ day', flushval = flushzero, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_damage_rate_sicd)
 
-    call this%set_restart_var(vname='fates_recovery_cflux', vtype=cohort_r8, &
-         long_name='fates diagnostic rate of damage recovery carbonflux', &
-         units='kg C/ha/day', flushval = flushzero, &
-         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_recovery_cflux_sicd)
-
-    call this%set_restart_var(vname='fates_recovery_rate', vtype=cohort_r8, &
-         long_name='fates diagnostic rate of damage transitions', &
-         units='indiv / ha/ day', flushval = flushzero, &
-         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_recovery_rate_sicd)
-    
     call this%set_restart_var(vname='fates_imortcflux', vtype=site_r8, &
          long_name='biomass of indivs killed due to impact mort', &
          units='kgC/ha/day', flushval = flushzero, &
@@ -1745,8 +1733,6 @@ contains
            rio_promrate_sisc           => this%rvars(ir_promrate_sisc)%r81d, &
            rio_damage_cflux_sicd       => this%rvars(ir_damage_cflux_sicd)%r81d, &
            rio_damage_rate_sicd        => this%rvars(ir_damage_rate_sicd)%r81d, & 
-           rio_recovery_cflux_sicd     => this%rvars(ir_recovery_cflux_sicd)%r81d, &
-           rio_recovery_rate_sicd      => this%rvars(ir_recovery_rate_sicd)%r81d, & 
            rio_termcflux_cano_si       => this%rvars(ir_termcflux_cano_si)%r81d, &
            rio_termcflux_usto_si       => this%rvars(ir_termcflux_usto_si)%r81d, &
            rio_democflux_si            => this%rvars(ir_democflux_si)%r81d, &
@@ -2125,22 +2111,23 @@ contains
                    rio_damage_rate_sicd(io_idx_si_cdcd) = &
                         sites(s)%damage_rate(icdi,icdj)
 
-                   rio_recovery_cflux_sicd(io_idx_si_cdcd) = &
-                        sites(s)%recovery_cflux(icdi,icdj)
-
-                   rio_recovery_rate_sicd(io_idx_si_cdcd) = &
-                        sites(s)%recovery_rate(icdi,icdj)
                    io_idx_si_cdcd = io_idx_si_cdcd + 1
 
                 end do
-                rio_imortrate_sicdsc(io_idx_si_cdsc) = sites(s)%imort_rate_damage(i_cdam, i_scls)
-                rio_termnindiv_sicdsc(io_idx_si_cdsc) = sites(s)%term_nindivs_damage(i_cdam, i_scls)
-                rio_imortcflux_sicdsc(io_idx_si_cdsc) = sites(s)%imort_cflux_damage(i_cdam, i_scls)
-                rio_termcflux_sicdsc(io_idx_si_cdsc) = sites(s)%term_cflux_damage(i_cdam, i_scls)
+             end do
+
+             do i_scls = 1, nlevsclass
+                do i_cdam = i, ncrowndamage
+                   rio_imortrate_sicdsc(io_idx_si_cdsc) = sites(s)%imort_rate_damage(i_cdam, i_scls)
+                   rio_termnindiv_sicdsc(io_idx_si_cdsc) = sites(s)%term_nindivs_damage(i_cdam, i_scls)
+                   rio_imortcflux_sicdsc(io_idx_si_cdsc) = sites(s)%imort_cflux_damage(i_cdam, i_scls)
+                   rio_termcflux_sicdsc(io_idx_si_cdsc) = sites(s)%term_cflux_damage(i_cdam, i_scls)
+                   io_idx_si_cdsc = io_idx_si_cdsc + 1
+                end do
              end do
           end if
 
-          
+
           rio_termcflux_cano_si(io_idx_si)  = sites(s)%term_carbonflux_canopy
           rio_termcflux_usto_si(io_idx_si)  = sites(s)%term_carbonflux_ustory
           rio_democflux_si(io_idx_si)       = sites(s)%demotion_carbonflux
@@ -2578,8 +2565,6 @@ contains
           rio_promrate_sisc           => this%rvars(ir_promrate_sisc)%r81d, &
           rio_damage_cflux_sicd       => this%rvars(ir_damage_cflux_sicd)%r81d, &
           rio_damage_rate_sicd        => this%rvars(ir_damage_rate_sicd)%r81d, & 
-          rio_recovery_cflux_sicd     => this%rvars(ir_recovery_cflux_sicd)%r81d, &
-          rio_recovery_rate_sicd      => this%rvars(ir_recovery_rate_sicd)%r81d, & 
           rio_imortrate_sicdsc        => this%rvars(ir_imortrate_sicdsc)%r81d, &
           rio_termnindiv_sicdsc       => this%rvars(ir_termnindiv_sicdsc)%r81d, &
           rio_imortcflux_sicdsc       => this%rvars(ir_imortcflux_sicdsc)%r81d, &
@@ -2994,8 +2979,6 @@ contains
                 do icdj = 1,ncrowndamage+1
                    sites(s)%damage_cflux(icdi,icdj) = rio_damage_cflux_sicd(io_idx_si_cdcd) 
                    sites(s)%damage_rate(icdi,icdj) =  rio_damage_rate_sicd(io_idx_si_cdcd) 
-                   sites(s)%recovery_cflux(icdi,icdj) = rio_recovery_cflux_sicd(io_idx_si_cdcd)
-                   sites(s)%recovery_rate(icdi,icdj) = rio_recovery_rate_sicd(io_idx_si_cdcd) 
                    io_idx_si_cdcd = io_idx_si_cdcd + 1
                 end do
              end do

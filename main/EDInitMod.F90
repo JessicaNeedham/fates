@@ -125,8 +125,6 @@ contains
     if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then 
        allocate(site_in%damage_cflux(1:ncrowndamage, 1:ncrowndamage+1))
        allocate(site_in%damage_rate(1:ncrowndamage, 1:ncrowndamage+1))
-       allocate(site_in%recovery_cflux(1:ncrowndamage, 1:ncrowndamage+1))
-       allocate(site_in%recovery_rate(1:ncrowndamage, 1:ncrowndamage+1))
        allocate(site_in%term_nindivs_damage(1:ncrowndamage, 1:nlevsclass))
        allocate(site_in%imort_rate_damage(1:ncrowndamage, 1:nlevsclass))
        allocate(site_in%imort_cflux_damage(1:ncrowndamage, 1:nlevsclass))
@@ -134,8 +132,6 @@ contains
     else
        allocate(site_in%damage_cflux(1, 1))
        allocate(site_in%damage_rate(1, 1))
-       allocate(site_in%recovery_cflux(1, 1))
-       allocate(site_in%recovery_rate(1, 1))
        allocate(site_in%term_nindivs_damage(1,1))
        allocate(site_in%imort_rate_damage(1,1))
        allocate(site_in%imort_cflux_damage(1,1))
@@ -248,8 +244,6 @@ contains
     ! damage transition info
     site_in%damage_cflux(:,:) = 0._r8
     site_in%damage_rate(:,:) = 0._r8
-    site_in%recovery_cflux(:,:) = 0._r8
-    site_in%recovery_rate(:,:) = 0._r8
     site_in%imort_rate_damage(:,:) = 0._r8
     site_in%term_nindivs_damage(:,:) = 0._r8
     site_in%imort_cflux_damage(:,:) = 0._r8
