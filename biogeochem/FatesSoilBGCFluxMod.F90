@@ -1023,8 +1023,8 @@ contains
 
 
     ! Target leaf biomass according to allometry and trimming
-    call bleaf(ccohort%dbh,ccohort%pft,ccohort%canopy_trim,target_leaf_c)
-    call bstore_allom(ccohort%dbh,ccohort%pft,ccohort%canopy_trim,target_store_c)
+    call bleaf(ccohort%dbh,ccohort%pft,ccohort%crowndamage, ccohort%canopy_trim,target_leaf_c)
+    call bstore_allom(ccohort%dbh,ccohort%pft,ccohort%crowndamage, ccohort%canopy_trim,target_store_c)
 
     leaf_store_x = max(rsnbl_math_prec,ccohort%prt%GetState(leaf_organ, element_id) + & 
          ccohort%prt%GetState(store_organ, element_id))

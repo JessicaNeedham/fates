@@ -554,25 +554,28 @@ contains
        temp_cohort%canopy_trim = 1.0_r8
 
        ! Calculate total above-ground biomass from allometry
-       call bagw_allom(temp_cohort%dbh,pft, c_agw)
+       call bagw_allom(temp_cohort%dbh,pft,temp_cohort%crowndamage, &
+            1.0_r8, c_agw)
 
        ! Calculate coarse root biomass from allometry
-       call bbgw_allom(temp_cohort%dbh,pft,c_bgw)
+       call bbgw_allom(temp_cohort%dbh,pft,temp_cohort%crowndamage, &
+            1.0_r8, c_bgw)
 
        ! Calculate the leaf biomass from allometry
        ! (calculates a maximum first, then applies canopy trim)
-       call bleaf(temp_cohort%dbh,pft,temp_cohort%canopy_trim,c_leaf)
+       call bleaf(temp_cohort%dbh,pft,temp_cohort%crowndamage, temp_cohort%canopy_trim,c_leaf)
 
        ! Calculate fine root biomass from allometry
        ! (calculates a maximum and then trimming value)
        call bfineroot(temp_cohort%dbh,pft,temp_cohort%canopy_trim,c_fnrt)
 
        ! Calculate sapwood biomass
-       call bsap_allom(temp_cohort%dbh,pft,temp_cohort%canopy_trim,a_sapw,c_sapw)
+       call bsap_allom(temp_cohort%dbh,pft,temp_cohort%crowndamage, 1.0_r8,&
+            temp_cohort%canopy_trim,a_sapw,c_sapw)
        
        call bdead_allom( c_agw, c_bgw, c_sapw, pft, c_struct )
 
-       call bstore_allom(temp_cohort%dbh, pft, &
+       call bstore_allom(temp_cohort%dbh, pft, temp_cohort%crowndamage, &
             temp_cohort%canopy_trim, c_store)
 
        temp_cohort%laimemory = 0._r8

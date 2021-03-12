@@ -84,6 +84,8 @@ Module EDCohortDynamicsMod
   use PRTAllometricCarbonMod, only : callom_prt_vartypes
   use PRTAllometricCarbonMod, only : ac_bc_inout_id_netdc
   use PRTAllometricCarbonMod, only : ac_bc_in_id_pft
+  use PRTAllometricCarbonMod, only : ac_bc_in_id_cdamage
+  use PRTAllometricCarbonMod, only : ac_bc_in_id_branch_frac
   use PRTAllometricCarbonMod, only : ac_bc_in_id_ctrim
   use PRTAllometricCarbonMod, only : ac_bc_inout_id_dbh
   use PRTAllometricCarbonMod, only : ac_bc_in_id_lstat
@@ -121,8 +123,7 @@ Module EDCohortDynamicsMod
   public :: UpdateCohortBioPhysRates
   public :: DeallocateCohort
   public :: EvaluateAndCorrectDBH
-  public :: damage_recovery
-
+ 
   logical, parameter :: debug  = .false. ! local debug flag
 
   character(len=*), parameter, private :: sourcefile = &
@@ -200,7 +201,7 @@ contains
     real(r8) :: leaf_c                         ! total leaf carbon
     integer  :: tnull,snull                    ! are the tallest and shortest cohorts allocate
     integer  :: nlevrhiz                       ! number of rhizosphere layers
-
+    
     !----------------------------------------------------------------------
     
     allocate(new_cohort)
@@ -276,9 +277,11 @@ contains
     new_cohort%treelai = tree_lai(leaf_c, new_cohort%pft, new_cohort%c_area,    &
          new_cohort%n, new_cohort%canopy_layer,               &
          patchptr%canopy_layer_tlai,new_cohort%vcmax25top)    
- 
+
     new_cohort%treesai = tree_sai(new_cohort%pft,  &
+         new_cohort%crowndamage, &
          new_cohort%dbh, &
+         spread, &
          new_cohort%canopy_trim, new_cohort%c_area,  &
          new_cohort%n, new_cohort%canopy_layer, &
          patchptr%canopy_layer_tlai, new_cohort%treelai,           &
@@ -399,6 +402,9 @@ contains
        call new_cohort%prt%RegisterBCIn(ac_bc_in_id_pft,bc_ival = new_cohort%pft)
        call new_cohort%prt%RegisterBCIn(ac_bc_in_id_ctrim,bc_rval = new_cohort%canopy_trim)
        call new_cohort%prt%RegisterBCIn(ac_bc_in_id_lstat,bc_ival = new_cohort%status_coh)
+       call new_cohort%prt%RegisterBCIn(ac_bc_in_id_cdamage,bc_ival = new_cohort%crowndamage)
+       call new_cohort%prt%RegisterBCIn(ac_bc_in_id_branch_frac,bc_rval = new_cohort%branch_frac) 
+
        
     case (prt_cnp_flex_allom_hyp)
 
@@ -1284,6 +1290,7 @@ contains
                                                        currentCohort%canopy_trim, &
                                                        currentCohort%dbh, currentCohort%hite, &
                                                        bdead = currentCohort%prt%GetState(struct_organ,all_carbon_elements), &
+                                                       crowndamage = currentCohort%crowndamage, &
                                                        crown_reduction = crown_reduction,&
                                                        branch_frac = currentCohort%branch_frac)
                                                else
@@ -1333,6 +1340,7 @@ contains
                                                     currentCohort%canopy_trim, &
                                                     currentCohort%dbh, currentCohort%hite, &
                                                     bdead = currentCohort%prt%GetState(struct_organ,all_carbon_elements), &
+                                                    crowndamage = currentCohort%crowndamage, &
                                                     crown_reduction = crown_reduction,&
                                                     branch_frac = currentCohort%branch_frac)
                                             else
@@ -1357,7 +1365,10 @@ contains
                                       currentCohort%treelai = tree_lai(leaf_c, currentCohort%pft, currentCohort%c_area, newn, &
                                            currentCohort%canopy_layer, currentPatch%canopy_layer_tlai, &
                                            currentCohort%vcmax25top)
-                                      currentCohort%treesai = tree_sai(currentCohort%pft, currentCohort%dbh, currentCohort%canopy_trim, &
+                                      currentCohort%treesai = tree_sai(currentCohort%pft,&
+                                           currentCohort%crowndamage, currentCohort%dbh,&
+                                           currentSite%spread, &
+                                           currentCohort%canopy_trim, &
                                            currentCohort%c_area, newn, currentCohort%canopy_layer, &
                                            currentPatch%canopy_layer_tlai, currentCohort%treelai,currentCohort%vcmax25top,1 ) 
 
@@ -2126,13 +2137,13 @@ contains
        struct_c = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
     
        ! Target sapwood biomass according to allometry and trimming [kgC]
-       call bsap_allom(dbh,ipft,canopy_trim,sapw_area,target_sapw_c)
+       call bsap_allom(dbh,ipft,icrowndamage, branch_frac, canopy_trim,sapw_area,target_sapw_c)
        
        ! Target total above ground biomass in woody/fibrous tissues  [kgC]
-       call bagw_allom(dbh,ipft, target_agw_c)
+       call bagw_allom(dbh,ipft, icrowndamage, branch_frac, target_agw_c)
        
        ! Target total below ground biomass in woody/fibrous tissues [kgC] 
-       call bbgw_allom(dbh,ipft,target_bgw_c)
+       call bbgw_allom(dbh,ipft,icrowndamage, branch_frac, target_bgw_c)
        
        ! Target total dead (structrual) biomass [kgC]
        call bdead_allom( target_agw_c, target_bgw_c, target_sapw_c, ipft, target_struct_c)
@@ -2150,12 +2161,16 @@ contains
 
 
              call ForceDBH( ipft,canopy_trim, dbh, hite_out, bdead=struct_c, &
+                  crowndamage = icrowndamage, &
                   crown_reduction = crown_reduction, &
-                  branch_frac = currentCohort%branch_frac)
+                  branch_frac = branch_frac)
 
           else
 
-             call ForceDBH( ipft,canopy_trim, dbh, hite_out, bdead=struct_c)
+             call ForceDBH( ipft,canopy_trim, dbh, hite_out, bdead=struct_c, &
+                  crowndamage = icrowndamage, &
+                  crown_reduction = crown_reduction, &
+                  branch_frac = branch_frac)
 
           end if
 
@@ -2171,7 +2186,7 @@ contains
        leaf_c  = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
 
        ! Target leaf biomass according to allometry and trimming
-       call bleaf(dbh,ipft,canopy_trim,target_leaf_c)
+       call bleaf(dbh,ipft,icrowndamage, canopy_trim,target_leaf_c)
 
        if( ( leaf_c - target_leaf_c ) > calloc_abs_error ) then
           call ForceDBH( ipft, canopy_trim, dbh, hite_out, bl=leaf_c )
@@ -2185,82 +2200,6 @@ contains
     return
   end subroutine EvaluateAndCorrectDBH
 
-
-  !--------------------------------------------------------------------------------
-  
-  subroutine damage_recovery(currentCohort, currentSite)
-
-    ! This subroutine back calculates damage class following the allocation scheme                                                                            
-    ! It should really go in DamageMainMod but to avoid circular dependicies I have put it here                                                               
-
-    use DamageMainMod , only : get_crown_damage
-    use FatesAllometryMod, only : bleaf
-    use FatesAllometryMod, only : carea_allom
-    
-    ! arguments                                                                                                                                               
-    type(ed_cohort_type),intent(inout) :: currentCohort
-    type(ed_site_type),intent(inout)   :: currentSite
-
-    ! locals                                                                                                                                                  
-    real(r8) :: leaf_c
-    real(r8) :: target_leaf_c
-    real(r8) :: a_sapw_target
-    real(r8) :: c_sapw_target
-    integer  :: pre_recovery
-    real(r8) :: sapw_c
-    real(r8) :: struct_c
-    real(r8) :: fnrt_c
-    real(r8) :: store_c
-    real(r8) ::  repro_c
-    real(r8) :: biomass_crown
-    real(r8) :: target_crown
-
-    pre_recovery = currentCohort%crowndamage
-   
-    
-    leaf_c = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
-    sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
- 
-    biomass_crown = leaf_c + sapw_c 
-    
-    call bleaf(currentCohort%dbh, currentCohort%pft,currentCohort%canopy_trim,&
-         target_leaf_c)
-
-    call bsap_allom(currentCohort%dbh, currentCohort%pft, currentCohort%canopy_trim, &
-         a_sapw_target, c_sapw_target) 
-    
-    target_crown = target_leaf_c + c_sapw_target
-    
-    call get_crown_damage(biomass_crown, target_crown, currentCohort%crowndamage)
-    call carea_allom(currentCohort%dbh,currentCohort%n,currentSite%spread,currentCohort%pft, &
-         currentCohort%crowndamage, currentCohort%c_area)
-    
-    sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
-    struct_c = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
-    leaf_c   = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
-    fnrt_c   = currentCohort%prt%GetState(fnrt_organ, all_carbon_elements)
-    store_c  = currentCohort%prt%GetState(store_organ, all_carbon_elements)
-    repro_c  = currentCohort%prt%GetState(repro_organ, all_carbon_elements)
-
-    if(currentCohort%crowndamage < pre_recovery) then
-
-       currentSite%damage_rate(pre_recovery, currentCohort%crowndamage) &
-            = currentSite%damage_rate(pre_recovery, currentCohort%crowndamage) + &
-            currentCohort%n
-
-       currentSite%damage_cflux(pre_recovery, currentCohort%crowndamage) &
-            = currentSite%damage_cflux(pre_recovery,currentCohort%crowndamage) + &
-            (leaf_c + sapw_c + struct_c + store_c + fnrt_c + repro_c) * currentCohort%n
-
-       write(fates_log(),*) 'JN crown damage pre: ', pre_recovery
-       write(fates_log(),*) 'JN crown damage post: ', currentCohort%crowndamage
-       write(fates_log(),*) 'JN target crown: ', target_crown
-       write(fates_log(),*) 'JN actual crown: ', biomass_crown
-    end if
-
-
-    return
-  end subroutine damage_recovery
 
 
   !------------------------------------------------------------------------------------

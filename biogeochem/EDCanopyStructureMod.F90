@@ -1518,14 +1518,16 @@ contains
           call carea_allom(currentCohort%dbh, currentCohort%n, currentSite%spread,&
                currentCohort%pft, 1, target_c_area)
           currentCohort%treesai = tree_sai(currentCohort%pft,  &
-                                           currentCohort%dbh, &
-                                           currentCohort%canopy_trim, &
-                                           target_c_area, &
-                                           currentCohort%n, currentCohort%canopy_layer, & 
-                                           currentPatch%canopy_layer_tlai, currentCohort%treelai , &
-                                           currentCohort%vcmax25top,4)  
+               currentCohort%crowndamage, &
+               currentCohort%dbh, &
+               currentSite%spread, &
+               currentCohort%canopy_trim, &
+               target_c_area, &
+               currentCohort%n, currentCohort%canopy_layer, & 
+               currentPatch%canopy_layer_tlai, currentCohort%treelai , &
+               currentCohort%vcmax25top,4)  
 
-          
+
           currentCohort%lai =  currentCohort%treelai *currentCohort%c_area/currentPatch%total_canopy_area 
           currentCohort%sai =  currentCohort%treesai * target_c_area/currentPatch%total_canopy_area
 

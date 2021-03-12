@@ -871,7 +871,7 @@ contains
     ! Get the target, or rather, maximum leaf carrying capacity of plant
     ! Lets also avoid super-low targets that have very low trimming functions
 
-    call bleaf(ccohort%dbh,ccohort%pft, &
+    call bleaf(ccohort%dbh,ccohort%pft,ccohort%crowndamage, &
          max(ccohort%canopy_trim,min_trim),leaf_c_target)
 
     if( (ccohort%status_coh == leaves_on) .or. ccohort_hydr%is_newly_recruited ) then
@@ -886,7 +886,8 @@ contains
     ! v_stem       = c_stem_biom / (prt_params%wood_density(ft) * kg_per_g * cm3_per_m3 )
 
     ! calculate the sapwood cross-sectional area
-    call bsap_allom(ccohort%dbh,ccohort%pft,ccohort%canopy_trim,a_sapwood_target,sapw_c_target)
+    call bsap_allom(ccohort%dbh,ccohort%pft,ccohort%crowndamage, ccohort%branch_frac, &
+         ccohort%canopy_trim,a_sapwood_target,sapw_c_target)
 
     ! uncomment this if you want to use
     ! the actual sapwood, which may be lower than target due to branchfall.
@@ -2708,7 +2709,8 @@ contains
     pft   = ccohort%pft
 
     ! Get the cross-section of the plant's sapwood area [m2]
-    call bsap_allom(ccohort%dbh,pft,ccohort%canopy_trim,a_sapwood,c_sap_dummy)
+    call bsap_allom(ccohort%dbh,pft,ccohort%crowndamage, ccohort%branch_frac, &
+         ccohort%canopy_trim,a_sapwood,c_sap_dummy)
 
     ! Leaf Maximum Hydraulic Conductance
     ! The starting hypothesis is that there is no resistance inside the

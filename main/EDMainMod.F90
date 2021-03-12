@@ -305,7 +305,6 @@ contains
     use FatesInterfaceTypesMod, only : ncrowndamage
     use FatesAllometryMod    , only : bleaf
     use FatesAllometryMod    , only : carea_allom
-    use EDCohortDynamicsMod  , only : damage_recovery
     use PRTGenericMod        , only : leaf_organ
     use FatesInterfaceTypesMod, only : hlm_use_cohort_age_tracking
     use FatesConstantsMod, only : itrue
@@ -456,12 +455,6 @@ contains
           ! -----------------------------------------------------------------------------
           
           call currentCohort%prt%DailyPRT()
-
-          if(hlm_use_canopy_damage .eq. itrue .or. &
-               hlm_use_understory_damage .eq. itrue) then
-             call damage_recovery(currentCohort, currentSite)
-             counter_n = counter_n + currentCohort%n
-          end if
 
 
           ! Update the mass balance tracking for the daily nutrient uptake flux
