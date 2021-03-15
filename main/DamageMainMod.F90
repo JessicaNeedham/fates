@@ -188,7 +188,10 @@ contains
     real(r8), allocatable :: dgmort_vec(:)
     real(r8) :: damage_mort_p1
     real(r8) :: damage_mort_p2
+    real(r8) :: class_width
 
+    class_width = 1.0_r8/real(ncrowndamage)
+    
     ! parameter to determine slope of exponential
     damage_mort_p1 = EDPftvarcon_inst%damage_mort_p1(pft)
     damage_mort_p2 = EDPftvarcon_inst%damage_mort_p2(pft)
@@ -196,7 +199,7 @@ contains
     ! JN - set up a vector of damage mortality values 
     allocate(dgmort_vec(1:ncrowndamage))
     do i = 1,ncrowndamage
-       dgmort_vec(i) = real(i)
+       dgmort_vec(i) = min(1.0_r8, (real(i) - 1.0_r8) * class_width)
     end do
 
     ! JN - could make these proper cases?
