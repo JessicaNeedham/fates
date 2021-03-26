@@ -489,7 +489,7 @@ contains
 
                 if(n_recover > nearzero) then
 
-                   write(fates_log(),*) 'JN number to recover: ', n_recover
+                   write(fates_log(),*) 'JN ed main mod number to recover: ', n_recover
                    
                    allocate(nc)
                    if(hlm_use_planthydro .eq. itrue) call InitHydrCohort(CurrentSite,nc)

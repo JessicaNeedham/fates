@@ -118,7 +118,6 @@ module EDPftvarcon
      real(r8), allocatable :: damage_frac(:)
      real(r8), allocatable :: damage_mort_p1(:)
      real(r8), allocatable :: damage_mort_p2(:)
-     real(r8), allocatable :: damage_recovery_scalar(:)
      
      ! Fire Parameters (No PFT vector capabilities in their own routines)
      ! See fire/SFParamsMod.F90 for bulk of fire parameters
@@ -549,10 +548,6 @@ contains
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
 
-    name = 'fates_damage_recovery_scalar'
-    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
-         dimension_names=dim_names, lower_bounds=dim_lower_bound)
-
     name = 'fates_trim_limit'
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
           dimension_names=dim_names, lower_bounds=dim_lower_bound)
@@ -908,10 +903,6 @@ contains
     call fates_params%RetreiveParameterAllocate(name=name, &
          data=this%damage_mort_p2)
 
-    name = 'fates_damage_recovery_scalar'
-    call fates_params%RetreiveParameterAllocate(name=name, &
-         data=this%damage_recovery_scalar)
-    
     name = 'fates_trim_limit'
     call fates_params%RetreiveParameterAllocate(name=name, &
           data=this%trim_limit)
@@ -1399,7 +1390,6 @@ contains
         write(fates_log(),fmt0) 'damage_frac = ',EDPftvarcon_inst%damage_frac
         write(fates_log(),fmt0) 'damage_mort_p1 = ',EDPftvarcon_inst%damage_mort_p1
         write(fates_log(),fmt0) 'damage_mort_p2 = ',EDPftvarcon_inst%damage_mort_p2
-        write(fates_log(),fmt0) 'damage_recovery_scalar = ',EDPftvarcon_inst%damage_recovery_scalar
         write(fates_log(),fmt0) 'germination_timescale = ',EDPftvarcon_inst%germination_rate
         write(fates_log(),fmt0) 'seed_decay_turnover = ',EDPftvarcon_inst%seed_decay_rate
         write(fates_log(),fmt0) 'trim_limit = ',EDPftvarcon_inst%trim_limit

@@ -437,7 +437,8 @@ contains
     
 
     nleafage = prt_global%state_descriptor(leaf_c_id)%num_pos ! Number of leaf age class
-
+    damage_recovery_scalar = prt_params%damage_recovery_scalar(ipft)
+    
     ! -----------------------------------------------------------------------------------
     ! Call the routine that advances leaves in age.
     ! This will move a portion of the leaf mass in each
@@ -678,7 +679,7 @@ contains
        !  2. What is biomass required to go from current damage level to next damage level?
 
        ! mass of this damage class
-       mass_d = (sum(leaf_c(1:nleafage)) + fnrt_c + store_c + sapw_c + struct_c ) * n
+       mass_d = (sum(leaf_c(1:nleafage)) + fnrt_c + store_c + sapw_c + struct_c ) 
 
        ! Target sapwood biomass according to allometry and trimming [kgC]
        call bsap_allom(dbh,ipft, crowndamage-1, branch_frac, canopy_trim,sapw_area,targetn_sapw_c)
@@ -706,23 +707,24 @@ contains
        call bstore_allom(dbh,ipft,crowndamage-1, canopy_trim,targetn_store_c)
 
        mass_dminus1 = (targetn_leaf_c + targetn_fnrt_c + targetn_store_c + &
-            targetn_sapw_c + targetn_struct_c) * n 
+            targetn_sapw_c + targetn_struct_c) 
 
        ! Carbon needed to get from current mass to allometric target mass of next damage class up
        recovery_demand = mass_dminus1 - mass_d
 
-       write(fates_log(),*) 'JN current mass     : ', mass_d
-       write(fates_log(),*) 'JN next target mass : ', mass_dminus1
-       write(fates_log(),*) 'JN recovery_demand  : ', recovery_demand
-       write(fates_log(),*) 'JN carbon balance   : ', carbon_balance
+   !    write(fates_log(),*) 'JN current mass     : ', mass_d
+   !    write(fates_log(),*) 'JN next target mass : ', mass_dminus1
+   !    write(fates_log(),*) 'JN recovery_demand  : ', recovery_demand
+   !    write(fates_log(),*) 'JN carbon balance   : ', carbon_balance
 
        ! 3. How many trees can get there with excess carbon?
-       max_recover_n = carbon_balance * n / recovery_demand 
-
+       max_recover_n = carbon_balance / recovery_demand * n
+       write(fates_log(),*) 'JN max_recover_n: ', max_recover_n
+       
        ! 4. Use the scalar to decide how many to recover
        n_recover = max_recover_n * damage_recovery_scalar
 
-      ! write(fates_log(),*) 'JN n recover : ', n_recover
+       write(fates_log(),*) 'JN n recover : ', n_recover
 
        ! 5. Need to create a new cohort here - 
        ! we reduce number density here and continue on with daily prt for the

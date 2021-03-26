@@ -277,7 +277,11 @@ contains
     name = 'fates_branch_turnover'
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
-    
+
+    name = 'fates_damage_recovery_scalar'
+    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
+         dimension_names=dim_names, lower_bounds=dim_lower_bound)
+ 
   end subroutine PRTRegisterPFT
   
   !-----------------------------------------------------------------------
@@ -483,6 +487,10 @@ contains
     name = 'fates_turnover_retrans_mode'
     call fates_params%RetreiveParameterAllocate(name=name, &
           data=prt_params%turnover_retrans_mode)
+
+    name = 'fates_damage_recovery_scalar'
+    call fates_params%RetreiveParameterAllocate(name=name, &
+          data=prt_params%damage_recovery_scalar)
 
 
   end subroutine PRTReceivePFT
@@ -725,6 +733,7 @@ contains
         write(fates_log(),fmt0) 'grperc = ',prt_params%grperc
         write(fates_log(),fmt0) 'c2b = ',prt_params%c2b
         write(fates_log(),fmt0) 'branch_turnover = ',prt_params%branch_long
+        write(fates_log(),fmt0) 'damage_recovery_scalar = ', prt_params%damage_recovery_scalar
         write(fates_log(),fmt0) 'allom_hmode = ',prt_params%allom_hmode
         write(fates_log(),fmt0) 'allom_lmode = ',prt_params%allom_lmode
         write(fates_log(),fmt0) 'allom_fmode = ',prt_params%allom_fmode
