@@ -309,7 +309,14 @@ contains
     use FatesInterfaceTypesMod, only : hlm_use_cohort_age_tracking
     use FatesConstantsMod, only : itrue
     use PRTGenericMod        , only : all_carbon_elements
-
+    use DamageMainMod        , only : damage_time
+    use EDCohortDynamicsMod   , only : zero_cohort, copy_cohort, insert_cohort
+    use EDCohortDynamicsMod   , only : DeallocateCohort
+    use FatesPlantHydraulicsMod, only : InitHydrCohort
+    use EDCohortDynamicsMod   , only : InitPRTObject
+    use EDCohortDynamicsMod   , only : InitPRTBoundaryConditions
+    use FatesConstantsMod     , only : nearzero
+    
     ! !ARGUMENTS:
     
     type(ed_site_type)     , intent(inout) :: currentSite
@@ -321,7 +328,13 @@ contains
     type(site_massbal_type), pointer :: site_cmass
     type(ed_patch_type)  , pointer :: currentPatch
     type(ed_cohort_type) , pointer :: currentCohort
-
+    type(ed_cohort_type) , pointer :: nc
+    type(ed_cohort_type) , pointer :: storesmallcohort
+    type(ed_cohort_type) , pointer :: storebigcohort
+    
+    integer :: snull
+    integer :: tnull 
+    
     integer  :: c                     ! Counter for litter size class 
     integer  :: ft                    ! Counter for PFT
     integer  :: iscpf                 ! index for the size-class x pft multiplexed bins
@@ -333,7 +346,6 @@ contains
     real(r8) :: delta_dbh             ! correction for dbh
     real(r8) :: delta_hite            ! correction for hite
     real(r8) :: leaf_loss
-    real(r8) :: leaf_c
     real(r8) :: mass_frac
     real(r8) :: leaf_m_pre
     real(r8) :: leaf_m_post
@@ -342,8 +354,18 @@ contains
 
     real(r8) :: target_leaf_c
     real(r8) :: frac_site_primary
-    real(r8) :: counter_n 
+    real(r8) :: counter_n
 
+    real(r8) :: n_old
+    real(r8) :: n_recover
+    real(r8) :: sapw_c
+    real(r8) :: leaf_c
+    real(r8) :: fnrt_c
+    real(r8) :: struct_c
+    real(r8) :: repro_c
+    real(r8) :: total_c
+    real(r8) :: store_c
+    
     !-----------------------------------------------------------------------
     leaf_loss = 0.0_r8
     leaf_loss_prt = 0.0_r8
@@ -450,9 +472,92 @@ contains
           ! -----------------------------------------------------------------------------
           ! Growth and Allocation (PARTEH)
           ! -----------------------------------------------------------------------------
+
+          ! JN cohort will be split during this phase to allow some fraction to recover
+          ! keep track of starting population
+          n_old = currentCohort%n
           
           call currentCohort%prt%DailyPRT()
 
+          if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+
+             if(currentCohort%crowndamage > 1) then
+
+                ! N is inout boundary condition so has now been updated. The difference must
+                ! go to a new cohort
+                n_recover = n_old - currentCohort%n
+
+                if(n_recover > nearzero) then
+
+                   write(fates_log(),*) 'JN number to recover: ', n_recover
+                   
+                   allocate(nc)
+                   if(hlm_use_planthydro .eq. itrue) call InitHydrCohort(CurrentSite,nc)
+                   ! Initialize the PARTEH object and point to the
+                   ! correct boundary condition fields
+                   nc%prt => null()
+                   call InitPRTObject(nc%prt)
+                   call InitPRTBoundaryConditions(nc)          
+                   call zero_cohort(nc)  
+                   call copy_cohort(currentCohort, nc)
+
+                   nc%n = n_recover
+                   nc%crowndamage = currentCohort%crowndamage - 1
+
+                   ! This new cohort has to spend carbon balance on growing out pools
+                   ! (but not dbh) to reach new allometric targets
+                   ! This was already calculated within parteh - this cohort should just
+                   ! be able to hit allometric targets of one damage class down
+                   call nc%prt%DamageRecovery()
+
+                   sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
+                   struct_c = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
+                   leaf_c   = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
+                   fnrt_c   = currentCohort%prt%GetState(fnrt_organ, all_carbon_elements)
+                   store_c  = currentCohort%prt%GetState(store_organ, all_carbon_elements)
+                   repro_c  = currentCohort%prt%GetState(repro_organ, all_carbon_elements)
+                      
+                   total_c = sapw_c + struct_c + leaf_c + fnrt_c + store_c + repro_c
+
+                   currentSite%damage_rate(currentCohort%crowndamage, nc%crowndamage) = &
+                        currentSite%damage_rate(currentCohort%crowndamage, nc%crowndamage) + nc%n
+                   currentSite%damage_cflux(currentCohort%crowndamage, nc%crowndamage) = &
+                        currentSite%damage_cflux(currentCohort%crowndamage, nc%crowndamage) + &
+                        nc%n * total_c
+                   
+                   ! Put the new recovered cohort in the correct place in the cohort linked list
+                   storebigcohort   => currentPatch%tallest
+                   storesmallcohort => currentPatch%shortest
+                   if(associated(currentPatch%tallest))then
+                      tnull = 0
+                   else
+                      tnull = 1
+                      currentPatch%tallest => nc
+                      nc%taller            => null()
+                   end if
+
+                   if(associated(currentPatch%shortest))then
+                      snull = 0
+                   else
+                      snull = 1
+                      currentPatch%shortest => nc
+                      nc%shorter            => null()
+                   end if
+
+                   call insert_cohort(nc, currentPatch%tallest, currentPatch%shortest, &
+                        tnull, snull, storebigcohort, storesmallcohort)
+
+                   currentPatch%tallest  => storebigcohort
+                   currentPatch%shortest => storesmallcohort
+
+                   call DeallocateCohort(nc)
+                   deallocate(nc)
+
+                end if ! end if greater than nearzero
+
+
+             end if ! end if crowndamage > 1
+          end if ! end if crowndamage is on
 
           ! Update the mass balance tracking for the daily nutrient uptake flux
           ! Then zero out the daily uptakes, they have been used

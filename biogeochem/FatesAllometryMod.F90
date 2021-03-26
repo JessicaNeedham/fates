@@ -401,7 +401,7 @@ contains
       
       if(crowndamage > 1) then
          call get_crown_reduction(crowndamage, crown_reduction)
-         bagw = bagw * (1.0_r8 - crown_reduction) * branch_frac
+         bagw = (bagw * (1.0_r8 - crown_reduction) * branch_frac) + (bagw * (1-branch_frac))
          if(present(dbagwdd))then
             dbagwdd = dbagwdd * (1.0_r8 - crown_reduction) * branch_frac
          end if
@@ -848,7 +848,7 @@ contains
        ! fraction of biomass that would be in branches (pft specific)
        if(crowndamage > 1)then
           call get_crown_reduction(crowndamage, crown_reduction)
-          bsap = bsap * (1.0_r8 - crown_reduction) * branch_frac
+          bsap = (bsap * branch_frac * (1.0_r8 - crown_reduction)) + (bsap * (1-branch_frac))
           if(present(dbsapdd))then
              dbsapdd = dbsapdd*(1.0_r8 - crown_reduction)*branch_frac
           end if

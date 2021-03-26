@@ -654,7 +654,15 @@ Module FatesHistoryInterfaceMod
   ! damage carbonflux
   integer :: ih_damage_cflux_si_cdcd
   integer :: ih_damage_rate_si_cdcd
-  
+
+  integer :: ih_totvegc_cdpf
+  integer :: ih_leafc_cdpf
+  integer :: ih_fnrtc_cdpf
+  integer :: ih_storec_cdpf
+  integer :: ih_sapwc_cdpf
+  integer :: ih_reproc_cdpf
+  integer :: ih_cefflux_cdpf
+
   
   ! indices to (site x canopy layer) variables
   integer :: ih_parsun_top_si_can
@@ -2588,8 +2596,9 @@ end subroutine flush_hvars
                      if ( cpatch%anthro_disturbance_label .eq. secondaryforest ) then
                          hio_biomass_secondary_forest_si(io_si) = hio_biomass_secondary_forest_si(io_si) + &
                                total_m * ccohort%n * AREA_INV
-                     endif
-              
+                      endif
+
+                     
                   elseif(element_list(el).eq.nitrogen_element)then
 
                      this%hvars(ih_storen_si)%r81d(io_si)  = &
@@ -3404,10 +3413,8 @@ end subroutine flush_hvars
          sites(s)%term_nindivs_damage(:,:) = 0._r8
          sites(s)%imort_cflux_damage(:,:) = 0._r8
          sites(s)%term_cflux_damage(:,:) = 0._r8
-
-         ! JN we don't zero damage rate/cflux because
-         ! damage only occurs at a specified time - need to keep the transition
-         ! rates from the day it occurred. 
+         sites(s)%damage_rate(:,:) = 0.0_r8
+         sites(s)%damage_cflux(:,:) = 0.0_r8
          
          ! pass the recruitment rate as a flux to the history, and then reset the recruitment buffer
          do i_pft = 1, numpft
@@ -3525,7 +3532,17 @@ end subroutine flush_hvars
                
                this%hvars(ih_cefflux_si)%r81d(io_si) = & 
                     sum(sites(s)%flux_diags(el)%nutrient_efflux_scpf(:),dim=1)
-               
+
+               if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue)then
+                  this%hvars(ih_totvegc_cdpf)%r82d(io_si,:) = 0._r8
+                  this%hvars(ih_leafc_cdpf)%r82d(io_si,:)   = 0._r8
+                  this%hvars(ih_fnrtc_cdpf)%r82d(io_si,:)   = 0._r8
+                  this%hvars(ih_sapwc_cdpf)%r82d(io_si,:)   = 0._r8
+                  this%hvars(ih_storec_cdpf)%r82d(io_si,:)  = 0._r8
+                  this%hvars(ih_reproc_cdpf)%r82d(io_si,:)  = 0._r8
+               end if
+
+
             elseif(element_list(el).eq.nitrogen_element)then
                
                this%hvars(ih_totvegn_scpf)%r82d(io_si,:) = 0._r8
@@ -3701,7 +3718,42 @@ end subroutine flush_hvars
                   
                   ccohort => ccohort%shorter
                end do
-                    
+
+               if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+                  ! Load Mass States
+                  ccohort => cpatch%tallest
+                  do while(associated(ccohort))
+
+                     sapw_m   = ccohort%prt%GetState(sapw_organ, element_list(el))
+                     struct_m = ccohort%prt%GetState(struct_organ, element_list(el))
+                     leaf_m   = ccohort%prt%GetState(leaf_organ, element_list(el))
+                     fnrt_m   = ccohort%prt%GetState(fnrt_organ, element_list(el))
+                     store_m  = ccohort%prt%GetState(store_organ, element_list(el))
+                     repro_m  = ccohort%prt%GetState(repro_organ, element_list(el))
+                     total_m  = sapw_m+struct_m+leaf_m+fnrt_m+store_m+repro_m
+
+                     icdpf = get_cdamagesizepft_class_index(ccohort%dbh, ccohort%crowndamage, ccohort%pft)
+
+                     if(element_list(el).eq.carbon12_element)then
+                        this%hvars(ih_totvegc_cdpf)%r82d(io_si,icdpf) = & 
+                             this%hvars(ih_totvegc_cdpf)%r82d(io_si,icdpf) + total_m * ccohort%n
+                        this%hvars(ih_leafc_cdpf)%r82d(io_si,icdpf) = & 
+                             this%hvars(ih_leafc_cdpf)%r82d(io_si,icdpf) + leaf_m * ccohort%n
+                        this%hvars(ih_fnrtc_cdpf)%r82d(io_si,icdpf) = & 
+                             this%hvars(ih_fnrtc_cdpf)%r82d(io_si,icdpf) + fnrt_m * ccohort%n
+                        this%hvars(ih_sapwc_cdpf)%r82d(io_si,icdpf) = & 
+                             this%hvars(ih_sapwc_cdpf)%r82d(io_si,icdpf) + sapw_m * ccohort%n
+                        this%hvars(ih_storec_cdpf)%r82d(io_si,icdpf) = & 
+                             this%hvars(ih_storec_cdpf)%r82d(io_si,icdpf) + store_m * ccohort%n
+                        this%hvars(ih_reproc_cdpf)%r82d(io_si,icdpf) = & 
+                             this%hvars(ih_reproc_cdpf)%r82d(io_si,icdpf) + repro_m * ccohort%n
+                     end if
+
+                     ccohort => ccohort%shorter
+                  end do
+               end if
+            
+                   
                cpatch => cpatch%younger
             end do
 
@@ -3751,32 +3803,35 @@ end subroutine flush_hvars
          end do
 
 
-         t_alive = sum(hio_damage_rate_si_cdcd(io_si,1:ncrowndamage*ncrowndamage))
-         t_dead = sum(hio_damage_rate_si_cdcd(io_si,(ncrowndamage*ncrowndamage)+1:))
+         if(damage_time)then
 
-        
-         write(fates_log(),*) 'N by size           : ', sum(hio_nplant_si_scls(:,:))
-         write(fates_log(),*) 'N by damage         : ', sum(hio_nplant_si_cdam(:,:))
-         write(fates_log(),*) 'N by damage rate    : ', t_alive
-         write(fates_log(),*) 'mortality sum by rate   : ', t_dead
-         write(fates_log(),*) 'mortality sum by pft    : ', sum(hio_mortality_si_pft(:,:))
-         write(fates_log(),*) 'mortality sum by damage : ', sum(hio_mortality_si_cdsc(:,:))
-         
-         t_alive = 0.0_r8
-         t_dead = 0.0_r8
-         do counter = 1, 30
-            if (mod(counter, ncrowndamage+1) == 0) then
-            t_dead = t_dead + hio_damage_cflux_si_cdcd(io_si,counter)
-            else
-               t_alive = t_alive + hio_damage_cflux_si_cdcd(io_si,counter)
-            end if
-         end do
+            t_alive = sum(hio_damage_rate_si_cdcd(io_si,1:ncrowndamage*ncrowndamage))
+            t_dead = sum(hio_damage_rate_si_cdcd(io_si,(ncrowndamage*ncrowndamage)+1:))
 
-         write(fates_log(),*) 'damage_cflux alive             : ', t_alive
-         write(fates_log(),*) 'carbon flux dead               : ', hio_canopy_mortality_carbonflux_si(io_si) +&
-              hio_understory_mortality_carbonflux_si(io_si)
-         write(fates_log(),*) 'damage_cflux dead              : ', t_dead
-        
+            write(fates_log(),*) 'JN damage tracking'
+            write(fates_log(),*) 'N by size           : ', sum(hio_nplant_si_scls(:,:))
+            write(fates_log(),*) 'N by damage         : ', sum(hio_nplant_si_cdam(:,:))
+            write(fates_log(),*) 'N by damage rate    : ', t_alive
+            write(fates_log(),*) 'mortality sum by rate   : ', t_dead
+            write(fates_log(),*) 'mortality sum by pft    : ', sum(hio_mortality_si_pft(:,:))
+            write(fates_log(),*) 'mortality sum by damage : ', sum(hio_mortality_si_cdsc(:,:))
+
+            t_alive = 0.0_r8
+            t_dead = 0.0_r8
+            do counter = 1, 30
+               if (mod(counter, ncrowndamage+1) == 0) then
+                  t_dead = t_dead + hio_damage_cflux_si_cdcd(io_si,counter)
+               else
+                  t_alive = t_alive + hio_damage_cflux_si_cdcd(io_si,counter)
+               end if
+            end do
+
+            write(fates_log(),*) 'damage_cflux alive             : ', t_alive
+            write(fates_log(),*) 'carbon flux dead               : ', hio_canopy_mortality_carbonflux_si(io_si) +&
+                 hio_understory_mortality_carbonflux_si(io_si)
+            write(fates_log(),*) 'damage_cflux dead              : ', t_dead
+         end if
+
          ! and reset the disturbance-related field buffers
 
          do el = 1, num_elements
@@ -6496,6 +6551,36 @@ end subroutine update_history_hifrq
           avgflag='A', vtype=site_cdsc_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_ddbh_si_cdsc )
 
+    call this%set_history_var(vname='TOTVEGC_CDPF', units='kgC/ha', &
+         long='total vegetation carbon mass in live plants by damage x size-class x pft', use_default='inactive', &
+         avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=hlm_hio_ignore_val,    &
+         upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_totvegc_cdpf )
+    
+    call this%set_history_var(vname='LEAFC_CDPF', units='kgC/ha', &
+         long='leaf carbon mass by damage x size-class x pft', use_default='inactive', &
+         avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=hlm_hio_ignore_val,    &
+         upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_leafc_cdpf )
+
+    call this%set_history_var(vname='FNRTC_CDPF', units='kgC/ha', &
+         long='fine-root carbon mass by damage x size-class x pft', use_default='inactive', &
+         avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=hlm_hio_ignore_val,    &
+         upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_fnrtc_cdpf )
+    
+    call this%set_history_var(vname='SAPWC_CDPF', units='kgC/ha', &
+         long='sapwood carbon mass by damage x size-class x pft', use_default='inactive', &
+         avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=hlm_hio_ignore_val,    &
+         upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_sapwc_cdpf )
+    
+    call this%set_history_var(vname='STOREC_CDPF', units='kgC/ha', &
+         long='storage carbon mass by damage x size-class x pft', use_default='inactive', &
+         avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=hlm_hio_ignore_val,    &
+         upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_storec_cdpf )
+    
+    call this%set_history_var(vname='REPROC_CDPF', units='kgC/ha', &
+         long='reproductive carbon mass (on plant) by damage x size-class x pft', use_default='inactive', &
+         avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=hlm_hio_ignore_val,    &
+         upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_reproc_cdpf )
+    
     ! CARBON BALANCE VARIABLES THAT DEPEND ON HLM BGC INPUTS
 
     call this%set_history_var(vname='NEP', units='gC/m^2/s', &

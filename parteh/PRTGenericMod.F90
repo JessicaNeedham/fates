@@ -242,7 +242,8 @@ module PRTGenericMod
      
      procedure :: DailyPRT            => DailyPRTBase
      procedure :: FastPRT             => FastPRTBase
-
+     procedure :: DamageRecovery      => DamageRecoveryBase
+     
      ! These are generic functions that should work on all hypotheses
 
      procedure, non_overridable :: InitAllocate
@@ -262,7 +263,8 @@ module PRTGenericMod
      procedure, non_overridable :: DeallocatePRTVartypes
      procedure, non_overridable :: WeightedFusePRTVartypes
      procedure, non_overridable :: CopyPRTVartypes
-
+     
+     
      procedure :: AgeLeaves  ! This routine may be used generically
                              ! but also leaving the door open for over-rides
      
@@ -1260,17 +1262,28 @@ contains
 
    ! ====================================================================================
    
-   subroutine FastPRTBase(this)
+   subroutine DamageRecoveryBase(this)
 
       class(prt_vartypes) :: this
       
-      write(fates_log(),*)'FastReactiveTransport must be extended by a child class.'
+      write(fates_log(),*)'?'
       call endrun(msg=errMsg(sourcefile, __LINE__))
 
-   end subroutine FastPRTBase
+   end subroutine DamageRecoveryBase
 
    ! ====================================================================================
+   ! ====================================================================================
+
+   subroutine FastPRTBase(this)
+      
+      class(prt_vartypes) :: this
+      
+      write(fates_log(),*)'FastReactiveTransport must be extended by a child class'
+      call endrun(msg=errMsg(sourcefile, __LINE__))
    
+   end subroutine FastPRTBase
+
+   !====================================================================================   
    subroutine SetState(prt,organ_id, element_id, state_val, position_id)
 
      ! This routine should only be called for initalizing the state value
