@@ -922,7 +922,7 @@ contains
          this%variables(i_var)%net_alloc(:) = 0.0_r8
          this%variables(i_var)%turnover(:)  = 0.0_r8
          this%variables(i_var)%burned(:)    = 0.0_r8
-         this%variables(i_var)%damaged(:)   = 0.0_r8
+         this%variables(i_var)%damaged(:)   = 0.0_r8    
       end do
       
     end subroutine ZeroRates
@@ -959,14 +959,15 @@ contains
                   (this%variables(i_var)%net_alloc(i_pos) &
                    -this%variables(i_var)%turnover(i_pos) & 
                    -this%variables(i_var)%burned(i_pos) &
-                   -this%variables(i_var)%damaged(i_pos) ))
-           
+                   -this%variables(i_var)%damaged(i_pos)))
+                  
            if(this%variables(i_var)%val(i_pos) > nearzero ) then
               rel_err = err / this%variables(i_var)%val(i_pos)
            else
               rel_err = 0.0_r8
            end if
 
+          
            if( abs(err) > calloc_abs_error ) then
               write(fates_log(),*) 'PARTEH mass conservation check failed'
               write(fates_log(),*) ' Change in mass over control period should'
@@ -983,8 +984,19 @@ contains
                                                this%variables(i_var)%val0(i_pos), &
                                                this%variables(i_var)%net_alloc(i_pos), &
                                                this%variables(i_var)%turnover(i_pos), &
-                                               this%variables(i_var)%burned(i_pos), &
+                                               this%variables(i_var)%burned(i_pos), & 
                                                this%variables(i_var)%damaged(i_pos)
+              
+              write(fates_log(),*) 'CM JN val0: ', this%variables(i_var)%val0(i_pos)
+              write(fates_log(),*) 'CMJN val: ', this%variables(i_var)%val(i_pos)
+              write(fates_log(),*) 'CM JN net_alloc: ', this%variables(i_var)%net_alloc(i_pos)
+              write(fates_log(),*) 'CM JN turnover : ', this%variables(i_var)%turnover(i_pos)
+              write(fates_log(),*) 'CM JN val-val0 : ', this%variables(i_var)%val(i_pos) - &
+                   this%variables(i_var)%val0(i_pos)
+              write(fates_log(),*) 'CM JN netalloc - turnover   : ',&
+                   this%variables(i_var)%net_alloc(i_pos) - &
+                   this%variables(i_var)%turnover
+
               write(fates_log(),*) ' Exiting.'
               call endrun(msg=errMsg(sourcefile, __LINE__))
            end if

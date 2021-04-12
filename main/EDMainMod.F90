@@ -306,6 +306,11 @@ contains
     use FatesAllometryMod    , only : bleaf
     use FatesAllometryMod    , only : carea_allom
     use PRTGenericMod        , only : leaf_organ
+    use PRTGenericMod        , only : repro_organ
+    use PRTGenericMod        , only : sapw_organ
+    use PRTGenericMod        , only : struct_organ
+    use PRTGenericMod        , only : store_organ
+    use PRTGenericMod        , only : fnrt_organ
     use FatesInterfaceTypesMod, only : hlm_use_cohort_age_tracking
     use FatesConstantsMod, only : itrue
     use PRTGenericMod        , only : all_carbon_elements
@@ -316,6 +321,10 @@ contains
     use EDCohortDynamicsMod   , only : InitPRTObject
     use EDCohortDynamicsMod   , only : InitPRTBoundaryConditions
     use FatesConstantsMod     , only : nearzero
+    use EDCanopyStructureMod  , only : canopy_structure
+    use PRTLossFluxesMod      , only : PRTDamageRecoveryFluxes
+    use PRTGenericMod         , only : max_nleafage
+    use PRTGenericMod         , only : prt_global
     
     ! !ARGUMENTS:
     
@@ -334,6 +343,8 @@ contains
     
     integer :: snull
     integer :: tnull 
+
+    
     
     integer  :: c                     ! Counter for litter size class 
     integer  :: ft                    ! Counter for PFT
@@ -345,16 +356,10 @@ contains
     logical  :: is_drought            ! logical for if the plant (site) is in a drought state
     real(r8) :: delta_dbh             ! correction for dbh
     real(r8) :: delta_hite            ! correction for hite
-    real(r8) :: leaf_loss
-    real(r8) :: mass_frac
-    real(r8) :: leaf_m_pre
-    real(r8) :: leaf_m_post
-    real(r8) :: leaf_loss_prt
     real(r8) :: current_npp           ! place holder for calculating npp each year in prescribed physiology mode
 
     real(r8) :: target_leaf_c
     real(r8) :: frac_site_primary
-    real(r8) :: counter_n
 
     real(r8) :: n_old
     real(r8) :: n_recover
@@ -365,12 +370,31 @@ contains
     real(r8) :: repro_c
     real(r8) :: total_c
     real(r8) :: store_c
+
+    real(r8) :: cc_leaf_c
+    real(r8) :: cc_fnrt_c
+    real(r8) :: cc_struct_c
+    real(r8) :: cc_repro_c
+    real(r8) :: cc_store_c
+    real(r8) :: cc_sapw_c
+    
+    real(r8) :: sapw_c0
+    real(r8) :: leaf_c0
+    real(r8) :: fnrt_c0
+    real(r8) :: struct_c0
+    real(r8) :: repro_c0
+    real(r8) :: total_c0
+    real(r8) :: store_c0
+    integer  :: nleafage
+    real(r8) :: total_c1
+    real(r8) :: total_c2
+    
+    integer,parameter :: leaf_c_id = 1
     
     !-----------------------------------------------------------------------
-    leaf_loss = 0.0_r8
-    leaf_loss_prt = 0.0_r8
-    counter_n = 0._r8
-  
+    nleafage = prt_global%state_descriptor(leaf_c_id)%num_pos
+
+    
     call get_frac_site_primary(currentSite, frac_site_primary)
 
     ! Set a pointer to this sites carbon12 mass balance
@@ -397,7 +421,7 @@ contains
        ! check to see if the patch has moved to the next age class
        currentPatch%age_class = get_age_class_index(currentPatch%age)
 
-       
+
        ! Update Canopy Biomass Pools
        currentCohort => currentPatch%shortest
        do while(associated(currentCohort)) 
@@ -415,8 +439,8 @@ contains
           !    Set the available carbon pool, identify allocation portions, and 
           !    decrement the available carbon pool to zero.
           ! -----------------------------------------------------------------------------
-     
-          
+
+
           if (hlm_use_ed_prescribed_phys .eq. itrue) then
              if (currentCohort%canopy_layer .eq. 1) then
                 currentCohort%npp_acc = EDPftvarcon_inst%prescribed_npp_canopy(ft) &
@@ -425,7 +449,7 @@ contains
                 currentCohort%npp_acc = EDPftvarcon_inst%prescribed_npp_understory(ft) &
                      * currentCohort%c_area / currentCohort%n / hlm_days_per_year
              endif
-             
+
              ! We don't explicitly define a respiration rate for prescribe phys
              ! but we do need to pass mass balance. So we say it is zero respiration
              currentCohort%gpp_acc  = currentCohort%npp_acc
@@ -444,12 +468,12 @@ contains
           ! <x>_acc will be reset soon and will be accumulated on the next leaf 
           !         photosynthesis step
           ! -----------------------------------------------------------------------------
-          
+
           currentCohort%npp_acc_hold  = currentCohort%npp_acc  * real(hlm_days_per_year,r8)
           currentCohort%gpp_acc_hold  = currentCohort%gpp_acc  * real(hlm_days_per_year,r8)
           currentCohort%resp_acc_hold = currentCohort%resp_acc * real(hlm_days_per_year,r8)
 
-          
+
           ! Conduct Maintenance Turnover (parteh)
           if(debug) call currentCohort%prt%CheckMassConservation(ft,3)
           if(any(currentSite%dstatus == [phen_dstat_moiston,phen_dstat_timeon])) then
@@ -459,7 +483,7 @@ contains
           end if
 
           call PRTMaintTurnover(currentCohort%prt,ft,is_drought)
-    
+
           ! If the current diameter of a plant is somehow less than what is consistent
           ! with what is allometrically consistent with the stuctural biomass, then
           ! correct the dbh to match.
@@ -476,21 +500,31 @@ contains
           ! JN cohort will be split during this phase to allow some fraction to recover
           ! keep track of starting population
           n_old = currentCohort%n
-          
+
+          ! track initial carbon pools
+       
+          leaf_c0   = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
+          fnrt_c0   = currentCohort%prt%GetState(fnrt_organ, all_carbon_elements)
+          sapw_c0   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
+          struct_c0 = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
+          store_c0  = currentCohort%prt%GetState(store_organ, all_carbon_elements)
+          repro_c0 = currentCohort%prt%GetState(repro_organ, all_carbon_elements)
+
+          total_c0 = sapw_c0 + struct_c0 + leaf_c0 + fnrt_c0 + store_c0 + repro_c0
+
           call currentCohort%prt%DailyPRT()
+          ! JN - remove this later - just a check 
+          call currentCohort%prt%CheckMassConservation(ft,5)
 
           if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
 
              if(currentCohort%crowndamage > 1) then
-
                 ! N is inout boundary condition so has now been updated. The difference must
                 ! go to a new cohort
                 n_recover = n_old - currentCohort%n
-
+                
                 if(n_recover > nearzero) then
-
-                   write(fates_log(),*) 'JN ed main mod number to recover: ', n_recover
-                   
+                  
                    allocate(nc)
                    if(hlm_use_planthydro .eq. itrue) call InitHydrCohort(CurrentSite,nc)
                    ! Initialize the PARTEH object and point to the
@@ -498,25 +532,73 @@ contains
                    nc%prt => null()
                    call InitPRTObject(nc%prt)
                    call InitPRTBoundaryConditions(nc)          
-                   call zero_cohort(nc)  
+                   !    call zero_cohort(nc)  
                    call copy_cohort(currentCohort, nc)
 
                    nc%n = n_recover
                    nc%crowndamage = currentCohort%crowndamage - 1
 
-                   ! This new cohort has to spend carbon balance on growing out pools
+                   ! Need to adjust the crown area which is NOT on a per individual basis
+                   nc%c_area = nc%n/n_old * currentCohort%c_area
+                   currentCohort%c_area = currentCohort%c_area - nc%c_area
+
+                   ! This new cohort spends carbon balance on growing out pools
                    ! (but not dbh) to reach new allometric targets
                    ! This was already calculated within parteh - this cohort should just
                    ! be able to hit allometric targets of one damage class down
                    call nc%prt%DamageRecovery()
 
-                   sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
-                   struct_c = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
-                   leaf_c   = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
-                   fnrt_c   = currentCohort%prt%GetState(fnrt_organ, all_carbon_elements)
-                   store_c  = currentCohort%prt%GetState(store_organ, all_carbon_elements)
-                   repro_c  = currentCohort%prt%GetState(repro_organ, all_carbon_elements)
-                      
+                   ! at this point we need to update fluxes or this cohort will
+                   ! fail its mass conservation checks
+
+                   sapw_c   = nc%prt%GetState(sapw_organ, all_carbon_elements)
+                   struct_c = nc%prt%GetState(struct_organ, all_carbon_elements)
+                   leaf_c   = nc%prt%GetState(leaf_organ, all_carbon_elements)
+                   fnrt_c   = nc%prt%GetState(fnrt_organ, all_carbon_elements)
+                   store_c  = nc%prt%GetState(store_organ, all_carbon_elements)
+                   repro_c  = nc%prt%GetState(repro_organ, all_carbon_elements)
+                   total_c1 = sapw_c + struct_c + leaf_c + fnrt_c + store_c + repro_c
+
+                   cc_sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
+                   cc_struct_c = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
+                   cc_leaf_c   = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
+                   cc_fnrt_c   = currentCohort%prt%GetState(fnrt_organ, all_carbon_elements)
+                   cc_store_c  = currentCohort%prt%GetState(store_organ, all_carbon_elements)
+                   cc_repro_c  = currentCohort%prt%GetState(repro_organ, all_carbon_elements)
+                   total_c2 = cc_sapw_c + cc_struct_c + cc_leaf_c + cc_fnrt_c + cc_store_c + cc_repro_c
+                  
+                   
+                   call PRTDamageRecoveryFluxes(nc%prt, leaf_organ, leaf_c0, leaf_c, cc_leaf_c)
+                   call PRTDamageRecoveryFluxes(nc%prt, repro_organ, repro_c0, repro_c, cc_repro_c)
+                   call PRTDamageRecoveryFluxes(nc%prt, sapw_organ, sapw_c0, sapw_c, cc_sapw_c)
+                   call PRTDamageRecoveryFluxes(nc%prt, struct_organ, struct_c0, struct_c, cc_struct_c)
+                   call PRTDamageRecoveryFluxes(nc%prt, store_organ, store_c0, store_c, cc_store_c)
+                   call PRTDamageRecoveryFluxes(nc%prt, fnrt_organ, fnrt_c0, fnrt_c, cc_fnrt_c)
+
+                   write(fates_log(),*) 'JN main checks'
+                   write(fates_log(),*) ' per capita c1      : ', total_c1 
+                   write(fates_log(),*) ' per capita c2      : ', total_c2    
+                   write(fates_log(),*) ' per capita c0      : ', total_c0
+
+                   write(fates_log(),*) ' total c1      : ', total_c1 * n_recover
+                   write(fates_log(),*) ' total c2      : ', total_c2 * currentCohort%n     
+                   write(fates_log(),*) ' c1 + c2       : ', (total_c1*n_recover) +&
+                         (total_c2 * currentCohort%n)
+                   write(fates_log(),*) ' c0            : ', total_c0* n_old
+
+                   write(fates_log(),*) ' n_old   : ', n_old
+                   write(fates_log(),*) ' nc + cc : ', nc%n + currentCohort%n 
+                   write(fates_log(),*) ' nc      : ', nc%n
+                   write(fates_log(),*) ' cc      : ', currentCohort%n
+                    
+                   call nc%prt%CheckMassConservation(ft,6)
+                   
+                   ! update crown area
+                   call carea_allom(nc%dbh, nc%n, currentSite%spread, nc%pft, nc%crowndamage, nc%c_area)
+                   call carea_allom(currentCohort%dbh, currentCohort%n, currentSite%spread, &
+                        currentCohort%pft, currentCohort%crowndamage, currentCohort%c_area)
+
+                  
                    total_c = sapw_c + struct_c + leaf_c + fnrt_c + store_c + repro_c
 
                    currentSite%damage_rate(currentCohort%crowndamage, nc%crowndamage) = &
@@ -524,40 +606,35 @@ contains
                    currentSite%damage_cflux(currentCohort%crowndamage, nc%crowndamage) = &
                         currentSite%damage_cflux(currentCohort%crowndamage, nc%crowndamage) + &
                         nc%n * total_c
+   
+                   !----------- Insert copy into linked list ----------------------! 
+                   nc%shorter => currentCohort
+                   if(associated(currentCohort%taller))then
+                      nc%taller => currentCohort%taller
+                      currentCohort%taller%shorter => nc
+                   else
+                      currentPatch%tallest => nc    
+                      nc%taller => null()
+                   endif
+                   currentCohort%taller => nc
                    
-                   ! Put the new recovered cohort in the correct place in the cohort linked list
-                   storebigcohort   => currentPatch%tallest
-                   storesmallcohort => currentPatch%shortest
-                   if(associated(currentPatch%tallest))then
-                      tnull = 0
-                   else
-                      tnull = 1
-                      currentPatch%tallest => nc
-                      nc%taller            => null()
-                   end if
-
-                   if(associated(currentPatch%shortest))then
-                      snull = 0
-                   else
-                      snull = 1
-                      currentPatch%shortest => nc
-                      nc%shorter            => null()
-                   end if
-
-                   call insert_cohort(nc, currentPatch%tallest, currentPatch%shortest, &
-                        tnull, snull, storebigcohort, storesmallcohort)
-
-                   currentPatch%tallest  => storebigcohort
-                   currentPatch%shortest => storesmallcohort
-
-                   call DeallocateCohort(nc)
-                   deallocate(nc)
-
                 end if ! end if greater than nearzero
-
-
              end if ! end if crowndamage > 1
           end if ! end if crowndamage is on
+
+          ! JN need to exit cohort list here and udpate canopy structure with this new cohort
+          currentCohort => currentCohort%taller
+       enddo
+       currentPatch => currentPatch%older
+    end do
+
+    call canopy_structure(currentSite, bc_in)
+
+    ! JN and then back into the cohort list
+    currentPatch => currentSite%youngest_patch
+    do while(associated(currentPatch))
+       currentCohort => currentPatch%shortest
+       do while(associated(currentCohort))
 
           ! Update the mass balance tracking for the daily nutrient uptake flux
           ! Then zero out the daily uptakes, they have been used

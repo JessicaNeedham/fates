@@ -1,3 +1,4 @@
+
 module PRTLossFluxesMod
 
 
@@ -65,7 +66,8 @@ module PRTLossFluxesMod
   public :: PRTPhenologyFlush
   public :: PRTReproRelease
   public :: PRTDamageLosses
-
+  public :: PRTDamageRecoveryFluxes
+  
 contains
 
 
@@ -850,6 +852,30 @@ contains
       return
    end subroutine MaintTurnoverSimpleRetranslocation
 
+   !----------------------------------------------------------------------------------------------
+   
+  subroutine PRTDamageRecoveryFluxes(prt, organ_id, mass_0, mass, cc_mass)
+
+    class(prt_vartypes) :: prt
+    integer,intent(in)  :: organ_id
+    real(r8),intent(in) :: mass_0
+    real(r8),intent(in) :: mass
+    real(r8),intent(in) :: cc_mass
+    
+    integer, parameter  :: icd = 1
+
+    ! Remove the amount that was copied from old cohort
+    prt%variables(organ_id)%net_alloc(icd) = prt%variables(organ_id)%net_alloc(icd) &
+         - (cc_mass - mass_0)
+    
+
+    ! Track the amount of mass being lost (+ is amount lost)
+    prt%variables(organ_id)%net_alloc(icd) = prt%variables(organ_id)%net_alloc(icd) &
+         + (mass - mass_0)
+
+    end subroutine PRTDamageRecoveryFluxes
+      
+  ! =====================================================================================
 
 
 

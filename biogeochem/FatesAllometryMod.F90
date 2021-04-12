@@ -401,9 +401,10 @@ contains
       
       if(crowndamage > 1) then
          call get_crown_reduction(crowndamage, crown_reduction)
-         bagw = (bagw * (1.0_r8 - crown_reduction) * branch_frac) + (bagw * (1-branch_frac))
+         bagw = (bagw * (1.0_r8 - crown_reduction) * branch_frac) + (bagw * (1.0_r8 - branch_frac))
          if(present(dbagwdd))then
-            dbagwdd = dbagwdd * (1.0_r8 - crown_reduction) * branch_frac
+            dbagwdd = (dbagwdd * (1.0_r8 - crown_reduction) * branch_frac) + &
+                 (dbagwdd * (1.0_r8 - branch_frac))
          end if
       end if
 
@@ -848,9 +849,10 @@ contains
        ! fraction of biomass that would be in branches (pft specific)
        if(crowndamage > 1)then
           call get_crown_reduction(crowndamage, crown_reduction)
-          bsap = (bsap * branch_frac * (1.0_r8 - crown_reduction)) + (bsap * (1-branch_frac))
+          bsap = (bsap * branch_frac * (1.0_r8 - crown_reduction)) + (bsap * (1.0_r8-branch_frac))
           if(present(dbsapdd))then
-             dbsapdd = dbsapdd*(1.0_r8 - crown_reduction)*branch_frac
+             dbsapdd = (dbsapdd*(1.0_r8 - crown_reduction)*branch_frac) + &
+                  (dbsapdd * (1.0_r8 - branch_frac))
           end if
        end if
        
@@ -990,7 +992,8 @@ contains
        case(1) ! Storage is constant proportionality of trimmed maximum leaf
           ! biomass (ie cushion * bleaf)
           
-          call bleaf(d,ipft,crowndamage, canopy_trim,bl,dbldd)
+         ! call bleaf(d,ipft,crowndamage, canopy_trim,bl,dbldd)
+          call bleaf(d,ipft, 1, canopy_trim, bl, dbldd)
           call bstore_blcushion(d,bl,dbldd,cushion,ipft,bstore,dbstoredd)
           
        case DEFAULT 
