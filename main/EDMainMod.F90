@@ -427,7 +427,7 @@ contains
        do while(associated(currentCohort)) 
 
           ft = currentCohort%pft
-
+ 
           ! Calculate the mortality derivatives
           call Mortality_Derivative( currentSite, currentCohort, bc_in, frac_site_primary )
 
@@ -513,13 +513,15 @@ contains
           total_c0 = sapw_c0 + struct_c0 + leaf_c0 + fnrt_c0 + store_c0 + repro_c0
 
           call currentCohort%prt%DailyPRT()
-          ! JN - remove this later - just a check 
+          ! JN - remove this later - just a check
           call currentCohort%prt%CheckMassConservation(ft,5)
 
           if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
 
              if(currentCohort%crowndamage > 1) then
- 
+
+                write(fates_log(),*) 'JN cohort splitting in mainMod'
+                
                 ! N is inout boundary condition so has now been updated. The difference must
                 ! go to a new cohort
                 n_recover = n_old - currentCohort%n

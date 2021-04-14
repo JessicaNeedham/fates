@@ -1662,7 +1662,7 @@ contains
        call bagw_allom(temp_cohort%dbh,ft,temp_cohort%crowndamage, temp_cohort%branch_frac, c_agw)
        call bbgw_allom(temp_cohort%dbh,ft, temp_cohort%branch_frac, c_bgw)
        call bdead_allom(c_agw,c_bgw,c_sapw,ft,c_struct)
-       call bstore_allom(temp_cohort%dbh,ft,temp_cohort%crowndamage, &
+       call bstore_allom(temp_cohort%dbh,ft, &
             temp_cohort%canopy_trim,c_store)
 
        ! Default assumption is that leaves are on

@@ -401,9 +401,12 @@ contains
                                                          ! leaf age class, and therefore
                                                          ! all new allocation goes into that pool
 
-    real(r8) ::  intgr_params(num_bc_in)                 ! The boundary conditions to this routine,
+    real(r8) ::  intgr_params(num_bc_in+1)                 ! The boundary conditions to this routine,
                                                          ! are pressed into an array that is also
                                                          ! passed to the integrators
+                                                         ! JN add one because we pass crown damage also
+                                                         ! which is not a bc_in
+    
 
     associate( & 
 
@@ -434,18 +437,19 @@ contains
     intgr_params(:)                 = un_initialized
     intgr_params(ac_bc_in_id_ctrim) = this%bc_in(ac_bc_in_id_ctrim)%rval
     intgr_params(ac_bc_in_id_pft)   = real(this%bc_in(ac_bc_in_id_pft)%ival)
+    intgr_params(ac_bc_in_id_branch_frac) = this%bc_in(ac_bc_in_id_branch_frac)%rval
+    intgr_params(num_bc_in + 1) = real(this%bc_inout(ac_bc_inout_id_cdamage)%ival)
     
-
     nleafage = prt_global%state_descriptor(leaf_c_id)%num_pos ! Number of leaf age class
     damage_recovery_scalar = prt_params%damage_recovery_scalar(ipft)
 
+    
     ! -----------------------------------------------------------------------------------
     ! Call the routine that advances leaves in age.
     ! This will move a portion of the leaf mass in each
     ! age bin, to the next bin. This will not handle movement
     ! of mass from the oldest bin into the litter pool, that is something else.
     ! -----------------------------------------------------------------------------------
-
     call this%AgeLeaves(ipft,sec_per_day)
 
     ! -----------------------------------------------------------------------------------
@@ -488,7 +492,7 @@ contains
     call bfineroot(dbh,ipft,canopy_trim,target_fnrt_c)
     
     ! Target storage carbon [kgC,kgC/cm]
-    call bstore_allom(dbh,ipft,crowndamage, canopy_trim,target_store_c)
+    call bstore_allom(dbh,ipft,canopy_trim,target_store_c)
 
 
     ! -----------------------------------------------------------------------------------
@@ -672,7 +676,7 @@ contains
     ! d = damage class
 
     if (crowndamage > 1 .and. carbon_balance > calloc_abs_error) then
-       write(fates_log(),*) 'JN testing' 
+
        if(damage_recovery_scalar > 0.0_r8) then 
        ! 1. What is excess carbon?
        ! carbon_balance
@@ -693,7 +697,7 @@ contains
        ! Target fine-root biomass and deriv. according to allometry and trimming [kgC, kgC/cm]
        call bfineroot(dbh,ipft,canopy_trim,targetn_fnrt_c)
        ! Target storage carbon [kgC,kgC/cm]
-       call bstore_allom(dbh,ipft,crowndamage-1, canopy_trim,targetn_store_c)
+       call bstore_allom(dbh,ipft, canopy_trim,targetn_store_c)
        ! Target leaf biomass according to allometry and trimming
        if(leaf_status==2) then
           call bleaf(dbh,ipft,crowndamage-1, canopy_trim,targetn_leaf_c)
@@ -775,7 +779,6 @@ contains
     end if ! end if crowndamage 
     !------------------------------------------------------------------------------------
 
-
     if_stature_growth: if( carbon_balance > calloc_abs_error ) then
        
        ! This routine checks that actual carbon is not below that targets. It does
@@ -855,7 +858,7 @@ contains
        end if
        
        do_solve_check: do while( ierr .ne. 0 )
-          
+ 
           deltaC = min(totalC,this%ode_opt_step)
           if(ODESolve == 1) then
              call RKF45(AllomCGrowthDeriv,c_pool,c_mask,deltaC,totalC, &
@@ -1074,6 +1077,8 @@ contains
 
         canopy_trim = intgr_params(ac_bc_in_id_ctrim)
         ipft        = int(intgr_params(ac_bc_in_id_pft))
+        branch_frac = intgr_params(ac_bc_in_id_branch_frac)
+        crowndamage = int(intgr_params(num_bc_in + 1))
        
         call bleaf(dbh,ipft,crowndamage,canopy_trim,ct_leaf, dbldd=ct_dleafdd)
         call bfineroot(dbh,ipft,canopy_trim,ct_fnrt,ct_dfnrtdd)
@@ -1083,7 +1088,7 @@ contains
         call bbgw_allom(dbh,ipft, branch_frac, ct_agw, ct_dbgwdd)
         call bdead_allom(ct_agw,ct_bgw, ct_sap, ipft, ct_dead, &
                          ct_dagwdd, ct_dbgwdd, ct_dsapdd, ct_ddeaddd)
-        call bstore_allom(dbh,ipft,crowndamage, canopy_trim,ct_store,ct_dstoredd)
+        call bstore_allom(dbh,ipft, canopy_trim,ct_store,ct_dstoredd)
         
         ! fraction of carbon going towards reproduction
         if (dbh <= prt_params%dbh_repro_threshold(ipft)) then ! cap on leaf biomass
@@ -1298,7 +1303,7 @@ contains
            target_leaf_c = 0.0_r8
         end if
         call bfineroot(dbh, ipft, canopy_trim, target_fnrt_c)
-        call bstore_allom(dbh, ipft, crowndamage, canopy_trim, target_store_c)
+        call bstore_allom(dbh, ipft, canopy_trim, target_store_c)
 
         ! Now we assign these targets to the actual biomass pools
         fnrt_c   = max(target_fnrt_c, fnrt_c)

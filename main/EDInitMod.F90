@@ -537,7 +537,8 @@ contains
        temp_cohort%n           = EDPftvarcon_inst%initd(pft) * patch_in%area
        temp_cohort%hite        = EDPftvarcon_inst%hgt_min(pft)
        temp_cohort%branch_frac = param_derived%branch_frac(pft)
-       
+
+       write(fates_log(),*) 'JN EDInitMod branch_frac: ', temp_cohort%branch_frac
        ! Assume no damage to begin with - since we assume no damage
        ! we do not need to initialise branch frac just yet. 
        temp_cohort%crowndamage = 1
@@ -569,7 +570,7 @@ contains
        
        call bdead_allom( c_agw, c_bgw, c_sapw, pft, c_struct )
 
-       call bstore_allom(temp_cohort%dbh, pft, temp_cohort%crowndamage, &
+       call bstore_allom(temp_cohort%dbh, pft, &
             temp_cohort%canopy_trim, c_store)
 
        temp_cohort%laimemory = 0._r8

@@ -378,7 +378,6 @@ contains
                      call bleaf(currentCohort%dbh,currentCohort%pft,currentCohort%crowndamage, &
                           currentCohort%canopy_trim,store_c_target)
 !                     call bstore_allom(currentCohort%dbh,currentCohort%pft, &
-                     !currentCohort%crowndamage, &
                      !currentCohort%canopy_trim,store_c_target)
 
                      call storage_fraction_of_target(store_c_target, & 

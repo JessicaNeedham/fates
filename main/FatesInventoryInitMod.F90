@@ -1039,7 +1039,7 @@ contains
          
          call bdead_allom( c_agw, c_bgw, c_sapw, temp_cohort%pft, c_struct )
          
-         call bstore_allom(temp_cohort%dbh, temp_cohort%pft,1, temp_cohort%canopy_trim, c_store)
+         call bstore_allom(temp_cohort%dbh, temp_cohort%pft, temp_cohort%canopy_trim, c_store)
       
          temp_cohort%laimemory = 0._r8
          temp_cohort%sapwmemory = 0._r8

@@ -244,7 +244,7 @@ contains
      end if
         
      if (grow_store) then
-        call bstore_allom(dbh,ipft,crowndamage, canopy_trim,bstore_diag)
+        call bstore_allom(dbh,ipft, canopy_trim,bstore_diag)
         if( abs(bstore_diag-bstore) > max_err ) then
            if(verbose_logging) then
               write(fates_log(),*) 'disparity in integrated/diagnosed storage carbon'
@@ -400,7 +400,10 @@ contains
       end select
       
       if(crowndamage > 1) then
+         write(fates_log(),*) 'JN adjusting bagw'
          call get_crown_reduction(crowndamage, crown_reduction)
+         write(fates_log(),*) 'JN crown damage : ', crowndamage
+         write(fates_log(),*) 'JN crown reduction : ', crown_reduction
          bagw = (bagw * (1.0_r8 - crown_reduction) * branch_frac) + (bagw * (1.0_r8 - branch_frac))
          if(present(dbagwdd))then
             dbagwdd = (dbagwdd * (1.0_r8 - crown_reduction) * branch_frac) + &
@@ -570,6 +573,8 @@ contains
 
 
     if ( crowndamage > 1 ) then
+
+       write(fates_log(),*) 'JN adjusting bleaf'
        call  get_crown_reduction(crowndamage, crown_reduction)
        bl = bl * (1.0_r8 - crown_reduction)
        if(present(dbldd))then
@@ -847,6 +852,8 @@ contains
        !JN if trees are damaged reduce bsap by percent crown loss *
        ! fraction of biomass that would be in branches (pft specific)
        if(crowndamage > 1)then
+
+          write(fates_log(),*) 'JN adjusting bsap '
           call get_crown_reduction(crowndamage, crown_reduction)
           bsap = (bsap * branch_frac * (1.0_r8 - crown_reduction)) + (bsap * (1.0_r8-branch_frac))
           if(present(dbsapdd))then
@@ -901,7 +908,7 @@ contains
     select case(int(prt_params%allom_cmode(ipft)))
     case(1) !"constant")
        !JN bbgw not affected by damage so use target allometry no damage
-       call bagw_allom(d,ipft,crowndamage = 1, branch_frac, bagw,dbagwdd)
+       call bagw_allom(d,ipft,1, branch_frac, bagw,dbagwdd)
        call bbgw_const(d,bagw,dbagwdd,ipft,bbgw,dbbgwdd)
     case DEFAULT
        write(fates_log(),*) 'An undefined coarse root allometry was specified: ', &
@@ -968,11 +975,10 @@ contains
   ! Storage biomass interface
   ! ============================================================================
   
-  subroutine bstore_allom(d,ipft,crowndamage, canopy_trim,bstore,dbstoredd)
+  subroutine bstore_allom(d,ipft, canopy_trim,bstore,dbstoredd)
 
      real(r8),intent(in)           :: d            ! plant diameter [cm]
      integer(i4),intent(in)        :: ipft         ! PFT index
-     integer(i4),intent(in)        :: crowndamage  ! crown damage class 
      real(r8),intent(in)           :: canopy_trim  ! Crown trimming function [0-1]
      real(r8),intent(out)          :: bstore       ! allometric target storage [kgC]
      real(r8),intent(out),optional :: dbstoredd    ! change storage per cm [kgC/cm]
@@ -990,7 +996,6 @@ contains
        case(1) ! Storage is constant proportionality of trimmed maximum leaf
           ! biomass (ie cushion * bleaf)
           
-         ! call bleaf(d,ipft,crowndamage, canopy_trim,bl,dbldd)
           call bleaf(d,ipft, 1, canopy_trim, bl, dbldd)
           call bstore_blcushion(d,bl,dbldd,cushion,ipft,bstore,dbstoredd)
           
