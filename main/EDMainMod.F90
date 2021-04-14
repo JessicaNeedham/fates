@@ -519,12 +519,13 @@ contains
           if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
 
              if(currentCohort%crowndamage > 1) then
+ 
                 ! N is inout boundary condition so has now been updated. The difference must
                 ! go to a new cohort
                 n_recover = n_old - currentCohort%n
-                
+
                 if(n_recover > nearzero) then
-                  
+
                    allocate(nc)
                    if(hlm_use_planthydro .eq. itrue) call InitHydrCohort(CurrentSite,nc)
                    ! Initialize the PARTEH object and point to the
@@ -566,8 +567,8 @@ contains
                    cc_store_c  = currentCohort%prt%GetState(store_organ, all_carbon_elements)
                    cc_repro_c  = currentCohort%prt%GetState(repro_organ, all_carbon_elements)
                    total_c2 = cc_sapw_c + cc_struct_c + cc_leaf_c + cc_fnrt_c + cc_store_c + cc_repro_c
-                  
-                   
+
+
                    call PRTDamageRecoveryFluxes(nc%prt, leaf_organ, leaf_c0, leaf_c, cc_leaf_c)
                    call PRTDamageRecoveryFluxes(nc%prt, repro_organ, repro_c0, repro_c, cc_repro_c)
                    call PRTDamageRecoveryFluxes(nc%prt, sapw_organ, sapw_c0, sapw_c, cc_sapw_c)
@@ -583,22 +584,22 @@ contains
                    write(fates_log(),*) ' total c1      : ', total_c1 * n_recover
                    write(fates_log(),*) ' total c2      : ', total_c2 * currentCohort%n     
                    write(fates_log(),*) ' c1 + c2       : ', (total_c1*n_recover) +&
-                         (total_c2 * currentCohort%n)
+                        (total_c2 * currentCohort%n)
                    write(fates_log(),*) ' c0            : ', total_c0* n_old
 
                    write(fates_log(),*) ' n_old   : ', n_old
                    write(fates_log(),*) ' nc + cc : ', nc%n + currentCohort%n 
                    write(fates_log(),*) ' nc      : ', nc%n
                    write(fates_log(),*) ' cc      : ', currentCohort%n
-                    
+
                    call nc%prt%CheckMassConservation(ft,6)
-                   
+
                    ! update crown area
                    call carea_allom(nc%dbh, nc%n, currentSite%spread, nc%pft, nc%crowndamage, nc%c_area)
                    call carea_allom(currentCohort%dbh, currentCohort%n, currentSite%spread, &
                         currentCohort%pft, currentCohort%crowndamage, currentCohort%c_area)
 
-                  
+
                    total_c = sapw_c + struct_c + leaf_c + fnrt_c + store_c + repro_c
 
                    currentSite%damage_rate(currentCohort%crowndamage, nc%crowndamage) = &
@@ -606,7 +607,7 @@ contains
                    currentSite%damage_cflux(currentCohort%crowndamage, nc%crowndamage) = &
                         currentSite%damage_cflux(currentCohort%crowndamage, nc%crowndamage) + &
                         nc%n * total_c
-   
+
                    !----------- Insert copy into linked list ----------------------! 
                    nc%shorter => currentCohort
                    if(associated(currentCohort%taller))then
@@ -617,25 +618,13 @@ contains
                       nc%taller => null()
                    endif
                    currentCohort%taller => nc
-                   
+
                 end if ! end if greater than nearzero
              end if ! end if crowndamage > 1
           end if ! end if crowndamage is on
 
-          ! JN need to exit cohort list here and udpate canopy structure with this new cohort
-          currentCohort => currentCohort%taller
-       enddo
-       currentPatch => currentPatch%older
-    end do
-
-    call canopy_structure(currentSite, bc_in)
-
-    ! JN and then back into the cohort list
-    currentPatch => currentSite%youngest_patch
-    do while(associated(currentPatch))
-       currentCohort => currentPatch%shortest
-       do while(associated(currentCohort))
-
+    
+   
           ! Update the mass balance tracking for the daily nutrient uptake flux
           ! Then zero out the daily uptakes, they have been used
           ! -----------------------------------------------------------------------------
@@ -761,6 +750,11 @@ contains
        currentPatch => currentPatch%older
    end do
 
+   ! JN - if crown damage is on then we need to update canopy structure because we
+   ! have split the cohorts
+   if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+      call canopy_structure(currentSite, bc_in)
+   end if
    
     ! When plants die, the water goes with them.  This effects
     ! the water balance. 

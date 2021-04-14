@@ -260,7 +260,7 @@ contains
      if (grow_dead) then
         call bsap_allom(dbh,ipft,crowndamage, branch_frac, canopy_trim,asap_diag,bsap_diag)
         call bagw_allom(dbh,ipft,crowndamage, branch_frac, bagw_diag)
-        call bbgw_allom(dbh,ipft,crowndamage, branch_frac, bbgw_diag)
+        call bbgw_allom(dbh,ipft, branch_frac, bbgw_diag)
         call bdead_allom( bagw_diag, bbgw_diag, bsap_diag, ipft, bdead_diag )        
         if( abs(bdead_diag-bdead) > max_err ) then
            if(verbose_logging) then
@@ -563,20 +563,20 @@ contains
     ! -------------------------------------------------------------------------
     
     bl = blmax * canopy_trim
-    
+
+    if(present(dbldd))then
+       dbldd = dblmaxdd * canopy_trim
+    end if
+
+
     if ( crowndamage > 1 ) then
        call  get_crown_reduction(crowndamage, crown_reduction)
        bl = bl * (1.0_r8 - crown_reduction)
-    end if
-
-    if(present(dbldd))then
-       if(crowndamage > 1) then
+       if(present(dbldd))then
           dbldd = dblmaxdd * canopy_trim * (1.0_r8 - crown_reduction)
-       else
-          dbldd = dblmaxdd * canopy_trim
        end if
     end if
-
+    
     return
   end subroutine bleaf
   
@@ -733,7 +733,7 @@ contains
 
   ! ============================================================================
 
-  real(r8) function tree_sai(pft, crowndamage,dbh, site_spread, canopy_trim, target_c_area, nplant, cl, &
+  real(r8) function tree_sai(pft, dbh, site_spread, canopy_trim, target_c_area, nplant, cl, &
                               canopy_lai, treelai, vcmax25top, call_id )
 
     ! ============================================================================
@@ -741,7 +741,6 @@ contains
     ! ============================================================================
 
     integer, intent(in)  :: pft
-    integer(i4),intent(in) :: crowndamage
     real(r8), intent(inout) :: dbh
     real(r8), intent(in) :: site_spread
     real(r8), intent(inout) :: target_c_area
@@ -856,11 +855,10 @@ contains
           end if
        end if
        
-
        
        ! Perform a capping/check on total woody biomass
        call bagw_allom(d,ipft,crowndamage, branch_frac, bagw,dbagwdd)
-       call bbgw_allom(d,ipft,crowndamage, branch_frac, bbgw,dbbgwdd)
+       call bbgw_allom(d,ipft, branch_frac, bbgw,dbbgwdd)
        
        ! Force sapwood to be less than a maximum fraction of total biomass
        ! We omit the sapwood area from this calculation
@@ -889,11 +887,10 @@ contains
   ! non-fineroot biomass.
   ! ============================================================================
 
-  subroutine bbgw_allom(d,ipft,crowndamage, branch_frac, bbgw,dbbgwdd)
+  subroutine bbgw_allom(d,ipft, branch_frac, bbgw,dbbgwdd)
 
     real(r8),intent(in)           :: d          ! plant diameter [cm]
     integer(i4),intent(in)        :: ipft       ! PFT index
-    integer(i4),intent(in)        :: crowndamage ! crown damage class
     real(r8), intent(in)          :: branch_frac ! branch fraction in canopy
     real(r8),intent(out)          :: bbgw       ! below ground woody biomass [kgC]
     real(r8),intent(out),optional :: dbbgwdd    ! change bbgw  per diam [kgC/cm]
@@ -903,7 +900,8 @@ contains
     
     select case(int(prt_params%allom_cmode(ipft)))
     case(1) !"constant")
-       call bagw_allom(d,ipft,crowndamage, branch_frac, bagw,dbagwdd)
+       !JN bbgw not affected by damage so use target allometry no damage
+       call bagw_allom(d,ipft,crowndamage = 1, branch_frac, bagw,dbagwdd)
        call bbgw_const(d,bagw,dbagwdd,ipft,bbgw,dbbgwdd)
     case DEFAULT
        write(fates_log(),*) 'An undefined coarse root allometry was specified: ', &
@@ -2340,7 +2338,7 @@ subroutine ForceDBH( ipft, canopy_trim, d, h, bdead, bl, crowndamage, crown_redu
         
         call bsap_allom(d,ipft,crowndamage, branch_frac, canopy_trim,at_sap,bt_sap,dbt_sap_dd)
         call bagw_allom(d,ipft,crowndamage, branch_frac, bt_agw,dbt_agw_dd)
-        call bbgw_allom(d,ipft,crowndamage, branch_frac, bt_bgw,dbt_bgw_dd)
+        call bbgw_allom(d,ipft, branch_frac, bt_bgw,dbt_bgw_dd)
 
         ! JN - bdead is actual not target biomass. Since this is reduced in damaged trees
         ! but is used here to back calculate dbh we need to find the equivalent damaged version of
@@ -2368,7 +2366,7 @@ subroutine ForceDBH( ipft, canopy_trim, d, h, bdead, bl, crowndamage, crown_redu
         
            call bsap_allom(d_try,ipft,crowndamage, branch_frac, canopy_trim,at_sap,bt_sap,dbt_sap_dd)
            call bagw_allom(d_try,ipft,crowndamage, branch_frac, bt_agw,dbt_agw_dd)
-           call bbgw_allom(d_try,ipft,crowndamage, branch_frac, bt_bgw,dbt_bgw_dd)
+           call bbgw_allom(d_try,ipft, branch_frac, bt_bgw,dbt_bgw_dd)
 
 
            ! JN - see above

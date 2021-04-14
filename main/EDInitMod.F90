@@ -552,7 +552,7 @@ contains
             1.0_r8, c_agw)
 
        ! Calculate coarse root biomass from allometry
-       call bbgw_allom(temp_cohort%dbh,pft,temp_cohort%crowndamage, &
+       call bbgw_allom(temp_cohort%dbh,pft, &
             1.0_r8, c_bgw)
 
        ! Calculate the leaf biomass from allometry

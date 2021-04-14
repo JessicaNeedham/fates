@@ -457,7 +457,7 @@ contains
     call bsap_allom(dbh,ipft,icrowndamage, branch_frac, canopy_trim, &
          sapw_area,target_c(sapw_id),target_dcdd(sapw_id)  )
     call bagw_allom(dbh,ipft,icrowndamage, branch_frac, agw_c_target,agw_dcdd_target)
-    call bbgw_allom(dbh,ipft,icrowndamage, branch_frac, bgw_c_target,bgw_dcdd_target)
+    call bbgw_allom(dbh,ipft, branch_frac, bgw_c_target,bgw_dcdd_target)
     call bdead_allom(agw_c_target,bgw_c_target, target_c(sapw_id), ipft, target_c(struct_id), &
                      agw_dcdd_target, bgw_dcdd_target, target_dcdd(sapw_id), target_dcdd(struct_id))
     call bleaf(dbh,ipft,icrowndamage, canopy_trim, target_c(leaf_id), target_dcdd(leaf_id))
@@ -1527,7 +1527,7 @@ contains
                call bfineroot(dbh_tp1,ipft,canopy_trim,fnrt_c_target_tp1)
                call bsap_allom(dbh_tp1,ipft,icrowndamage,branch_frac,canopy_trim,sapw_area,sapw_c_target_tp1)
                call bagw_allom(dbh_tp1,ipft,icrowndamage, branch_frac, agw_c_target_tp1)
-               call bbgw_allom(dbh_tp1,ipft,icrowndamage, branch_frac, bgw_c_target_tp1)
+               call bbgw_allom(dbh_tp1,ipft, branch_frac, bgw_c_target_tp1)
                call bdead_allom(agw_c_target_tp1,bgw_c_target_tp1, sapw_c_target_tp1, ipft, struct_c_target_tp1)
                call bstore_allom(dbh_tp1,ipft,icrowndamage, canopy_trim,store_c_target_tp1)
                
@@ -2134,7 +2134,7 @@ contains
         call bfineroot(dbh,ipft,canopy_trim,fnrt_c_target,fnrt_dcdd_target)
         call bsap_allom(dbh,ipft,icrowndamage, branch_frac,canopy_trim,sapw_area,sapw_c_target,sapw_dcdd_target)
         call bagw_allom(dbh,ipft,icrowndamage, branch_frac, agw_c_target,agw_dcdd_target)
-        call bbgw_allom(dbh,ipft,icrowndamage, branch_frac, bgw_c_target,bgw_dcdd_target)
+        call bbgw_allom(dbh,ipft, branch_frac, bgw_c_target,bgw_dcdd_target)
         call bdead_allom(agw_c_target,bgw_c_target, sapw_c_target, ipft, struct_c_target, &
                          agw_dcdd_target, bgw_dcdd_target, sapw_dcdd_target, struct_dcdd_target)
         call bstore_allom(dbh,ipft,icrowndamage,canopy_trim,store_c_target,store_dcdd_target)

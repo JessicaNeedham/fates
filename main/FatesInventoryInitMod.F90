@@ -1022,7 +1022,7 @@ contains
               temp_cohort%crowndamage, temp_cohort%branch_frac, c_agw)
          ! Calculate coarse root biomass from allometry
          call bbgw_allom(temp_cohort%dbh,temp_cohort%pft,&
-              temp_cohort%crowndamage, temp_cohort%branch_frac, c_bgw)
+              temp_cohort%branch_frac, c_bgw)
          
          ! Calculate the leaf biomass (calculates a maximum first, then applies canopy trim
          ! and sla scaling factors)

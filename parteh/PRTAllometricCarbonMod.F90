@@ -472,7 +472,7 @@ contains
     call bagw_allom(dbh,ipft, crowndamage, branch_frac, target_agw_c)
     
     ! Target total below ground biomass in woody/fibrous tissues [kgC] 
-    call bbgw_allom(dbh,ipft, crowndamage, branch_frac, target_bgw_c)
+    call bbgw_allom(dbh,ipft, branch_frac, target_bgw_c)
     
     ! Target total dead (structrual) biomass [kgC]
     call bdead_allom( target_agw_c, target_bgw_c, target_sapw_c, ipft, target_struct_c)
@@ -672,6 +672,7 @@ contains
     ! d = damage class
 
     if (crowndamage > 1 .and. carbon_balance > calloc_abs_error) then
+       write(fates_log(),*) 'JN testing' 
        if(damage_recovery_scalar > 0.0_r8) then 
        ! 1. What is excess carbon?
        ! carbon_balance
@@ -686,7 +687,7 @@ contains
        ! Target total above ground biomass in woody/fibrous tissues  [kgC]
        call bagw_allom(dbh,ipft, crowndamage-1, branch_frac, targetn_agw_c)
        ! Target total below ground biomass in woody/fibrous tissues [kgC] 
-       call bbgw_allom(dbh,ipft, crowndamage-1, branch_frac, targetn_bgw_c)
+       call bbgw_allom(dbh,ipft, branch_frac, targetn_bgw_c)
        ! Target total dead (structrual) biomass [kgC]
        call bdead_allom( targetn_agw_c, targetn_bgw_c, targetn_sapw_c, ipft, targetn_struct_c)
        ! Target fine-root biomass and deriv. according to allometry and trimming [kgC, kgC/cm]
@@ -909,7 +910,7 @@ contains
              write(fates_log(),*) 'fnrt:',grow_fnrt,target_fnrt_c,target_fnrt_c - fnrt_c
              write(fates_log(),*) 'sap:',grow_sapw,target_sapw_c, target_sapw_c - sapw_c
              write(fates_log(),*) 'store:',grow_store,target_store_c,target_store_c - store_c
-             write(fates_log(),*) 'dead:',target_struct_c,target_struct_c - struct_c
+              write(fates_log(),*) 'dead:',target_struct_c,target_struct_c - struct_c
              call endrun(msg=errMsg(sourcefile, __LINE__))
           end if
 
@@ -1079,7 +1080,7 @@ contains
         call bsap_allom(dbh,ipft, crowndamage, branch_frac, canopy_trim,sapw_area,ct_sap,ct_dsapdd)
 
         call bagw_allom(dbh,ipft,crowndamage, branch_frac, ct_agw,ct_dagwdd)
-        call bbgw_allom(dbh,ipft,crowndamage, branch_frac, ct_agw, ct_dbgwdd)
+        call bbgw_allom(dbh,ipft, branch_frac, ct_agw, ct_dbgwdd)
         call bdead_allom(ct_agw,ct_bgw, ct_sap, ipft, ct_dead, &
                          ct_dagwdd, ct_dbgwdd, ct_dsapdd, ct_ddeaddd)
         call bstore_allom(dbh,ipft,crowndamage, canopy_trim,ct_store,ct_dstoredd)
@@ -1289,7 +1290,7 @@ contains
         ! Get allometric targets for this dbh and crown damage class
         call bsap_allom(dbh, ipft, crowndamage, branch_frac, canopy_trim, sapw_area, target_sapw_c)
         call bagw_allom(dbh, ipft, crowndamage, branch_frac, target_agw_c)
-        call bbgw_allom(dbh, ipft, crowndamage, branch_frac, target_bgw_c)
+        call bbgw_allom(dbh, ipft, branch_frac, target_bgw_c)
         call bdead_allom(target_agw_c, target_bgw_c, target_sapw_c, ipft, target_struct_c)
         if(leaf_status ==2)then
            call bleaf(dbh, ipft, crowndamage, canopy_trim, target_leaf_c)

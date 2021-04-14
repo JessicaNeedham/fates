@@ -280,7 +280,6 @@ contains
          patchptr%canopy_layer_tlai,new_cohort%vcmax25top)    
 
     new_cohort%treesai = tree_sai(new_cohort%pft,  &
-         new_cohort%crowndamage, &
          new_cohort%dbh, &
          spread, &
          new_cohort%canopy_trim, new_cohort%c_area,  &
@@ -1367,7 +1366,7 @@ contains
                                            currentCohort%canopy_layer, currentPatch%canopy_layer_tlai, &
                                            currentCohort%vcmax25top)
                                       currentCohort%treesai = tree_sai(currentCohort%pft,&
-                                           currentCohort%crowndamage, currentCohort%dbh,&
+                                           currentCohort%dbh,&
                                            currentSite%spread, &
                                            currentCohort%canopy_trim, &
                                            currentCohort%c_area, newn, currentCohort%canopy_layer, &
@@ -2144,7 +2143,7 @@ contains
        call bagw_allom(dbh,ipft, icrowndamage, branch_frac, target_agw_c)
        
        ! Target total below ground biomass in woody/fibrous tissues [kgC] 
-       call bbgw_allom(dbh,ipft,icrowndamage, branch_frac, target_bgw_c)
+       call bbgw_allom(dbh,ipft, branch_frac, target_bgw_c)
        
        ! Target total dead (structrual) biomass [kgC]
        call bdead_allom( target_agw_c, target_bgw_c, target_sapw_c, ipft, target_struct_c)

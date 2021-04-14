@@ -1518,7 +1518,6 @@ contains
           call carea_allom(currentCohort%dbh, currentCohort%n, currentSite%spread,&
                currentCohort%pft, 1, target_c_area)
           currentCohort%treesai = tree_sai(currentCohort%pft,  &
-               currentCohort%crowndamage, &
                currentCohort%dbh, &
                currentSite%spread, &
                currentCohort%canopy_trim, &
