@@ -400,10 +400,7 @@ contains
       end select
       
       if(crowndamage > 1) then
-         write(fates_log(),*) 'JN adjusting bagw'
          call get_crown_reduction(crowndamage, crown_reduction)
-         write(fates_log(),*) 'JN crown damage : ', crowndamage
-         write(fates_log(),*) 'JN crown reduction : ', crown_reduction
          bagw = (bagw * (1.0_r8 - crown_reduction) * branch_frac) + (bagw * (1.0_r8 - branch_frac))
          if(present(dbagwdd))then
             dbagwdd = (dbagwdd * (1.0_r8 - crown_reduction) * branch_frac) + &

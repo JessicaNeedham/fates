@@ -519,9 +519,7 @@ contains
           if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
 
              if(currentCohort%crowndamage > 1) then
-
-                write(fates_log(),*) 'JN cohort splitting in mainMod'
-                
+  
                 ! N is inout boundary condition so has now been updated. The difference must
                 ! go to a new cohort
                 n_recover = n_old - currentCohort%n
@@ -577,22 +575,6 @@ contains
                    call PRTDamageRecoveryFluxes(nc%prt, struct_organ, struct_c0, struct_c, cc_struct_c)
                    call PRTDamageRecoveryFluxes(nc%prt, store_organ, store_c0, store_c, cc_store_c)
                    call PRTDamageRecoveryFluxes(nc%prt, fnrt_organ, fnrt_c0, fnrt_c, cc_fnrt_c)
-
-                   write(fates_log(),*) 'JN main checks'
-                   write(fates_log(),*) ' per capita c1      : ', total_c1 
-                   write(fates_log(),*) ' per capita c2      : ', total_c2    
-                   write(fates_log(),*) ' per capita c0      : ', total_c0
-
-                   write(fates_log(),*) ' total c1      : ', total_c1 * n_recover
-                   write(fates_log(),*) ' total c2      : ', total_c2 * currentCohort%n     
-                   write(fates_log(),*) ' c1 + c2       : ', (total_c1*n_recover) +&
-                        (total_c2 * currentCohort%n)
-                   write(fates_log(),*) ' c0            : ', total_c0* n_old
-
-                   write(fates_log(),*) ' n_old   : ', n_old
-                   write(fates_log(),*) ' nc + cc : ', nc%n + currentCohort%n 
-                   write(fates_log(),*) ' nc      : ', nc%n
-                   write(fates_log(),*) ' cc      : ', currentCohort%n
 
                    call nc%prt%CheckMassConservation(ft,6)
 

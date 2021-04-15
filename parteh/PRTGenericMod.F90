@@ -986,17 +986,6 @@ contains
                                                this%variables(i_var)%turnover(i_pos), &
                                                this%variables(i_var)%burned(i_pos), & 
                                                this%variables(i_var)%damaged(i_pos)
-              
-              write(fates_log(),*) 'CM JN val0: ', this%variables(i_var)%val0(i_pos)
-              write(fates_log(),*) 'CMJN val: ', this%variables(i_var)%val(i_pos)
-              write(fates_log(),*) 'CM JN net_alloc: ', this%variables(i_var)%net_alloc(i_pos)
-              write(fates_log(),*) 'CM JN turnover : ', this%variables(i_var)%turnover(i_pos)
-              write(fates_log(),*) 'CM JN val-val0 : ', this%variables(i_var)%val(i_pos) - &
-                   this%variables(i_var)%val0(i_pos)
-              write(fates_log(),*) 'CM JN netalloc - turnover   : ',&
-                   this%variables(i_var)%net_alloc(i_pos) - &
-                   this%variables(i_var)%turnover
-
               write(fates_log(),*) ' Exiting.'
               call endrun(msg=errMsg(sourcefile, __LINE__))
            end if
