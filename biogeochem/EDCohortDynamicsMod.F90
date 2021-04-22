@@ -837,11 +837,21 @@ contains
                    currentCohort%n * (struct_c+sapw_c+leaf_c+fnrt_c+store_c+repro_c)
           end if
 
-          if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
-             currentSite%term_nindivs_damage(currentCohort%crowndamage, currentCohort%size_class) = &
-                  currentSite%term_nindivs_damage(currentCohort%crowndamage,currentCohort%size_class) + currentCohort%n
-             currentSite%term_cflux_damage(currentCohort%crowndamage, currentCohort%size_class) = &
-                  currentSite%term_cflux_damage(currentCohort%crowndamage, currentCohort%size_class) + &
+          if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue &
+               .and. levcan==ican_upper) then
+          currentSite%term_nindivs_canopy_damage(currentCohort%crowndamage, currentCohort%size_class) = &
+                  currentSite%term_nindivs_canopy_damage(currentCohort%crowndamage,currentCohort%size_class) + currentCohort%n
+             currentSite%term_cflux_canopy_damage(currentCohort%crowndamage, currentCohort%size_class) = &
+                  currentSite%term_cflux_canopy_damage(currentCohort%crowndamage, currentCohort%size_class) + &
+                  currentCohort%n * (struct_c+sapw_c+leaf_c+fnrt_c+store_c+repro_c)
+          end if
+          
+          if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue &
+               .and. levcan .ne. ican_upper) then
+             currentSite%term_nindivs_ustory_damage(currentCohort%crowndamage, currentCohort%size_class) = &
+                  currentSite%term_nindivs_ustory_damage(currentCohort%crowndamage,currentCohort%size_class) + currentCohort%n
+             currentSite%term_cflux_ustory_damage(currentCohort%crowndamage, currentCohort%size_class) = &
+                  currentSite%term_cflux_ustory_damage(currentCohort%crowndamage, currentCohort%size_class) + &
                   currentCohort%n * (struct_c+sapw_c+leaf_c+fnrt_c+store_c+repro_c)
           end if
 

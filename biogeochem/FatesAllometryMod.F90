@@ -571,7 +571,6 @@ contains
 
     if ( crowndamage > 1 ) then
 
-       write(fates_log(),*) 'JN adjusting bleaf'
        call  get_crown_reduction(crowndamage, crown_reduction)
        bl = bl * (1.0_r8 - crown_reduction)
        if(present(dbldd))then
@@ -850,7 +849,6 @@ contains
        ! fraction of biomass that would be in branches (pft specific)
        if(crowndamage > 1)then
 
-          write(fates_log(),*) 'JN adjusting bsap '
           call get_crown_reduction(crowndamage, crown_reduction)
           bsap = (bsap * branch_frac * (1.0_r8 - crown_reduction)) + (bsap * (1.0_r8-branch_frac))
           if(present(dbsapdd))then

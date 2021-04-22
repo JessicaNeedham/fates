@@ -524,7 +524,6 @@ contains
     real(r8) :: seed_stock
 
     real(r8) :: cd_n
-    real(r8) :: cd_frac_total
     real(r8) :: cd_n_total
     integer :: cd
     real(r8) :: cd_frac
@@ -541,7 +540,7 @@ contains
     real(r8) :: nplant_counter_II
 
     !--------------------------------------------------------------------- 
-   
+    
     storesmallcohort => null() ! storage of the smallest cohort for insertion routine
     storebigcohort   => null() ! storage of the largest cohort for insertion routine 
 
@@ -1230,7 +1229,7 @@ contains
 
                       if(.not. nc%isnew) then
                          ! to keep track of how much nc%n needs to be reduced by after the loop
-                         cd_frac_total = 0.0_r8 
+                         cd_n_total = 0.0_r8 
 
                          ! for each damage class find the number density and if big enough allocate a new cohort
                          do cd = nc%crowndamage+1, ncrowndamage 
@@ -1239,7 +1238,7 @@ contains
                             cd_n = nc%n * cd_frac
 
                             if(cd_n > nearzero) then
-                               cd_frac_total = cd_frac_total + cd_frac
+                               cd_n_total = cd_n_total + cd_n
 
                                allocate(nc_d)  ! new cohort surviving but damaged
                                if(hlm_use_planthydro.eq.itrue) call InitHydrCohort(CurrentSite,nc_d)
@@ -1331,7 +1330,7 @@ contains
 
 
                          ! Reduce nc%n now based on sum of all new damage classes
-                         nc%n = nc%n * (1.0_r8-cd_frac_total)
+                         nc%n = nc%n - cd_n_total
 
                       end if ! end if not new
                    end if  ! end if understory and woody
@@ -1348,6 +1347,7 @@ contains
                      currentCohort%prt%GetState(repro_organ, 1) ) &
                      * currentCohort%n
                 
+
                 ! Regardless of disturbance type, reduce mass of damaged canopy trees
                 if(hlm_use_canopy_damage .eq.itrue .and. damage_time) then
                    if (prt_params%woody(currentCohort%pft)==1  .and. &
@@ -1355,16 +1355,18 @@ contains
 
                       if(.not. currentCohort%isnew ) then
                          ! to keep track of how much canopy n  needs to be reduced by after the loop
-                         cd_frac_total = 0.0_r8
-
+                         cd_n_total = 0.0_r8
+                        
                          ! for each damage class find the number density and if big enough allocate a new cohort
                          do cd = currentCohort%crowndamage+1, ncrowndamage
 
                             call get_damage_frac(currentCohort%crowndamage, cd, currentCohort%pft, cd_frac)
-                            cd_n = currentCohort%n * cd_frac
-                            if(cd_n > nearzero) then
 
-                               cd_frac_total = cd_frac_total + cd_frac
+                            cd_n = currentCohort%n * cd_frac
+
+                            if(cd_n > nearzero) then
+  
+                               cd_n_total = cd_n_total + cd_n
 
                                allocate(nc_canopy_d)  ! new cohort surviving but damaged
                                if(hlm_use_planthydro.eq.itrue) call InitHydrCohort(CurrentSite,nc_canopy_d)
@@ -1390,7 +1392,7 @@ contains
 
                                nc_canopy_d%n = cd_n
                                nc_canopy_d%crowndamage = cd
-
+ 
                                ! update crown area here - for cohort fusion and canopy organisation below 
                                call carea_allom(nc_canopy_d%dbh, nc_canopy_d%n, currentSite%spread,&
                                     nc_canopy_d%pft, nc_canopy_d%crowndamage, nc_canopy_d%c_area)
@@ -1456,19 +1458,20 @@ contains
                             end if ! end if new n is large enough
 
                          end do ! end crowndamage loop
-
+ 
                          ! Reduce currentCohort%n now based on sum of all new damage classes  
-                         currentCohort%n = currentCohort%n * (1.0_r8-cd_frac_total)
-
+                         currentCohort%n = currentCohort%n - cd_n_total
+ 
                       end if ! end if not new
                    end if  ! end if canopy and woody              
                 end if ! end if canopy damage is on and damage time
 
-                if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+                if(hlm_use_canopy_damage .eq. itrue .and. currentCohort%canopy_layer == 1 .or.&
+                   hlm_use_understory_damage .eq. itrue .and. currentCohort%canopy_layer > 1) then
 
                    if(.not. currentCohort%isnew) then
+
                       ! Keep track of number and carbon that stayed in the same damage class
-                      ! This can include understory trees that stay in undamaged 
                       sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
                       struct_c = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
                       leaf_c   = currentCohort%prt%GetState(leaf_organ, all_carbon_elements)
@@ -1482,12 +1485,9 @@ contains
 
                       currentSite%damage_rate(currentCohort%crowndamage, currentCohort%crowndamage) = &
                            currentSite%damage_rate(currentCohort%crowndamage, currentCohort%crowndamage) + currentCohort%n
-
                    end if
                 end if ! end if damage is on
 
-
-                
                 ! Put new undamaged cohorts in the correct place in the linked list
                 if (nc%n > 0.0_r8) then   
                    storebigcohort   =>  new_patch%tallest
@@ -1583,11 +1583,8 @@ contains
 
 
        enddo ! currentPatch patch loop.
-
-       if(damage_time)then
-          write(fates_log(),'(a/,5(F12.6,1x))') 'JN spawn patches damage rate : ', currentSite%damage_rate 
-       end if
        
+     
        !write(fates_log(),*) 'JN Site level pre damage live stock : ', live_stock_pre
        !write(fates_log(),*) 'JN Site level post damage live stock: ', live_stock_post 
       ! write(fates_log(),*) 'JN patch damage_rate : ', sum(currentSite%damage_rate(:,:))

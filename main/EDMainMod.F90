@@ -586,10 +586,10 @@ contains
 
                    total_c = sapw_c + struct_c + leaf_c + fnrt_c + store_c + repro_c
 
-                   currentSite%damage_rate(currentCohort%crowndamage, nc%crowndamage) = &
-                        currentSite%damage_rate(currentCohort%crowndamage, nc%crowndamage) + nc%n
-                   currentSite%damage_cflux(currentCohort%crowndamage, nc%crowndamage) = &
-                        currentSite%damage_cflux(currentCohort%crowndamage, nc%crowndamage) + &
+                   currentSite%recovery_rate(currentCohort%crowndamage, nc%crowndamage) = &
+                        currentSite%recovery_rate(currentCohort%crowndamage, nc%crowndamage) + nc%n
+                   currentSite%recovery_cflux(currentCohort%crowndamage, nc%crowndamage) = &
+                        currentSite%recovery_cflux(currentCohort%crowndamage, nc%crowndamage) + &
                         nc%n * total_c
 
                    !----------- Insert copy into linked list ----------------------! 
