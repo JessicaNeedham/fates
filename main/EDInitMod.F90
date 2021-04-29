@@ -230,13 +230,18 @@ contains
     site_in%term_nindivs_ustory(:,:) = 0._r8
     site_in%term_carbonflux_canopy = 0._r8
     site_in%term_carbonflux_ustory = 0._r8
+    site_in%term_crownarea_canopy = 0._r8
+    site_in%term_crownarea_ustory = 0._r8
     site_in%recruitment_rate(:) = 0._r8
     site_in%imort_rate(:,:) = 0._r8
     site_in%imort_carbonflux = 0._r8
+    site_in%imort_crownarea = 0._r8
     site_in%fmort_rate_canopy(:,:) = 0._r8
     site_in%fmort_rate_ustory(:,:) = 0._r8
     site_in%fmort_carbonflux_canopy = 0._r8
     site_in%fmort_carbonflux_ustory = 0._r8
+    site_in%fmort_crownarea_canopy = 0._r8
+    site_in%fmort_crownarea_ustory = 0._r8
     site_in%fmort_rate_cambial(:,:) = 0._r8
     site_in%fmort_rate_crown(:,:) = 0._r8
 
@@ -259,7 +264,11 @@ contains
     site_in%term_nindivs_ustory_damage(:,:) = 0._r8
     site_in%imort_cflux_damage(:,:) = 0._r8
     site_in%term_cflux_canopy_damage(:,:) = 0._r8
-    site_in%term_cflux_ustory_damage(:,:) = 0.0_r8
+    site_in%term_cflux_ustory_damage(:,:) = 0._r8
+    site_in%crownarea_canopy_damage = 0._r8
+    site_in%crownarea_ustory_damage = 0._r8
+    
+    
     ! Resources management (logging/harvesting, etc)
     site_in%resources_management%trunk_product_site  = 0.0_r8
 

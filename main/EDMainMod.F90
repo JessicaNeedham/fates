@@ -363,6 +363,7 @@ contains
 
     real(r8) :: n_old
     real(r8) :: n_recover
+    integer  :: nleafage
     real(r8) :: sapw_c
     real(r8) :: leaf_c
     real(r8) :: fnrt_c
@@ -383,11 +384,10 @@ contains
     real(r8) :: fnrt_c0
     real(r8) :: struct_c0
     real(r8) :: repro_c0
-    real(r8) :: total_c0
     real(r8) :: store_c0
-    integer  :: nleafage
-    real(r8) :: total_c1
-    real(r8) :: total_c2
+    real(r8) :: total_c0
+    real(r8) :: nc_carbon
+    real(r8) :: cc_carbon
     
     integer,parameter :: leaf_c_id = 1
     
@@ -558,7 +558,7 @@ contains
                    fnrt_c   = nc%prt%GetState(fnrt_organ, all_carbon_elements)
                    store_c  = nc%prt%GetState(store_organ, all_carbon_elements)
                    repro_c  = nc%prt%GetState(repro_organ, all_carbon_elements)
-                   total_c1 = sapw_c + struct_c + leaf_c + fnrt_c + store_c + repro_c
+                   nc_carbon = sapw_c + struct_c + leaf_c + fnrt_c + store_c + repro_c
 
                    cc_sapw_c   = currentCohort%prt%GetState(sapw_organ, all_carbon_elements)
                    cc_struct_c = currentCohort%prt%GetState(struct_organ, all_carbon_elements)
@@ -566,7 +566,7 @@ contains
                    cc_fnrt_c   = currentCohort%prt%GetState(fnrt_organ, all_carbon_elements)
                    cc_store_c  = currentCohort%prt%GetState(store_organ, all_carbon_elements)
                    cc_repro_c  = currentCohort%prt%GetState(repro_organ, all_carbon_elements)
-                   total_c2 = cc_sapw_c + cc_struct_c + cc_leaf_c + cc_fnrt_c + cc_store_c + cc_repro_c
+                   cc_carbon = cc_sapw_c + cc_struct_c + cc_leaf_c + cc_fnrt_c + cc_store_c + cc_repro_c
 
 
                    call PRTDamageRecoveryFluxes(nc%prt, leaf_organ, leaf_c0, leaf_c, cc_leaf_c)
@@ -584,13 +584,11 @@ contains
                         currentCohort%pft, currentCohort%crowndamage, currentCohort%c_area)
 
 
-                   total_c = sapw_c + struct_c + leaf_c + fnrt_c + store_c + repro_c
-
                    currentSite%recovery_rate(currentCohort%crowndamage, nc%crowndamage) = &
                         currentSite%recovery_rate(currentCohort%crowndamage, nc%crowndamage) + nc%n
                    currentSite%recovery_cflux(currentCohort%crowndamage, nc%crowndamage) = &
                         currentSite%recovery_cflux(currentCohort%crowndamage, nc%crowndamage) + &
-                        nc%n * total_c
+                        nc%n * nc_carbon
 
                    !----------- Insert copy into linked list ----------------------! 
                    nc%shorter => currentCohort
@@ -605,6 +603,15 @@ contains
 
                 end if ! end if greater than nearzero
              end if ! end if crowndamage > 1
+
+             ! JN fill in the diagonals
+             currentSite%recovery_rate(currentCohort%crowndamage, currentCohort%crowndamage) = &
+                  currentSite%recovery_rate(currentCohort%crowndamage, currentCohort%crowndamage) +&
+                  currentCohort%n
+             currentSite%recovery_cflux(currentCohort%crowndamage, currentCohort%crowndamage) = &
+                  currentSite%recovery_cflux(currentCohort%crowndamage, currentCohort%crowndamage) + &
+                  currentCohort%n * cc_carbon
+
           end if ! end if crowndamage is on
 
     

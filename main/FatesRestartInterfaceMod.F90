@@ -195,14 +195,19 @@ module FatesRestartInterfaceMod
   integer :: ir_recovery_rate_sicd
   integer :: ir_termcflux_cano_si
   integer :: ir_termcflux_usto_si
+  integer :: ir_termcarea_cano_si
+  integer :: ir_termcarea_usto_si
   integer :: ir_democflux_si
   integer :: ir_promcflux_si
   integer :: ir_imortcflux_si
+  integer :: ir_imortcarea_si
   integer :: ir_imortcflux_sicdsc
   integer :: ir_termcflux_cano_sicdsc
   integer :: ir_termcflux_usto_sicdsc
   integer :: ir_fmortcflux_cano_si
   integer :: ir_fmortcflux_usto_si
+  integer :: ir_fmortcarea_cano_si
+  integer :: ir_fmortcarea_usto_si
   integer :: ir_cwdagin_flxdg
   integer :: ir_cwdbgin_flxdg
   integer :: ir_leaflittin_flxdg
@@ -1230,6 +1235,11 @@ contains
          units='kgC/ha/day', flushval = flushzero, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_imortcflux_si)
 
+     call this%set_restart_var(vname='fates_imortcarea', vtype=site_r8, &
+         long_name='crownarea of indivs killed due to impact mort', &
+         units='m2/ha/day', flushval = flushzero, &
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_imortcarea_si)
+
     call this%set_restart_var(vname='fates_imortcflux_dam', vtype=cohort_r8, &
          long_name='biomass of indivs killed due to impact mort by damage class', &
          units='kgC/ha/day', flushval = flushzero, &
@@ -1275,6 +1285,25 @@ contains
          units='', flushval = flushzero, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index =   ir_promcflux_si )
 
+   call this%set_restart_var(vname='fates_fmortcarea_canopy', vtype=site_r8, &
+         long_name='fates diagnostic crownarea of canopy fire', &
+         units='m2/sec', flushval = flushzero, &
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_fmortcarea_cano_si)
+
+    call this%set_restart_var(vname='fates_fmortcarea_ustory', vtype=site_r8, &
+         long_name='fates diagnostic crownarea of understory fire', &
+         units='m2/sec', flushval = flushzero, &
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_fmortcarea_usto_si)
+
+    call this%set_restart_var(vname='fates_termcarea_canopy', vtype=site_r8, &
+         long_name='fates diagnostic term crownarea canopy', &
+         units='', flushval = flushzero, &
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index =   ir_termcarea_cano_si )
+
+   call this%set_restart_var(vname='fates_termcarea_ustory', vtype=site_r8, &
+         long_name='fates diagnostic term crownarea understory', &
+         units='', flushval = flushzero, &
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index =   ir_termcarea_usto_si )
 
 
 
@@ -1763,11 +1792,16 @@ contains
            rio_recovery_rate_sicd        => this%rvars(ir_recovery_rate_sicd)%r81d, & 
            rio_termcflux_cano_si       => this%rvars(ir_termcflux_cano_si)%r81d, &
            rio_termcflux_usto_si       => this%rvars(ir_termcflux_usto_si)%r81d, &
+           rio_termcarea_cano_si       => this%rvars(ir_termcarea_cano_si)%r81d, &
+           rio_termcarea_usto_si       => this%rvars(ir_termcarea_usto_si)%r81d, &
            rio_democflux_si            => this%rvars(ir_democflux_si)%r81d, &
            rio_promcflux_si            => this%rvars(ir_promcflux_si)%r81d, &
            rio_imortcflux_si           => this%rvars(ir_imortcflux_si)%r81d, &
            rio_fmortcflux_cano_si      => this%rvars(ir_fmortcflux_cano_si)%r81d, &
-           rio_fmortcflux_usto_si      => this%rvars(ir_fmortcflux_usto_si)%r81d)
+           rio_fmortcflux_usto_si      => this%rvars(ir_fmortcflux_usto_si)%r81d, &
+           rio_imortcarea_si           => this%rvars(ir_imortcarea_si)%r81d, &
+           rio_fmortcarea_cano_si      => this%rvars(ir_fmortcarea_cano_si)%r81d, &
+           rio_fmortcarea_usto_si      => this%rvars(ir_fmortcarea_usto_si)%r81d)
 
 
        totalCohorts = 0
@@ -2165,12 +2199,18 @@ contains
 
           rio_termcflux_cano_si(io_idx_si)  = sites(s)%term_carbonflux_canopy
           rio_termcflux_usto_si(io_idx_si)  = sites(s)%term_carbonflux_ustory
+          rio_termcarea_cano_si(io_idx_si)  = sites(s)%term_crownarea_canopy
+          rio_termcarea_usto_si(io_idx_si)  = sites(s)%term_crownarea_ustory
           rio_democflux_si(io_idx_si)       = sites(s)%demotion_carbonflux
           rio_promcflux_si(io_idx_si)       = sites(s)%promotion_carbonflux
           rio_imortcflux_si(io_idx_si)      = sites(s)%imort_carbonflux
+          rio_imortcarea_si(io_idx_si)      = sites(s)%imort_crownarea
           rio_fmortcflux_cano_si(io_idx_si) = sites(s)%fmort_carbonflux_canopy
           rio_fmortcflux_usto_si(io_idx_si) = sites(s)%fmort_carbonflux_ustory
+          rio_fmortcarea_cano_si(io_idx_si) = sites(s)%fmort_crownarea_canopy
+          rio_fmortcarea_usto_si(io_idx_si) = sites(s)%fmort_crownarea_ustory
 
+          
           rio_cd_status_si(io_idx_si)    = sites(s)%cstatus
           rio_dd_status_si(io_idx_si)    = sites(s)%dstatus
           rio_nchill_days_si(io_idx_si)  = sites(s)%nchilldays
@@ -2614,7 +2654,12 @@ contains
           rio_promcflux_si            => this%rvars(ir_promcflux_si)%r81d, &
           rio_imortcflux_si           => this%rvars(ir_imortcflux_si)%r81d, &
           rio_fmortcflux_cano_si      => this%rvars(ir_fmortcflux_cano_si)%r81d, &
-          rio_fmortcflux_usto_si      => this%rvars(ir_fmortcflux_usto_si)%r81d)
+          rio_fmortcflux_usto_si      => this%rvars(ir_fmortcflux_usto_si)%r81d, &
+          rio_termcarea_cano_si       => this%rvars(ir_termcarea_cano_si)%r81d, &
+          rio_termcarea_usto_si       => this%rvars(ir_termcarea_usto_si)%r81d, &
+          rio_imortcarea_si           => this%rvars(ir_imortcarea_si)%r81d, &
+          rio_fmortcarea_cano_si      => this%rvars(ir_fmortcarea_cano_si)%r81d, &
+          rio_fmortcarea_usto_si      => this%rvars(ir_fmortcarea_usto_si)%r81d)
      
 
        totalcohorts = 0
@@ -3031,11 +3076,16 @@ contains
 
           sites(s)%term_carbonflux_canopy   = rio_termcflux_cano_si(io_idx_si)
           sites(s)%term_carbonflux_ustory   = rio_termcflux_usto_si(io_idx_si)
+          sites(s)%term_crownarea_canopy    = rio_termcarea_cano_si(io_idx_si)
+          sites(s)%term_crownarea_ustory    = rio_termcarea_usto_si(io_idx_si)
           sites(s)%demotion_carbonflux      = rio_democflux_si(io_idx_si)
           sites(s)%promotion_carbonflux     = rio_promcflux_si(io_idx_si)
           sites(s)%imort_carbonflux         = rio_imortcflux_si(io_idx_si)
+          sites(s)%imort_crownarea          = rio_imortcarea_si(io_idx_si)
           sites(s)%fmort_carbonflux_canopy  = rio_fmortcflux_cano_si(io_idx_si)
           sites(s)%fmort_carbonflux_ustory  = rio_fmortcflux_usto_si(io_idx_si)
+          sites(s)%fmort_crownarea_canopy  = rio_fmortcarea_cano_si(io_idx_si)
+          sites(s)%fmort_crownarea_ustory  = rio_fmortcarea_usto_si(io_idx_si)
 
           
           ! Site level phenology status flags

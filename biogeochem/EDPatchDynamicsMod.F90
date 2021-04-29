@@ -5,6 +5,7 @@ module EDPatchDynamicsMod
   ! ============================================================================
   use FatesGlobals         , only : fates_log 
   use FatesInterfaceTypesMod    , only : hlm_freq_day
+  use FatesInterfaceTypesMod    , only : hlm_days_per_year
   use EDPftvarcon          , only : EDPftvarcon_inst
   use EDPftvarcon          , only : GetDecompyFrac
   use PRTParametersMod      , only : prt_params
@@ -538,9 +539,15 @@ contains
 
     real(r8) :: nplant_counter
     real(r8) :: nplant_counter_II
-
-    !--------------------------------------------------------------------- 
+    real(r8) :: frac
+    real(r8), allocatable :: d_rate(:)
+    integer :: i
     
+    !--------------------------------------------------------------------- 
+    allocate(d_rate(ncrowndamage))
+    d_rate(:) = 0.0_r8
+    
+
     storesmallcohort => null() ! storage of the smallest cohort for insertion routine
     storebigcohort   => null() ! storage of the largest cohort for insertion routine 
 
@@ -566,16 +573,6 @@ contains
     currentSite%disturbance_rates_primary_to_primary(1:N_DIST_TYPES) = 0._r8
     currentSite%disturbance_rates_primary_to_secondary(1:N_DIST_TYPES) = 0._r8
     currentSite%disturbance_rates_secondary_to_secondary(1:N_DIST_TYPES) = 0._r8
-
-
-    ! zero the diagnostic damage carbon flux
-    ! JN maybe this only needs to be done if it a damage day?
-    if(hlm_use_understory_damage .eq. itrue .or. hlm_use_canopy_damage .eq. itrue) then
-       if( damage_time ) then
-          currentSite%damage_cflux(:,:) = 0._r8
-          currentSite%damage_rate(:,:) = 0._r8
-       end if
-    end if
 
     do while(associated(currentPatch))
 
@@ -909,22 +906,27 @@ contains
                               currentSite%imort_rate(currentCohort%size_class, currentCohort%pft) + &
                               nc%n * ED_val_understorey_death / hlm_freq_day
 
-                         if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
-                            currentSite%imort_rate_damage(currentCohort%crowndamage, currentCohort%size_class) = &
-                                 currentSite%imort_rate_damage(currentCohort%crowndamage, currentCohort%size_class) + &
-                                 nc%n * ED_val_understorey_death / hlm_freq_day
-                         end if
-
+                          currentSite%imort_crownarea = currentSite%imort_crownarea + &
+                               currentCohort%c_area * ED_val_understorey_death / hlm_freq_day 
+                    
                          currentSite%imort_carbonflux = currentSite%imort_carbonflux + &
                               (nc%n * ED_val_understorey_death / hlm_freq_day ) * &
                               total_c * g_per_kg * days_per_sec * years_per_day * ha_per_m2
 
-                         if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue ) then
+                         
+                         if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+
+                            currentSite%imort_rate_damage(currentCohort%crowndamage, currentCohort%size_class) = &
+                                 currentSite%imort_rate_damage(currentCohort%crowndamage, currentCohort%size_class) + &
+                                 nc%n * ED_val_understorey_death / hlm_freq_day
+
                             currentSite%imort_cflux_damage(currentCohort%crowndamage, currentCohort%size_class) = &
                                  currentSite%imort_cflux_damage(currentCohort%crowndamage, currentCohort%size_class) + &
                                  (nc%n * ED_val_understorey_death / hlm_freq_day ) * &
                                  total_c * g_per_kg * days_per_sec * years_per_day * ha_per_m2
+                    
                          end if
+
                          
                          ! Step 2:  Apply survivor ship function based on the understory death fraction
                          ! remaining of understory plants of those that are knocked over 
@@ -1004,6 +1006,9 @@ contains
                            (nc%n * currentCohort%fire_mort) * &
                            total_c * g_per_kg * days_per_sec * ha_per_m2
 
+                      currentSite%fmort_crownarea_canopy = currentSite%fmort_crownarea_canopy + &
+                           currentCohort%c_area * currentCohort%fire_mort / hlm_freq_day
+                         
                    else
                       currentSite%fmort_rate_ustory(currentCohort%size_class, currentCohort%pft) = &
                            currentSite%fmort_rate_ustory(currentCohort%size_class, currentCohort%pft) + &
@@ -1012,6 +1017,10 @@ contains
                       currentSite%fmort_carbonflux_ustory = currentSite%fmort_carbonflux_ustory + &
                            (nc%n * currentCohort%fire_mort) * &
                            total_c * g_per_kg * days_per_sec * ha_per_m2
+
+                      currentSite%fmort_crownarea_ustory = currentSite%fmort_crownarea_ustory + &
+                           currentCohort%c_area * currentCohort%fire_mort / hlm_freq_day
+
                    end if
 
                    currentSite%fmort_rate_cambial(currentCohort%size_class, currentCohort%pft) = &
@@ -1297,8 +1306,10 @@ contains
                                     (leaf_m_post + sapw_m_post + struct_m_post + fnrt_c + store_c) * cd_n
 
                                currentSite%damage_rate(nc%crowndamage, cd) = &
-                                    currentSite%damage_rate(nc%crowndamage, cd) + cd_n
+                                    currentSite%damage_rate(nc%crowndamage, cd) + cd_n * hlm_days_per_year
 
+                               currentSite%crownarea_ustory_damage = currentSite%crownarea_ustory_damage + &
+                                    (currentCohort%c_area/currentCohort%n - nc_d%c_area/nc_d%n) * nc_d%n
 
                                storebigcohort   =>  new_patch%tallest
                                storesmallcohort =>  new_patch%shortest 
@@ -1396,7 +1407,7 @@ contains
                                ! update crown area here - for cohort fusion and canopy organisation below 
                                call carea_allom(nc_canopy_d%dbh, nc_canopy_d%n, currentSite%spread,&
                                     nc_canopy_d%pft, nc_canopy_d%crowndamage, nc_canopy_d%c_area)
-
+ 
                                call get_crown_reduction(nc_canopy_d%crowndamage, mass_frac)
 
                                leaf_m_pre = nc_canopy_d%prt%GetState(leaf_organ, all_carbon_elements) + &
@@ -1429,8 +1440,12 @@ contains
                                     (leaf_m_post + sapw_m_post + struct_m_post + fnrt_c + store_c) * cd_n
 
                                currentSite%damage_rate(currentCohort%crowndamage, cd) = &
-                                    currentSite%damage_rate(currentCohort%crowndamage, cd) + cd_n
+                                    currentSite%damage_rate(currentCohort%crowndamage, cd) + cd_n * hlm_days_per_year
 
+                               currentSite%crownarea_canopy_damage = currentSite%crownarea_canopy_damage + &
+                                    (currentCohort%c_area/currentCohort%n - nc_canopy_d%c_area/nc_canopy_d%n) *&
+                                    nc_canopy_d%n 
+                               
                                storebigcohort   =>  currentPatch%tallest
                                storesmallcohort =>  currentPatch%shortest 
                                if(associated(currentPatch%tallest))then
@@ -1458,7 +1473,11 @@ contains
                             end if ! end if new n is large enough
 
                          end do ! end crowndamage loop
- 
+
+
+                        frac = cd_n_total/CurrentCohort%n
+                       ! write(fates_log(),*) 'JN spawn patches frac: ', frac
+                         
                          ! Reduce currentCohort%n now based on sum of all new damage classes  
                          currentCohort%n = currentCohort%n - cd_n_total
  
@@ -1594,8 +1613,21 @@ contains
       ! write(fates_log(),*) 'patch dyn  N2: ', nplant_counter_II
       ! write(fates_log(),*) 'damage N     : ', sum(currentSite%damage_rate(:,:))
       ! write(fates_log(),*) 'damage cflux : ', sum(currentSite%damage_cflux(:,:))
+
+       if(damage_time) then 
+        !  write(fates_log(), '(a/,5(F12.6,1x))') 'JN spawn patches damage : ', currentSite%damage_rate(:,:)
+
+          do i = 1, ncrowndamage
+             d_rate(i) = sum(currentSite%damage_rate(i,i+1:ncrowndamage))/currentSite%damage_rate(i,i)
+          end do
+          
+
+          write(fates_log(),*) 'JN d_rates : ', d_rate
+         ! write(fates_log(),*) 'JN patch dyn crown area damage : ', currentSite%crownarea_canopy_damage
+          
+       end if
        
-      !*************************/
+       !*************************/
       !**  INSERT NEW PATCH(ES) INTO LINKED LIST    
       !*************************/
        
@@ -1672,8 +1704,8 @@ contains
     call check_patch_area(currentSite)
     call set_patchno(currentSite)
 
-    write(fates_log(),*) 'site level damage litter = ', total_litter_d
-    write(fates_log(),*) 'site level damage loss   = ', leaf_loss_prt+sapw_loss_prt+struct_loss_prt
+    !write(fates_log(),*) 'JN site level damage litter = ', total_litter_d
+    !write(fates_log(),*) 'JN site level damage loss   = ', leaf_loss_prt+sapw_loss_prt+struct_loss_prt
 
     return
   end subroutine spawn_patches

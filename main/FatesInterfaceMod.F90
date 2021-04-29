@@ -1065,10 +1065,6 @@ module FatesInterfaceMod
              i=i+1
              fates_hdim_cdimap_levcdcd(i) = icdcd
              fates_hdim_cdjmap_levcdcd(i) = icdam
-             write(fates_log(),*) 'i : ', i
-             write(fates_log(),*) 'icdam : ', icdam
-             write(fates_log(),*) 'icdcd : ', icdcd
-
           end do
        end do
 

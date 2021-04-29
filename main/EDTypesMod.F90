@@ -779,11 +779,19 @@ module EDTypesMod
                                                        ! with termination mortality, per canopy level
      real(r8) :: term_carbonflux_ustory                ! carbon flux from live to dead pools associated 
                                                        ! with termination mortality, per canopy level    
+
+     real(r8) :: term_crownarea_canopy                ! crownarea from termination mortality, per canopy level
+     real(r8) :: term_crownarea_ustory                ! crownarea from termination mortality, per canopy level    
+ 
      real(r8) :: demotion_carbonflux                             ! biomass of demoted individuals from canopy to understory [kgC/ha/day]
      real(r8) :: promotion_carbonflux                            ! biomass of promoted individuals from understory to canopy [kgC/ha/day]
      real(r8) :: imort_carbonflux                                ! biomass of individuals killed due to impact mortality per year. [kgC/ha/day]
+     real(r8) :: imort_crownarea                                 ! crownarea of individuals killed due to impact mortality per year. [m2 day]
+
      real(r8) :: fmort_carbonflux_canopy                         ! biomass of canopy indivs killed due to fire per year. [gC/m2/sec]
      real(r8) :: fmort_carbonflux_ustory                         ! biomass of understory indivs killed due to fire per year [gC/m2/sec] 
+     real(r8) :: fmort_crownarea_canopy                         ! crownarea of canopy indivs killed due to fire per year. [m2/sec]
+     real(r8) :: fmort_crownarea_ustory                         ! crownarea of understory indivs killed due to fire per year [m2/sec] 
 
      real(r8) :: recruitment_rate(1:maxpft)            ! number of individuals that were recruited into new cohorts
      real(r8), allocatable :: demotion_rate(:)         ! rate of individuals demoted from canopy to understory per FATES timestep
@@ -820,6 +828,8 @@ module EDTypesMod
      real(r8), allocatable :: term_cflux_canopy_damage(:,:)          ! carbon flux from termination mortality by damage class
      real(r8), allocatable :: term_cflux_ustory_damage(:,:)          ! carbon flux from termination mortality by damage class
 
+     real(r8)              :: crownarea_canopy_damage                 ! crown area of canopy that is damaged annually  
+     real(r8)              :: crownarea_ustory_damage                 ! crown area of understory that is damaged annually
      
      ! Canopy Spread
      real(r8) ::  spread                                          ! dynamic canopy allometric term [unitless]
