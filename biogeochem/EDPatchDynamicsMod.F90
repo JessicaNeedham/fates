@@ -483,7 +483,6 @@ contains
     type (ed_cohort_type), pointer :: currentCohort
     type (ed_cohort_type), pointer :: nc
     type (ed_cohort_type), pointer :: nc_d
-    type (ed_cohort_type), pointer :: nc_canopy_d
     type (ed_cohort_type), pointer :: storesmallcohort
     type (ed_cohort_type), pointer :: storebigcohort
     real(r8) :: site_areadis_primary         ! total area disturbed (to primary forest) in m2 per site per day
@@ -505,8 +504,7 @@ contains
                                              ! for both woody and grass species
     real(r8) :: leaf_m                       ! leaf mass during partial burn calculations
     real(r8) :: total_litter_d               ! debugging
-    real(r8) :: total_damage_litter
-    real(r8) :: total_canopy_damage_litter
+    real(r8) :: patch_damage_litter
     
     real(r8) :: mass_frac
     real(r8) :: leaf_m_pre
@@ -519,26 +517,14 @@ contains
     real(r8) :: struct_m_post
     real(r8) :: struct_loss_prt
     
-    real(r8) :: live_stock
-    real(r8) :: litter_stock
-    real(r8) :: litter_stock_new
-    real(r8) :: seed_stock
-
     real(r8) :: cd_n
     real(r8) :: cd_n_total
     integer :: cd
     real(r8) :: cd_frac
     real(r8) :: agb_frac
 
-    real(r8) :: live_stock_pre
-    real(r8) :: live_stock_post
-    real(r8) :: litter_stock_pre
-    real(r8) :: litter_stock_post
-    
     logical  :: found_youngest_primary       ! logical for finding the first primary forest patch
 
-    real(r8) :: nplant_counter
-    real(r8) :: nplant_counter_II
     real(r8) :: frac
     real(r8), allocatable :: d_rate(:)
     integer :: i
@@ -547,12 +533,11 @@ contains
     allocate(d_rate(ncrowndamage))
     d_rate(:) = 0.0_r8
     
-
+    total_litter_d = 0.0_r8
+  
     storesmallcohort => null() ! storage of the smallest cohort for insertion routine
     storebigcohort   => null() ! storage of the largest cohort for insertion routine 
 
-    nplant_counter = 0._r8
-    nplant_counter_II = 0._r8
     ! calculate area of disturbed land, in this timestep, by summing contributions from each existing patch. 
     currentPatch => currentSite%youngest_patch
 
@@ -562,13 +547,8 @@ contains
     leaf_loss_prt = 0.0_r8
     sapw_loss_prt = 0.0_r8
     struct_loss_prt = 0.0_r8
-    total_litter_d = 0.0_r8
-    total_canopy_damage_litter = 0.0_r8
-    total_damage_litter = 0.0_r8
-
-    litter_stock_pre = 0.0_r8
-    litter_stock_post = 0.0_r8
-    
+    patch_damage_litter = 0.0_r8
+ 
     ! zero the diagnostic disturbance rate fields
     currentSite%disturbance_rates_primary_to_primary(1:N_DIST_TYPES) = 0._r8
     currentSite%disturbance_rates_primary_to_secondary(1:N_DIST_TYPES) = 0._r8
@@ -682,13 +662,13 @@ contains
        ! pools to the new patch.  We only loop the pre-existing patches, so 
        ! quit the loop if the current patch is either null, or matches the
        ! two new pointers.
-
+       
        currentPatch => currentSite%oldest_patch
        do while(associated(currentPatch))
 
           ! This is the amount of patch area that is disturbed, and donated by the donor
           patch_site_areadis = currentPatch%area * currentPatch%disturbance_rate
-        
+
           if ( patch_site_areadis > nearzero ) then
 
              ! figure out whether the receiver patch for disturbance from this patch 
@@ -743,82 +723,35 @@ contains
              end if
 
 
-             
-             
-             ! send mass lost from damaged but surviving trees to litter             
-             if(hlm_use_understory_damage .eq. itrue .and. damage_time ) then
-                call damage_litter_fluxes(currentSite, currentPatch, new_patch, patch_site_areadis, &
-                     total_damage_litter)
+             ! and the damaged trees
+             if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+                if( damage_time ) then 
+
+                   call damage_litter_fluxes(currentSite, currentPatch, new_patch, patch_site_areadis, &
+                        patch_damage_litter)
+                end if
              end if
-
-             litt => currentPatch%litter(1)
-             litt_new => new_patch%litter(1)
-             ! What is patch level litter here?
-             litter_stock = (sum(litt%ag_cwd) + sum(litt%bg_cwd) + &
-                  sum(litt%leaf_fines) + sum(litt%root_fines)) * &
-                  (currentPatch%area - site_areadis_primary)
-             litter_stock_new = (sum(litt_new%ag_cwd) + sum(litt_new%bg_cwd) + &
-                  sum(litt_new%leaf_fines) + sum(litt_new%root_fines)) * site_areadis_primary
-
-             litter_stock_pre = litter_stock_pre + litter_stock + litter_stock_new
-             
-             ! and the damaged canopy trees
-             if(hlm_use_canopy_damage .eq. itrue .and. damage_time ) then 
-                call damage_litter_fluxes(currentSite, currentPatch, new_patch, patch_site_areadis, &
-                     total_canopy_damage_litter)
-             end if
-
-             ! and here?
-             litter_stock = (sum(litt%ag_cwd) + sum(litt%bg_cwd) + &
-                  sum(litt%leaf_fines) + sum(litt%root_fines)) * &
-                  (currentPatch%area - site_areadis_primary)
-             litter_stock_new = (sum(litt_new%ag_cwd) + sum(litt_new%bg_cwd) + &
-                  sum(litt_new%leaf_fines) + sum(litt_new%root_fines)) * site_areadis_primary
-
-             litter_stock_post = litter_stock_post + litter_stock + litter_stock_new
 
              ! in kg - for debugging
-             total_litter_d = total_litter_d + total_damage_litter + total_canopy_damage_litter
-             
-          end if ! patch_site_areadis > nearzero 
+             total_litter_d = total_litter_d + patch_damage_litter
 
-          currentPatch => currentPatch%younger
 
-       end do
+             ! --------------------------------------------------------------------------
+             ! The newly formed patch from disturbance (new_patch), has now been given 
+             ! some litter from dead plants and pre-existing litter from the donor patches.
+             !
+             ! Next, we loop through the cohorts in the donor patch, copy them with 
+             ! area modified number density into the new-patch, and apply survivorship.
+             ! Cohorts in the new patch have to be split into damage and undamaged. 
+             ! -------------------------------------------------------------------------
 
-      ! write(fates_log(),*) 'Site level pre damage litter stock : ', litter_stock_pre
-      ! write(fates_log(),*) 'Site level post damage litter stock: ', litter_stock_post
 
-       
-       ! --------------------------------------------------------------------------
-       ! The newly formed patch from disturbance (new_patch), has now been given 
-       ! some litter from dead plants and pre-existing litter from the donor patches.
-       !
-       ! Next, we loop through the cohorts in the donor patch, copy them with 
-       ! area modified number density into the new-patch, and apply survivorship.
-       ! Cohorts in the new patch have to be split into damage and undamaged. 
-       ! -------------------------------------------------------------------------
-
-       ! these will be site level 
-       live_stock_pre = 0.0_r8
-       live_stock_post = 0.0_r8
-
-       currentPatch => currentSite%oldest_patch
-       do while(associated(currentPatch))
-
-               
-          ! This is the amount of patch area that is disturbed, and donated by the donor
-          patch_site_areadis = currentPatch%area * currentPatch%disturbance_rate
- 
-          if ( patch_site_areadis > nearzero ) then
-
-           
              currentCohort => currentPatch%shortest
              do while(associated(currentCohort))       
 
 
                 agb_frac = prt_params%allom_agb_frac(currentCohort%pft)
-                
+
                 allocate(nc)  ! new cohort surviving
                 if(hlm_use_planthydro.eq.itrue) call InitHydrCohort(CurrentSite,nc)
 
@@ -865,7 +798,7 @@ contains
 
                       currentCohort%n = currentCohort%n * (1.0_r8 - fates_mortality_disturbance_fraction * &
                            min(1.0_r8,currentCohort%dmort * hlm_freq_day))  
-                      
+
                       nc%n = 0.0_r8      ! kill all of the trees who caused the disturbance.  
 
                       nc%cmort = nan     ! The mortality diagnostics are set to nan 
@@ -880,12 +813,12 @@ contains
                       nc%lmort_collateral = nan
                       nc%lmort_infra      = nan
                       nc%l_degrad         = nan
-                      
+
                    else
                       ! small trees 
                       if( int(prt_params%woody(currentCohort%pft)) == itrue)then
-                         
-                         
+
+
                          ! Survivorship of undestory woody plants.  Two step process.
                          ! Step 1:  Reduce current number of plants to reflect the 
                          !          change in area.
@@ -906,14 +839,14 @@ contains
                               currentSite%imort_rate(currentCohort%size_class, currentCohort%pft) + &
                               nc%n * ED_val_understorey_death / hlm_freq_day
 
-                          currentSite%imort_crownarea = currentSite%imort_crownarea + &
-                               currentCohort%c_area * ED_val_understorey_death / hlm_freq_day 
-                    
+                         currentSite%imort_crownarea = currentSite%imort_crownarea + &
+                              currentCohort%c_area * ED_val_understorey_death / hlm_freq_day 
+
                          currentSite%imort_carbonflux = currentSite%imort_carbonflux + &
                               (nc%n * ED_val_understorey_death / hlm_freq_day ) * &
                               total_c * g_per_kg * days_per_sec * years_per_day * ha_per_m2
 
-                         
+
                          if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
 
                             currentSite%imort_rate_damage(currentCohort%crowndamage, currentCohort%size_class) = &
@@ -924,15 +857,15 @@ contains
                                  currentSite%imort_cflux_damage(currentCohort%crowndamage, currentCohort%size_class) + &
                                  (nc%n * ED_val_understorey_death / hlm_freq_day ) * &
                                  total_c * g_per_kg * days_per_sec * years_per_day * ha_per_m2
-                    
+
                          end if
 
-                         
+
                          ! Step 2:  Apply survivor ship function based on the understory death fraction
                          ! remaining of understory plants of those that are knocked over 
                          ! by the overstorey trees dying...  
                          nc%n = nc%n * (1.0_r8 - ED_val_understorey_death)
-                         
+
                          ! since the donor patch split and sent a fraction of its members
                          ! to the new patch and a fraction to be preserved in itself,
                          ! when reporting diagnostic rates, we must carry over the mortality rates from
@@ -1008,7 +941,7 @@ contains
 
                       currentSite%fmort_crownarea_canopy = currentSite%fmort_crownarea_canopy + &
                            currentCohort%c_area * currentCohort%fire_mort / hlm_freq_day
-                         
+
                    else
                       currentSite%fmort_rate_ustory(currentCohort%size_class, currentCohort%pft) = &
                            currentSite%fmort_rate_ustory(currentCohort%size_class, currentCohort%pft) + &
@@ -1049,9 +982,9 @@ contains
                    ! Some of of the leaf mass from living plants has been
                    ! burned off.  Here, we remove that mass, and
                    ! tally it in the flux we sent to the atmosphere
-                   
+
                    if(int(prt_params%woody(currentCohort%pft)) == itrue)then
-                       leaf_burn_frac = currentCohort%fraction_crown_burned
+                      leaf_burn_frac = currentCohort%fraction_crown_burned
                    else
 
                       ! Grasses determine their fraction of leaves burned here
@@ -1063,14 +996,14 @@ contains
                    ! us reasonable mortality and burn fraction rates
 
                    if( (leaf_burn_frac < 0._r8) .or. &
-                       (leaf_burn_frac > 1._r8) .or. &
-                       (currentCohort%fire_mort < 0._r8) .or. &
-                       (currentCohort%fire_mort > 1._r8)) then
-                       write(fates_log(),*) 'unexpected fire fractions'
-                       write(fates_log(),*) prt_params%woody(currentCohort%pft)
-                       write(fates_log(),*) leaf_burn_frac
-                       write(fates_log(),*) currentCohort%fire_mort
-                       call endrun(msg=errMsg(sourcefile, __LINE__))
+                        (leaf_burn_frac > 1._r8) .or. &
+                        (currentCohort%fire_mort < 0._r8) .or. &
+                        (currentCohort%fire_mort > 1._r8)) then
+                      write(fates_log(),*) 'unexpected fire fractions'
+                      write(fates_log(),*) prt_params%woody(currentCohort%pft)
+                      write(fates_log(),*) leaf_burn_frac
+                      write(fates_log(),*) currentCohort%fire_mort
+                      call endrun(msg=errMsg(sourcefile, __LINE__))
                    end if
 
                    do el = 1,num_elements
@@ -1126,10 +1059,10 @@ contains
 
                       ! WHat to do with cohorts in the understory of a logging generated
                       ! disturbance patch?
-                      
+
                       if(int(prt_params%woody(currentCohort%pft)) == itrue)then
-                         
-                         
+
+
                          ! Survivorship of undestory woody plants.  Two step process.
                          ! Step 1:  Reduce current number of plants to reflect the 
                          !          change in area.
@@ -1138,7 +1071,7 @@ contains
                          !          and cohort counts are absolute, reduce this number.
                          nc%n = currentCohort%n * patch_site_areadis/currentPatch%area
 
-                         
+
                          ! because the mortality rate due to impact for the cohorts which had 
                          ! been in the understory and are now in the newly-
                          ! disturbed patch is very high, passing the imort directly to 
@@ -1151,25 +1084,23 @@ contains
                               nc%n * currentPatch%fract_ldist_not_harvested * &
                               logging_coll_under_frac / hlm_freq_day
 
-                         if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then 
-                            currentSite%imort_rate_damage(currentCohort%crowndamage, currentCohort%size_class) = &
-                                 currentSite%imort_rate_damage(currentCohort%crowndamage, currentCohort%size_class) + &
-                                 nc%n * currentPatch%fract_ldist_not_harvested * &
-                                 logging_coll_under_frac / hlm_freq_day
-                         end if
-
                          currentSite%imort_carbonflux = currentSite%imort_carbonflux + &
                               (nc%n * currentPatch%fract_ldist_not_harvested * &
                               logging_coll_under_frac/ hlm_freq_day ) * &
                               total_c * g_per_kg * days_per_sec * years_per_day * ha_per_m2
 
-                         if ( hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue ) then
+                         if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then 
+                            currentSite%imort_rate_damage(currentCohort%crowndamage, currentCohort%size_class) = &
+                                 currentSite%imort_rate_damage(currentCohort%crowndamage, currentCohort%size_class) + &
+                                 nc%n * currentPatch%fract_ldist_not_harvested * &
+                                 logging_coll_under_frac / hlm_freq_day
+
                             currentSite%imort_cflux_damage(nc%crowndamage, nc%size_class) = &
                                  currentSite%imort_cflux_damage(nc%crowndamage, nc%size_class) + &
                                  (nc%n * currentPatch%fract_ldist_not_harvested * &
                                  logging_coll_under_frac/ hlm_freq_day ) * &
                                  total_c * g_per_kg * days_per_sec * years_per_day * ha_per_m2
-                          end if
+                         end if
 
                          ! Step 2:  Apply survivor ship function based on the understory death fraction
 
@@ -1230,263 +1161,148 @@ contains
                 end if   ! Select disturbance mode
 
                 
-                ! Regardless of disturbance type, reduce mass of damaged but surviving understory trees
-                if(hlm_use_understory_damage .eq. itrue .and. damage_time) then
+                ! Regardless of disturbance type, reduce mass of damaged trees
+                if(hlm_use_canopy_damage .eq.itrue .or. hlm_use_understory_damage .eq. itrue) then
+                   if(damage_time) then
 
-                   if (prt_params%woody(currentCohort%pft)==1  .and. &
-                        currentCohort%canopy_layer > 1) then 
+                      ! if woody
+                      if (prt_params%woody(currentCohort%pft)==1  ) then
 
-                      if(.not. nc%isnew) then
-                         ! to keep track of how much nc%n needs to be reduced by after the loop
-                         cd_n_total = 0.0_r8 
+                         if(.not. currentCohort%isnew ) then
 
-                         ! for each damage class find the number density and if big enough allocate a new cohort
-                         do cd = nc%crowndamage+1, ncrowndamage 
-                            call get_damage_frac(nc%crowndamage, cd, currentCohort%pft, cd_frac)
+                            ! to keep track of how much canopy n  needs to be reduced by after the loop
+                            cd_n_total = 0.0_r8
 
-                            cd_n = nc%n * cd_frac
+                            ! for each damage class find the number density and if big enough allocate a new cohort
+                            do cd = currentCohort%crowndamage+1, ncrowndamage
 
-                            if(cd_n > nearzero) then
-                               cd_n_total = cd_n_total + cd_n
+                               call get_damage_frac(currentCohort%crowndamage, cd, currentCohort%pft, cd_frac)
 
-                               allocate(nc_d)  ! new cohort surviving but damaged
-                               if(hlm_use_planthydro.eq.itrue) call InitHydrCohort(CurrentSite,nc_d)
-
-                               ! Initialize the PARTEH object and point to the
-                               ! correct boundary condition fields
-                               nc_d%prt => null()
-
-                               call InitPRTObject(nc_d%prt)
-                               call InitPRTBoundaryConditions(nc_d)
-                               call zero_cohort(nc_d)
-
-                               ! nc_d is the new cohort that goes in the disturbed (new) patch and gets damaged 
-                               call copy_cohort(nc, nc_d)
-
-                               !this is the case as the new patch probably doesn't have a closed canopy, and
-                               ! even if it does, that will be sorted out in canopy_structure. 
-                               nc_d%canopy_layer = 1 
-                               nc_d%canopy_layer_yesterday = 1._r8 
-
-                               ! new number densities - we just do damaged cohort here -
-                               ! undamaged at the end of the cohort loop once we know how many damaged to
-                               ! subtract
-
-                               nc_d%n = cd_n
-                               nc_d%crowndamage = cd
-
-                               ! update crown area here - for cohort fusion and canopy organisation below 
-                               call carea_allom(nc_d%dbh, nc_d%n, currentSite%spread, nc_d%pft, &
-                                    nc_d%crowndamage, nc_d%c_area)
-
-                               call get_crown_reduction(nc_d%crowndamage, mass_frac)
-
-                               leaf_m_pre = nc_d%prt%GetState(leaf_organ, all_carbon_elements) + &
-                                    nc_d%prt%GetState(repro_organ, all_carbon_elements)
-                               call PRTDamageLosses(nc_d%prt, leaf_organ, mass_frac)
-                               call PRTDamageLosses(nc_d%prt, repro_organ, mass_frac)
-                               leaf_m_post = nc_d%prt%GetState(leaf_organ, all_carbon_elements) + &
-                                    nc_d%prt%GetState(repro_organ, all_carbon_elements)
-                               leaf_loss_prt = leaf_loss_prt + (leaf_m_pre - leaf_m_post)*nc_d%n
-
-                               sapw_m_pre = nc_d%prt%GetState(sapw_organ, all_carbon_elements)
-                               call PRTDamageLosses(nc_d%prt, sapw_organ, mass_frac * &
-                                    nc_d%branch_frac * agb_frac)
-                               sapw_m_post = nc_d%prt%GetState(sapw_organ, all_carbon_elements)
-                               sapw_loss_prt = sapw_loss_prt + (sapw_m_pre - sapw_m_post)*nc_d%n
-
-                               struct_m_pre = nc_d%prt%GetState(struct_organ, all_carbon_elements)
-                               call PRTDamageLosses(nc_d%prt, struct_organ, mass_frac * &
-                                    nc_d%branch_frac * agb_frac)
-                               struct_m_post = nc_d%prt%GetState(struct_organ, all_carbon_elements)
-                               struct_loss_prt = struct_loss_prt + (struct_m_pre - struct_m_post)*nc_d%n
-                               
-                               currentSite%damage_cflux(nc%crowndamage, cd) = &
-                                    currentSite%damage_cflux(nc%crowndamage, cd) + &
-                                    (leaf_m_post + sapw_m_post + struct_m_post + fnrt_c + store_c) * cd_n
-
-                               currentSite%damage_rate(nc%crowndamage, cd) = &
-                                    currentSite%damage_rate(nc%crowndamage, cd) + cd_n * hlm_days_per_year
-
-                               currentSite%crownarea_ustory_damage = currentSite%crownarea_ustory_damage + &
-                                    (currentCohort%c_area/currentCohort%n - nc_d%c_area/nc_d%n) * nc_d%n
-
-                               storebigcohort   =>  new_patch%tallest
-                               storesmallcohort =>  new_patch%shortest 
-                               if(associated(new_patch%tallest))then
-                                  tnull = 0
+                               if(hlm_use_canopy_damage .eq. itrue .and. currentCohort%canopy_layer == 1) then
+                                  cd_n = currentCohort%n * cd_frac
+                               else if(hlm_use_understory_damage .eq. itrue .and. currentCohort%canopy_layer > 1) then
+                                  cd_n = currentCohort%n * cd_frac
                                else
-                                  tnull = 1
-                                  new_patch%tallest => nc_d
-                                  nc_d%taller => null()
-                               endif
-
-                               if(associated(new_patch%shortest))then
-                                  snull = 0
-                               else
-                                  snull = 1
-                                  new_patch%shortest => nc_d
-                                  nc_d%shorter => null()
-                               endif
-                               nc_d%patchptr => new_patch
-                               call insert_cohort(nc_d, new_patch%tallest, new_patch%shortest, &
-                                    tnull, snull, storebigcohort, storesmallcohort)
-
-                               new_patch%tallest  => storebigcohort 
-                               new_patch%shortest => storesmallcohort   
+                                  cd_n = 0._r8
+                               end if
 
 
-                            end if ! end if new n is large enough
-                         end do ! end crowndamage loop
+                               if(cd_n > nearzero) then
+
+                                  cd_n_total = cd_n_total + cd_n
+
+                                  allocate(nc_d)  ! new cohort surviving but damaged
+                                  if(hlm_use_planthydro.eq.itrue) call InitHydrCohort(CurrentSite,nc_d)
+
+                                  ! Initialize the PARTEH object and point to the
+                                  ! correct boundary condition fields
+                                  nc_d%prt => null()
+
+                                  call InitPRTObject(nc_d%prt)
+                                  call InitPRTBoundaryConditions(nc_d)
+                                  call zero_cohort(nc_d)
+
+                                  ! nc_canopy_d is the new cohort that gets damaged 
+                                  call copy_cohort(currentCohort, nc_d)
+
+                                  ! assume that these damaged canopy trees are still in the canopy
+                                  nc_d%canopy_layer = currentCohort%canopy_layer
+                                  nc_d%canopy_layer_yesterday = 1._r8 
+
+                                  ! new number densities - we just do damaged cohort here -
+                                  ! undamaged at the end of the cohort loop once we know how many damaged to
+                                  ! subtract
+
+                                  nc_d%n = cd_n
+                                  nc_d%crowndamage = cd
+
+                                  ! update crown area here - for cohort fusion and canopy organisation below 
+                                  call carea_allom(nc_d%dbh, nc_d%n, currentSite%spread,&
+                                       nc_d%pft, nc_d%crowndamage, nc_d%c_area)
+
+                                  call get_crown_reduction(nc_d%crowndamage, mass_frac)
 
 
-                         ! Reduce nc%n now based on sum of all new damage classes
-                         nc%n = nc%n - cd_n_total
+                                  leaf_m_pre = nc_d%prt%GetState(leaf_organ, all_carbon_elements) + &
+                                       nc_d%prt%GetState(repro_organ, all_carbon_elements)
+                                  call PRTDamageLosses(nc_d%prt, leaf_organ, mass_frac)
+                                  call PRTDamageLosses(nc_d%prt, repro_organ, mass_frac)
+                                  leaf_m_post = nc_d%prt%GetState(leaf_organ, all_carbon_elements) + &
+                                       nc_d%prt%GetState(repro_organ, all_carbon_elements) 
 
-                      end if ! end if not new
-                   end if  ! end if understory and woody
-                end if ! end if understory damage is on
+                                  leaf_loss_prt = leaf_loss_prt + (leaf_m_pre - leaf_m_post)* &
+                                       nc_d%n
+
+                                  sapw_m_pre = nc_d%prt%GetState(sapw_organ, all_carbon_elements)
+                                  call PRTDamageLosses(nc_d%prt, sapw_organ, mass_frac * &
+                                       nc_d%branch_frac * agb_frac)
+                                  sapw_m_post = nc_d%prt%GetState(sapw_organ, all_carbon_elements)
+                                  sapw_loss_prt = sapw_loss_prt + (sapw_m_pre - sapw_m_post)*nc_d%n
+
+                                  struct_m_pre = nc_d%prt%GetState(struct_organ, all_carbon_elements)
+                                  call PRTDamageLosses(nc_d%prt, struct_organ, mass_frac * &
+                                       nc_d%branch_frac * agb_frac)
+                                  struct_m_post = nc_d%prt%GetState(struct_organ, all_carbon_elements)
+                                  struct_loss_prt = struct_loss_prt + (struct_m_pre - struct_m_post)* &
+                                       nc_d%n
 
 
-                ! biomass of canopy cohort before damage
-                live_stock_pre = live_stock_pre + &
-                     (currentCohort%prt%GetState(struct_organ, 1) + &
-                     currentCohort%prt%GetState(sapw_organ, 1) + &
-                     currentCohort%prt%GetState(leaf_organ, 1) + &
-                     currentCohort%prt%GetState(fnrt_organ, 1) + &
-                     currentCohort%prt%GetState(store_organ, 1) + &
-                     currentCohort%prt%GetState(repro_organ, 1) ) &
-                     * currentCohort%n
+                                  store_c  = nc_d%prt%GetState(store_organ, all_carbon_elements)
+                                  fnrt_c  = nc_d%prt%GetState(fnrt_organ, all_carbon_elements)
+
+                                  currentSite%damage_cflux(currentCohort%crowndamage, cd) = &
+                                       currentSite%damage_cflux(currentCohort%crowndamage, cd) + &
+                                       (leaf_m_post + sapw_m_post + struct_m_post + fnrt_c + store_c) * cd_n
+
+                                  currentSite%damage_rate(currentCohort%crowndamage, cd) = &
+                                       currentSite%damage_rate(currentCohort%crowndamage, cd) + cd_n * hlm_days_per_year
+
+                                  currentSite%crownarea_canopy_damage = currentSite%crownarea_canopy_damage + &
+                                       (currentCohort%c_area/currentCohort%n - nc_d%c_area/nc_d%n) * nc_d%n 
+
+                                  storebigcohort   =>  currentPatch%tallest
+                                  storesmallcohort =>  currentPatch%shortest 
+                                  if(associated(currentPatch%tallest))then
+                                     tnull = 0
+                                  else
+                                     tnull = 1
+                                     currentPatch%tallest => nc_d
+                                     nc_d%taller => null()
+                                  endif
+
+                                  if(associated(currentPatch%shortest))then
+                                     snull = 0
+                                  else
+                                     snull = 1
+                                     currentPatch%shortest => nc_d
+                                     nc_d%shorter => null()
+                                  endif
+
+                                  call insert_cohort(nc_d, currentPatch%tallest, currentPatch%shortest, &
+                                       tnull, snull, storebigcohort, storesmallcohort)
+
+                                  currentPatch%tallest  => storebigcohort 
+                                  currentPatch%shortest => storesmallcohort   
+
+                               end if ! end if new n is large enough
+
+                            end do ! end crowndamage loop
+
+
+                            frac = cd_n_total/CurrentCohort%n
+                            !  write(fates_log(),*) 'JN spawn patches frac: ', frac
+
+                            ! Reduce currentCohort%n now based on sum of all new damage classes  
+                            currentCohort%n = currentCohort%n - cd_n_total
+
+                         end if ! end if not new
+                      end if  ! end if canopy and woody              
+                   end if ! end if damage time
+                end if ! end if damage is on 
                 
-
-                ! Regardless of disturbance type, reduce mass of damaged canopy trees
-                if(hlm_use_canopy_damage .eq.itrue .and. damage_time) then
-                   if (prt_params%woody(currentCohort%pft)==1  .and. &
-                        currentCohort%canopy_layer == 1) then 
-
-                      if(.not. currentCohort%isnew ) then
-                         ! to keep track of how much canopy n  needs to be reduced by after the loop
-                         cd_n_total = 0.0_r8
-                        
-                         ! for each damage class find the number density and if big enough allocate a new cohort
-                         do cd = currentCohort%crowndamage+1, ncrowndamage
-
-                            call get_damage_frac(currentCohort%crowndamage, cd, currentCohort%pft, cd_frac)
-
-                            cd_n = currentCohort%n * cd_frac
-
-                            if(cd_n > nearzero) then
-  
-                               cd_n_total = cd_n_total + cd_n
-
-                               allocate(nc_canopy_d)  ! new cohort surviving but damaged
-                               if(hlm_use_planthydro.eq.itrue) call InitHydrCohort(CurrentSite,nc_canopy_d)
-
-                               ! Initialize the PARTEH object and point to the
-                               ! correct boundary condition fields
-                               nc_canopy_d%prt => null()
-
-                               call InitPRTObject(nc_canopy_d%prt)
-                               call InitPRTBoundaryConditions(nc_canopy_d)
-                               call zero_cohort(nc_canopy_d)
-
-                               ! nc_canopy_d is the new cohort that gets damaged 
-                               call copy_cohort(currentCohort, nc_canopy_d)
-
-                               ! assume that these damaged canopy trees are still in the canopy
-                               nc_canopy_d%canopy_layer = 1 
-                               nc_canopy_d%canopy_layer_yesterday = 1._r8 
-
-                               ! new number densities - we just do damaged cohort here -
-                               ! undamaged at the end of the cohort loop once we know how many damaged to
-                               ! subtract
-
-                               nc_canopy_d%n = cd_n
-                               nc_canopy_d%crowndamage = cd
- 
-                               ! update crown area here - for cohort fusion and canopy organisation below 
-                               call carea_allom(nc_canopy_d%dbh, nc_canopy_d%n, currentSite%spread,&
-                                    nc_canopy_d%pft, nc_canopy_d%crowndamage, nc_canopy_d%c_area)
- 
-                               call get_crown_reduction(nc_canopy_d%crowndamage, mass_frac)
-
-                               leaf_m_pre = nc_canopy_d%prt%GetState(leaf_organ, all_carbon_elements) + &
-                                    nc_canopy_d%prt%GetState(repro_organ, all_carbon_elements)
-                               call PRTDamageLosses(nc_canopy_d%prt, leaf_organ, mass_frac)
-                               call PRTDamageLosses(nc_canopy_d%prt, repro_organ, mass_frac)
-                               leaf_m_post = nc_canopy_d%prt%GetState(leaf_organ, all_carbon_elements) + &
-                                    nc_canopy_d%prt%GetState(repro_organ, all_carbon_elements)
-                               leaf_loss_prt = leaf_loss_prt + (leaf_m_pre - leaf_m_post)* &
-                                    nc_canopy_d%n
-
-                               sapw_m_pre = nc_canopy_d%prt%GetState(sapw_organ, all_carbon_elements)
-                               call PRTDamageLosses(nc_canopy_d%prt, sapw_organ, mass_frac * &
-                                    nc_canopy_d%branch_frac * agb_frac)
-                               sapw_m_post = nc_canopy_d%prt%GetState(sapw_organ, all_carbon_elements)
-                               sapw_loss_prt = sapw_loss_prt + (sapw_m_pre - sapw_m_post)*nc_canopy_d%n
-
-                               struct_m_pre = nc_canopy_d%prt%GetState(struct_organ, all_carbon_elements)
-                               call PRTDamageLosses(nc_canopy_d%prt, struct_organ, mass_frac * &
-                                    nc_canopy_d%branch_frac * agb_frac)
-                               struct_m_post = nc_canopy_d%prt%GetState(struct_organ, all_carbon_elements)
-                               struct_loss_prt = struct_loss_prt + (struct_m_pre - struct_m_post)* &
-                                    nc_canopy_d%n
-
-                               store_c  = nc_canopy_d%prt%GetState(store_organ, all_carbon_elements)
-                               fnrt_c  = nc_canopy_d%prt%GetState(fnrt_organ, all_carbon_elements)
-
-                               currentSite%damage_cflux(currentCohort%crowndamage, cd) = &
-                                    currentSite%damage_cflux(currentCohort%crowndamage, cd) + &
-                                    (leaf_m_post + sapw_m_post + struct_m_post + fnrt_c + store_c) * cd_n
-
-                               currentSite%damage_rate(currentCohort%crowndamage, cd) = &
-                                    currentSite%damage_rate(currentCohort%crowndamage, cd) + cd_n * hlm_days_per_year
-
-                               currentSite%crownarea_canopy_damage = currentSite%crownarea_canopy_damage + &
-                                    (currentCohort%c_area/currentCohort%n - nc_canopy_d%c_area/nc_canopy_d%n) *&
-                                    nc_canopy_d%n 
-                               
-                               storebigcohort   =>  currentPatch%tallest
-                               storesmallcohort =>  currentPatch%shortest 
-                               if(associated(currentPatch%tallest))then
-                                  tnull = 0
-                               else
-                                  tnull = 1
-                                  currentPatch%tallest => nc_canopy_d
-                                  nc_canopy_d%taller => null()
-                               endif
-
-                               if(associated(currentPatch%shortest))then
-                                  snull = 0
-                               else
-                                  snull = 1
-                                  currentPatch%shortest => nc_canopy_d
-                                  nc_canopy_d%shorter => null()
-                               endif
-
-                               call insert_cohort(nc_canopy_d, currentPatch%tallest, currentPatch%shortest, &
-                                    tnull, snull, storebigcohort, storesmallcohort)
-
-                               currentPatch%tallest  => storebigcohort 
-                               currentPatch%shortest => storesmallcohort   
-
-                            end if ! end if new n is large enough
-
-                         end do ! end crowndamage loop
-
-
-                        frac = cd_n_total/CurrentCohort%n
-                       ! write(fates_log(),*) 'JN spawn patches frac: ', frac
-                         
-                         ! Reduce currentCohort%n now based on sum of all new damage classes  
-                         currentCohort%n = currentCohort%n - cd_n_total
- 
-                      end if ! end if not new
-                   end if  ! end if canopy and woody              
-                end if ! end if canopy damage is on and damage time
-
+                   
                 if(hlm_use_canopy_damage .eq. itrue .and. currentCohort%canopy_layer == 1 .or.&
-                   hlm_use_understory_damage .eq. itrue .and. currentCohort%canopy_layer > 1) then
+                     hlm_use_understory_damage .eq. itrue .and. currentCohort%canopy_layer > 1) then
 
                    if(.not. currentCohort%isnew) then
 
@@ -1543,76 +1359,35 @@ contains
                 currentCohort => currentCohort%taller      
              enddo ! currentCohort 
 
-             
+
              call sort_cohorts(currentPatch)
-                          
-             ! Needs to be here so we include the new damaged cohorts
-             currentCohort => currentPatch%tallest
-             do while(associated(currentCohort))
-                live_stock_post = live_stock_post + &
-                     (currentCohort%prt%GetState(struct_organ, 1) + &
-                     currentCohort%prt%GetState(sapw_organ, 1) + &
-                     currentCohort%prt%GetState(leaf_organ, 1) + &
-                     currentCohort%prt%GetState(fnrt_organ, 1) + &
-                     currentCohort%prt%GetState(store_organ, 1) + &
-                     currentCohort%prt%GetState(repro_organ, 1) ) &
-                     * currentCohort%n
-                currentCohort => currentCohort%shorter
 
-                
-             end do
+             !update area of donor patch
+             currentPatch%area = currentPatch%area - patch_site_areadis
 
-          !update area of donor patch
-          currentPatch%area = currentPatch%area - patch_site_areadis
+             ! sort out the cohorts, since some of them may be so small as to need removing. 
+             ! the first call to terminate cohorts removes sparse number densities,
+             ! the second call removes for all other reasons (sparse culling must happen
+             ! before fusion)
 
-          ! sort out the cohorts, since some of them may be so small as to need removing. 
-          ! the first call to terminate cohorts removes sparse number densities,
-          ! the second call removes for all other reasons (sparse culling must happen
-          ! before fusion)
-
-          currentCohort => currentPatch%tallest
-          do while(associated(currentCohort))
-             nplant_counter = nplant_counter + currentCohort%n
-             currentCohort => currentCohort%shorter
-          enddo
+          
+             call terminate_cohorts(currentSite, currentPatch, 1,16)
+             call fuse_cohorts(currentSite,currentPatch, bc_in)
+             call terminate_cohorts(currentSite, currentPatch, 2,16)
+             call sort_cohorts(currentPatch)
 
 
-          call terminate_cohorts(currentSite, currentPatch, 1,16)
-          call fuse_cohorts(currentSite,currentPatch, bc_in)
-          call terminate_cohorts(currentSite, currentPatch, 2,16)
-          call sort_cohorts(currentPatch)
-
-             
           end if    ! if ( new_patch%area > nearzero ) then 
 
           !zero disturbance rate trackers
           currentPatch%disturbance_rate  = 0._r8
           currentPatch%disturbance_rates = 0._r8
           currentPatch%fract_ldist_not_harvested = 0._r8
-          
-
-          currentCohort => currentPatch%tallest
-          do while(associated(currentCohort))
-             nplant_counter_II = nplant_counter_II + currentCohort%n
-             currentCohort => currentCohort%shorter
-          enddo
-
 
           currentPatch => currentPatch%younger
 
 
        enddo ! currentPatch patch loop.
-       
-     
-       !write(fates_log(),*) 'JN Site level pre damage live stock : ', live_stock_pre
-       !write(fates_log(),*) 'JN Site level post damage live stock: ', live_stock_post 
-      ! write(fates_log(),*) 'JN patch damage_rate : ', sum(currentSite%damage_rate(:,:))
-       ! write(fates_log(),*) 'JN patch total plants: ', nplant_counter
-
-      ! write(fates_log(),*) 'patch dyn  N : ', nplant_counter
-      ! write(fates_log(),*) 'patch dyn  N2: ', nplant_counter_II
-      ! write(fates_log(),*) 'damage N     : ', sum(currentSite%damage_rate(:,:))
-      ! write(fates_log(),*) 'damage cflux : ', sum(currentSite%damage_cflux(:,:))
 
        if(damage_time) then 
         !  write(fates_log(), '(a/,5(F12.6,1x))') 'JN spawn patches damage : ', currentSite%damage_rate(:,:)
@@ -1622,8 +1397,7 @@ contains
           end do
           
 
-          write(fates_log(),*) 'JN d_rates : ', d_rate
-         ! write(fates_log(),*) 'JN patch dyn crown area damage : ', currentSite%crownarea_canopy_damage
+!          write(fates_log(),*) 'JN d_rates : ', d_rate
           
        end if
        
@@ -1704,8 +1478,8 @@ contains
     call check_patch_area(currentSite)
     call set_patchno(currentSite)
 
-    !write(fates_log(),*) 'JN site level damage litter = ', total_litter_d
-    !write(fates_log(),*) 'JN site level damage loss   = ', leaf_loss_prt+sapw_loss_prt+struct_loss_prt
+    write(fates_log(),*) 'JN site level damage litter = ', total_litter_d
+    write(fates_log(),*) 'JN site level damage loss   = ', leaf_loss_prt+sapw_loss_prt+struct_loss_prt
 
     return
   end subroutine spawn_patches
@@ -2591,6 +2365,7 @@ contains
 
        do while(associated(currentCohort))       
 
+         
           agb_frac = prt_params%allom_agb_frac(currentCohort%pft)
           pft = currentCohort%pft
           ! Get mass in Kg of the element in the specified organ
@@ -2599,14 +2374,26 @@ contains
           leaf_m   = currentCohort%prt%GetState(leaf_organ, element_id) !kg
           repro_m  = currentCohort%prt%GetState(repro_organ, element_id) 
 
-          ! if we are in canopy damage mode skip understory trees
-          if(hlm_use_canopy_damage .eq.itrue .and. &
-               prt_params%woody(currentCohort%pft)==1 .and. &
-               currentCohort%canopy_layer ==1 ) then
+          if(prt_params%woody(currentCohort%pft)==1) then
 
-             ! litter is called before damage - so we need to account for mortality here too
-             num_trees = currentCohort%n * (1.0_r8 - fates_mortality_disturbance_fraction * &
-                  min(1.0_r8, currentCohort%dmort* hlm_freq_day))
+             if( hlm_use_canopy_damage .eq.itrue .and. &
+                  currentCohort%canopy_layer ==1 .and. .not. currentCohort%isnew) then
+
+                ! litter is called before damage - so we need to account for mortality here too
+                num_trees = currentCohort%n * (1.0_r8 - fates_mortality_disturbance_fraction * &
+                     min(1.0_r8, currentCohort%dmort* hlm_freq_day))
+
+             else if( hlm_use_understory_damage .eq.itrue .and. &
+                  currentCohort%canopy_layer > 1 .and. .not. currentCohort%isnew) then
+
+                num_trees = currentCohort%n * (patch_site_areadis/currentPatch%area) * &
+                     (1.0_r8 - ED_val_understorey_death) 
+
+             else
+                num_trees = 0._r8
+             end if
+
+           
 
              do cd = currentCohort%crowndamage+1, ncrowndamage
 
@@ -2615,14 +2402,20 @@ contains
                 ! now to get the number of damaged trees we multiply by damage frac
                 num_trees_cd = num_trees * cd_frac
 
+             !   write(fates_log(),*) 'JN litter cd_n : ', num_trees_cd
+                
                 ! if non negligable get litter
                 if (num_trees_cd > nearzero ) then
 
                    call get_crown_reduction(cd, crown_reduction)
 
+                  ! write(fates_log(),*) 'JN litter mass : ', crown_reduction
+                   
                    ! leaf loss in kg
                    leaf_loss =  (leaf_m + repro_m) * crown_reduction
-
+                   !write(fates_log(),*) 'JN litter leaf loss : ', leaf_m * crown_reduction
+                   !write(fates_log(),*) 'JN litter repro loss : ', repro_m * crown_reduction
+                   
                    leaf_donatable_mass = num_trees_cd * leaf_loss
 
                    do dcmpy=1,ndcmpy
@@ -2641,7 +2434,8 @@ contains
                    branch_loss = (sapw_m + struct_m) * crown_reduction * &
                         currentCohort%branch_frac * agb_frac * num_trees_cd
 
-
+                   
+                   
                    do c=1,(ncwd_no_trunk)
 
                       branch_donatable_mass = branch_loss * SF_val_CWD_frac_canopy(c)
@@ -2662,81 +2456,17 @@ contains
 
                 end if ! end if non-negligable
              end do ! end crown damage loop
-          end if  ! end if woody, canopy and hlm use canopy = true
-
-          ! if we are in canopy damage mode skip understory trees
-          if(hlm_use_understory_damage .eq.itrue .and. &
-               prt_params%woody(currentCohort%pft)==1 .and. &
-               currentCohort%canopy_layer > 1 ) then
-
-             ! litter is called before damage - so we need to account for mortality here too
-             num_trees = currentCohort%n * (patch_site_areadis/currentPatch%area) * &
-                  (1.0_r8 - ED_val_understorey_death) 
-
-             do cd = currentCohort%crowndamage+1, ncrowndamage
-
-                call get_damage_frac(currentCohort%crowndamage, cd, currentCohort%pft, cd_frac)
-
-                ! now to get the number of damaged trees we multiply by damage frac
-                num_trees_cd = num_trees * cd_frac
-
-                ! if non negligable get litter
-                if (num_trees_cd > nearzero ) then
-
-                   call get_crown_reduction(cd, crown_reduction)
-
-                   ! leaf loss in kg
-                   leaf_loss =  (leaf_m + repro_m) * crown_reduction
-
-                   leaf_donatable_mass = num_trees_cd * leaf_loss
-
-                   do dcmpy=1,ndcmpy
-                      dcmpy_frac = GetDecompyFrac(pft,leaf_organ,dcmpy)
-
-                      new_litt%leaf_fines(dcmpy) = new_litt%leaf_fines(dcmpy) + &
-                           leaf_donatable_mass*donate_m2*dcmpy_frac ! kg per m2
-                      curr_litt%leaf_fines(dcmpy) = curr_litt%leaf_fines(dcmpy) + &
-                           leaf_donatable_mass*retain_m2*dcmpy_frac ! kg per m2
-                   end do
-
-                   flux_diags%leaf_litter_input(pft) = flux_diags%leaf_litter_input(pft) + &
-                        leaf_donatable_mass
-
-                   ! branch loss
-                   branch_loss = (sapw_m + struct_m) * crown_reduction * &
-                        currentCohort%branch_frac * agb_frac * num_trees_cd
-
-
-                   do c=1,(ncwd_no_trunk)
-
-                      branch_donatable_mass = branch_loss * SF_val_CWD_frac_canopy(c)
-
-                      ! Transfer wood of dying trees to AG CWD pools
-                      new_litt%ag_cwd(c) = new_litt%ag_cwd(c) + branch_donatable_mass * donate_m2
-
-                      curr_litt%ag_cwd(c) = curr_litt%ag_cwd(c) + branch_donatable_mass * retain_m2
-
-                      flux_diags%cwd_ag_input(c) = & 
-                           flux_diags%cwd_ag_input(c) + branch_donatable_mass
-
-                   end do
-
-                   ! should match leaf damage that is printed after PRTDamageLosses is called
-                   total_damage_litter = total_damage_litter + leaf_donatable_mass + &
-                        branch_loss
-
-                end if ! end if non-negligable
-             end do ! end crown damage loop
-          end if  ! end if woody, understory and hlm use canopy = true
-
+             
+          end if ! end if woody
+             
 
 
           currentCohort => currentCohort%taller
+          
 
        enddo !currentCohort
 
     enddo ! end element
-
 
     return
   end subroutine damage_litter_fluxes
