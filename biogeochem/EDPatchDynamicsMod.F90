@@ -1079,6 +1079,10 @@ contains
                               currentSite%imort_rate(currentCohort%size_class, currentCohort%pft) + &
                               nc%n * currentPatch%fract_ldist_not_harvested * &
                               logging_coll_under_frac / hlm_freq_day
+                         
+                         currentSite%imort_crownarea = currentSite%imort_crownarea + &
+                              nc%c_area * currentPatch%fract_ldist_not_harvested * &
+                              logging_coll_under_frac / hlm_freq_day
 
                          currentSite%imort_carbonflux = currentSite%imort_carbonflux + &
                               (nc%n * currentPatch%fract_ldist_not_harvested * &
@@ -1248,14 +1252,23 @@ contains
 
                                   currentSite%damage_cflux(currentCohort%crowndamage, cd) = &
                                        currentSite%damage_cflux(currentCohort%crowndamage, cd) + &
-                                       (leaf_m_post + sapw_m_post + struct_m_post + fnrt_c + store_c) * cd_n
+                                       (leaf_m_post + sapw_m_post + struct_m_post + fnrt_c + store_c) * cd_n * &
+                                       hlm_days_per_year
 
                                   currentSite%damage_rate(currentCohort%crowndamage, cd) = &
                                        currentSite%damage_rate(currentCohort%crowndamage, cd) + cd_n * hlm_days_per_year
+                                  
+                                  if(hlm_use_canopy_damage .eq. itrue) then
+                                     currentSite%crownarea_canopy_damage = currentSite%crownarea_canopy_damage + &
+                                          (currentCohort%c_area/currentCohort%n - nc_d%c_area/nc_d%n) * nc_d%n 
+                                  end if
 
-                                  currentSite%crownarea_canopy_damage = currentSite%crownarea_canopy_damage + &
-                                       (currentCohort%c_area/currentCohort%n - nc_d%c_area/nc_d%n) * nc_d%n 
+                                  if(hlm_use_understory_damage .eq. itrue) then
+                                     currentSite%crownarea_ustory_damage = currentSite%crownarea_ustory_damage + &
+                                          (currentCohort%c_area/currentCohort%n - nc_d%c_area/nc_d%n) * nc_d%n
+                                  end if
 
+                                  
                                   storebigcohort   =>  currentPatch%tallest
                                   storesmallcohort =>  currentPatch%shortest 
                                   if(associated(currentPatch%tallest))then

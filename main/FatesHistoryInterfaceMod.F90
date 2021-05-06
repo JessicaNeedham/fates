@@ -2339,13 +2339,13 @@ end subroutine flush_hvars
                         sites(s)%damage_cflux(icdj,icdi) * g_per_kg  * days_per_sec * &
                         ha_per_m2
                    hio_damage_rate_si_cdcd(io_si,icdcd) = &
-                        sites(s)%damage_rate(icdj,icdi) ! * days_per_year
+                        sites(s)%damage_rate(icdj,icdi) 
 
                    hio_recovery_cflux_si_cdcd(io_si,icdcd) = &
                         sites(s)%recovery_cflux(icdj,icdi) * g_per_kg * days_per_sec * &
                         ha_per_m2
                    hio_recovery_rate_si_cdcd(io_si,icdcd) = &
-                        sites(s)%recovery_rate(icdj,icdi) !  * days_per_year
+                        sites(s)%recovery_rate(icdj,icdi)
 
 
                    icdcd = icdcd + 1
@@ -3918,11 +3918,11 @@ end subroutine flush_hvars
          ! JN add site level mortality counting to crownarea diagnostic
          hio_canopy_mortality_crownarea_si(io_si) = hio_canopy_mortality_crownarea_si(io_si) + &
               sites(s)%fmort_crownarea_canopy + &
-              sites(s)%term_crownarea_canopy
+              sites(s)%term_crownarea_canopy * days_per_year
 
          hio_understory_mortality_crownarea_si(io_si) = hio_understory_mortality_crownarea_si(io_si) + &
               sites(s)%fmort_crownarea_ustory + &
-              sites(s)%term_crownarea_ustory + &
+              sites(s)%term_crownarea_ustory * days_per_year + &
               sites(s)%imort_crownarea
 
          
