@@ -526,12 +526,8 @@ contains
     logical  :: found_youngest_primary       ! logical for finding the first primary forest patch
 
     real(r8) :: frac
-    real(r8), allocatable :: d_rate(:)
-    integer :: i
     
     !--------------------------------------------------------------------- 
-    allocate(d_rate(ncrowndamage))
-    d_rate(:) = 0.0_r8
     
     total_litter_d = 0.0_r8
   
@@ -1083,6 +1079,10 @@ contains
                               currentSite%imort_rate(currentCohort%size_class, currentCohort%pft) + &
                               nc%n * currentPatch%fract_ldist_not_harvested * &
                               logging_coll_under_frac / hlm_freq_day
+                         
+                         currentSite%imort_crownarea = currentSite%imort_crownarea + &
+                              nc%c_area * currentPatch%fract_ldist_not_harvested * &
+                              logging_coll_under_frac / hlm_freq_day
 
                          currentSite%imort_carbonflux = currentSite%imort_carbonflux + &
                               (nc%n * currentPatch%fract_ldist_not_harvested * &
@@ -1252,14 +1252,23 @@ contains
 
                                   currentSite%damage_cflux(currentCohort%crowndamage, cd) = &
                                        currentSite%damage_cflux(currentCohort%crowndamage, cd) + &
-                                       (leaf_m_post + sapw_m_post + struct_m_post + fnrt_c + store_c) * cd_n
+                                       (leaf_m_post + sapw_m_post + struct_m_post + fnrt_c + store_c) * cd_n * &
+                                       hlm_days_per_year
 
                                   currentSite%damage_rate(currentCohort%crowndamage, cd) = &
                                        currentSite%damage_rate(currentCohort%crowndamage, cd) + cd_n * hlm_days_per_year
+                                  
+                                  if(hlm_use_canopy_damage .eq. itrue) then
+                                     currentSite%crownarea_canopy_damage = currentSite%crownarea_canopy_damage + &
+                                          (currentCohort%c_area/currentCohort%n - nc_d%c_area/nc_d%n) * nc_d%n 
+                                  end if
 
-                                  currentSite%crownarea_canopy_damage = currentSite%crownarea_canopy_damage + &
-                                       (currentCohort%c_area/currentCohort%n - nc_d%c_area/nc_d%n) * nc_d%n 
+                                  if(hlm_use_understory_damage .eq. itrue) then
+                                     currentSite%crownarea_ustory_damage = currentSite%crownarea_ustory_damage + &
+                                          (currentCohort%c_area/currentCohort%n - nc_d%c_area/nc_d%n) * nc_d%n
+                                  end if
 
+                                  
                                   storebigcohort   =>  currentPatch%tallest
                                   storesmallcohort =>  currentPatch%shortest 
                                   if(associated(currentPatch%tallest))then
@@ -1389,17 +1398,6 @@ contains
 
        enddo ! currentPatch patch loop.
 
-       if(damage_time) then 
-        !  write(fates_log(), '(a/,5(F12.6,1x))') 'JN spawn patches damage : ', currentSite%damage_rate(:,:)
-
-          do i = 1, ncrowndamage
-             d_rate(i) = sum(currentSite%damage_rate(i,i+1:ncrowndamage))/currentSite%damage_rate(i,i)
-          end do
-          
-
-!          write(fates_log(),*) 'JN d_rates : ', d_rate
-          
-       end if
        
        !*************************/
       !**  INSERT NEW PATCH(ES) INTO LINKED LIST    
