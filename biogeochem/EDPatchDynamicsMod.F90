@@ -526,12 +526,8 @@ contains
     logical  :: found_youngest_primary       ! logical for finding the first primary forest patch
 
     real(r8) :: frac
-    real(r8), allocatable :: d_rate(:)
-    integer :: i
     
     !--------------------------------------------------------------------- 
-    allocate(d_rate(ncrowndamage))
-    d_rate(:) = 0.0_r8
     
     total_litter_d = 0.0_r8
   
@@ -1388,18 +1384,6 @@ contains
 
 
        enddo ! currentPatch patch loop.
-
-       if(damage_time) then 
-        !  write(fates_log(), '(a/,5(F12.6,1x))') 'JN spawn patches damage : ', currentSite%damage_rate(:,:)
-
-          do i = 1, ncrowndamage
-             d_rate(i) = sum(currentSite%damage_rate(i,i+1:ncrowndamage))/currentSite%damage_rate(i,i)
-          end do
-          
-
-!          write(fates_log(),*) 'JN d_rates : ', d_rate
-          
-       end if
        
        !*************************/
       !**  INSERT NEW PATCH(ES) INTO LINKED LIST    

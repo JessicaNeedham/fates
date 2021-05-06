@@ -2375,10 +2375,10 @@ subroutine ForceDBH( ipft, canopy_trim, d, h, bdead, bl, crowndamage, crown_redu
             !       agb_frac, branch_frac, crown_reduction)
           ! end if
 
-           call bdead_allom(bt_agw,bt_bgw, bt_sap, ipft, bt_dead, dbt_agw_dd, &
-                dbt_bgw_dd, dbt_sap_dd, dbt_dead_dd)
+           call bdead_allom(bt_agw,bt_bgw, bt_sap, ipft, bt_dead_try, dbt_agw_dd, &
+                dbt_bgw_dd, dbt_sap_dd, dbt_dead_dd_try)
            
-           ! Prevent overshooting
+           ! Prevent overshooting   
            if(bt_dead_try > (bdead+calloc_abs_error)) then
               step_frac = step_frac*0.5_r8
            else

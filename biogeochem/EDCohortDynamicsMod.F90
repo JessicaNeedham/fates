@@ -2183,6 +2183,7 @@ contains
                   branch_frac = branch_frac)
 
           else
+             call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
 
              call ForceDBH( ipft,canopy_trim, dbh, hite_out, bdead=struct_c, &
                   crowndamage = icrowndamage, &

@@ -511,10 +511,9 @@ contains
           repro_c0 = currentCohort%prt%GetState(repro_organ, all_carbon_elements)
 
           total_c0 = sapw_c0 + struct_c0 + leaf_c0 + fnrt_c0 + store_c0 + repro_c0
-
+          cc_carbon = 0.0_r8 ! JN need to set it here to avoid nan errors if conditionsn aren't met below
+          
           call currentCohort%prt%DailyPRT()
-          ! JN - remove this later - just a check
-          call currentCohort%prt%CheckMassConservation(ft,5)
 
           if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
 
@@ -576,8 +575,6 @@ contains
                    call PRTDamageRecoveryFluxes(nc%prt, store_organ, store_c0, store_c, cc_store_c)
                    call PRTDamageRecoveryFluxes(nc%prt, fnrt_organ, fnrt_c0, fnrt_c, cc_fnrt_c)
 
-                   call nc%prt%CheckMassConservation(ft,6)
-
                    ! update crown area
                    call carea_allom(nc%dbh, nc%n, currentSite%spread, nc%pft, nc%crowndamage, nc%c_area)
                    call carea_allom(currentCohort%dbh, currentCohort%n, currentSite%spread, &
@@ -602,8 +599,10 @@ contains
                    currentCohort%taller => nc
 
                 end if ! end if greater than nearzero
+                
              end if ! end if crowndamage > 1
 
+             
              ! JN fill in the diagonals
              currentSite%recovery_rate(currentCohort%crowndamage, currentCohort%crowndamage) = &
                   currentSite%recovery_rate(currentCohort%crowndamage, currentCohort%crowndamage) +&
@@ -614,7 +613,6 @@ contains
 
           end if ! end if crowndamage is on
 
-    
    
           ! Update the mass balance tracking for the daily nutrient uptake flux
           ! Then zero out the daily uptakes, they have been used

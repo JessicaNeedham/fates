@@ -1083,9 +1083,8 @@ contains
         call bleaf(dbh,ipft,crowndamage,canopy_trim,ct_leaf, dbldd=ct_dleafdd)
         call bfineroot(dbh,ipft,canopy_trim,ct_fnrt,ct_dfnrtdd)
         call bsap_allom(dbh,ipft, crowndamage, branch_frac, canopy_trim,sapw_area,ct_sap,ct_dsapdd)
-
         call bagw_allom(dbh,ipft,crowndamage, branch_frac, ct_agw,ct_dagwdd)
-        call bbgw_allom(dbh,ipft, branch_frac, ct_agw, ct_dbgwdd)
+        call bbgw_allom(dbh,ipft, branch_frac, ct_bgw, ct_dbgwdd)        
         call bdead_allom(ct_agw,ct_bgw, ct_sap, ipft, ct_dead, &
                          ct_dagwdd, ct_dbgwdd, ct_dsapdd, ct_ddeaddd)
         call bstore_allom(dbh,ipft, canopy_trim,ct_store,ct_dstoredd)
