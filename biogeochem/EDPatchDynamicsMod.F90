@@ -951,6 +951,29 @@ contains
                            currentCohort%c_area * currentCohort%fire_mort / hlm_freq_day
 
                    end if
+                   
+                   ! JN also track fire damage mortality and cflux along size x damage axis
+                   if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
+                      if(levcan==ican_upper) then
+                         currentSite%fmort_rate_canopy_damage(currentCohort%crowndamage, currentCohort%size_class) = &
+                              currentSite%fmort_rate_canopy_damage(currentCohort%crowndamage, currentCohort%size_class) + &
+                              nc%n * currentCohort%fire_mort / hlm_freq_day
+
+                         currentSite%fmort_cflux_canopy_damage(currentCohort%crowndamage, currentCohort%size_class) = &
+                              currentSite%fmort_cflux_canopy_damage(currentCohort%crowndamage, currentCohort%size_class) + &
+                              (nc%n * currentCohort%fire_mort) * &
+                              total_c * g_per_kg * days_per_sec * ha_per_m2
+                      else
+                         currentSite%fmort_rate_ustory_damage(currentCohort%crowndamage, currentCohort%size_class) = &
+                              currentSite%fmort_rate_ustory_damage(currentCohort%crowndamage, currentCohort%size_class) + &
+                              nc%n * currentCohort%fire_mort / hlm_freq_day
+
+                         currentSite%fmort_cflux_ustory_damage(currentCohort%crowndamage, currentCohort%size_class) = &
+                              currentSite%fmort_cflux_ustory_damage(currentCohort%crowndamage, currentCohort%size_class) + &
+                              (nc%n * currentCohort%fire_mort) * &
+                              total_c * g_per_kg * days_per_sec * ha_per_m2
+                      end if
+                   end if
 
                    currentSite%fmort_rate_cambial(currentCohort%size_class, currentCohort%pft) = &
                         currentSite%fmort_rate_cambial(currentCohort%size_class, currentCohort%pft) + &

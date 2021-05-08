@@ -3441,34 +3441,45 @@ end subroutine flush_hvars
                   hio_mortality_si_cdsc(io_si, icdsc) = hio_mortality_si_cdsc(io_si, icdsc) + &
                        (sites(s)%term_nindivs_canopy_damage(icdam, i_scls) * days_per_year) + &
                        (sites(s)%term_nindivs_ustory_damage(icdam, i_scls) * days_per_year) + &
-                       sites(s)%imort_rate_damage(icdam, i_scls)
-           
+                       sites(s)%imort_rate_damage(icdam, i_scls) + &
+                       sites(s)%fmort_rate_canopy_damage(icdam, i_scls) + &
+                       sites(s)%fmort_rate_ustory_damage(icdam, i_scls)
+
+                  ! JN recovery is both canopy layers combined
                   imcdam = icdam + (ncrowndamage * ncrowndamage)
                   hio_recovery_rate_si_cdcd(io_si, imcdam) = hio_recovery_rate_si_cdcd(io_si, imcdam) + &
                        sites(s)%term_nindivs_canopy_damage(icdam, i_scls) * days_per_year  + &
                        sites(s)%term_nindivs_ustory_damage(icdam, i_scls) * days_per_year + &
-                       (sites(s)%imort_rate_damage(icdam, i_scls) )
+                       sites(s)%imort_rate_damage(icdam, i_scls) + &
+                       sites(s)%fmort_rate_canopy_damage(icdam, i_scls) + &
+                       sites(s)%fmort_rate_ustory_damage(icdam, i_scls) 
 
                   hio_recovery_cflux_si_cdcd(io_si, imcdam) = hio_recovery_cflux_si_cdcd(io_si, imcdam) + &
                        sites(s)%imort_cflux_damage(icdam, i_scls) + &
                        sites(s)%term_cflux_canopy_damage(icdam, i_scls)*g_per_kg*days_per_sec*ha_per_m2 + &
-                       sites(s)%term_cflux_ustory_damage(icdam, i_scls)*g_per_kg*days_per_sec*ha_per_m2
-
+                       sites(s)%term_cflux_ustory_damage(icdam, i_scls)*g_per_kg*days_per_sec*ha_per_m2 + &
+                       sites(s)%fmort_cflux_canopy_damage(icdam, i_scls) + &
+                       sites(s)%fmort_cflux_ustory_damage(icdam, i_scls)
+                  
+                  
                end do
             end do
          end if
 
 
+         ! damage is only the canopy layer of interest
          if(hlm_use_canopy_damage .eq. itrue ) then
             do icdam = 1, ncrowndamage
                do i_scls = 1,nlevsclass
                   
                   imcdam = icdam + (ncrowndamage * ncrowndamage)
                   hio_damage_rate_si_cdcd(io_si, imcdam) = hio_damage_rate_si_cdcd(io_si, imcdam) + &
-                       sites(s)%term_nindivs_canopy_damage(icdam, i_scls) * days_per_year 
+                       sites(s)%term_nindivs_canopy_damage(icdam, i_scls) * days_per_year + &
+                       sites(s)%fmort_rate_canopy_damage(icdam, i_scls) 
 
                   hio_damage_cflux_si_cdcd(io_si, imcdam) = hio_damage_cflux_si_cdcd(io_si, imcdam) + &
-                       sites(s)%term_cflux_canopy_damage(icdam, i_scls)*g_per_kg*days_per_sec*ha_per_m2 
+                       sites(s)%term_cflux_canopy_damage(icdam, i_scls)*g_per_kg*days_per_sec*ha_per_m2 + &
+                       sites(s)%fmort_cflux_canopy_damage(icdam, i_scls)*g_per_kg*days_per_sec*ha_per_m2
                end do
             end do
          end if
@@ -3481,11 +3492,13 @@ end subroutine flush_hvars
                   imcdam = icdam + (ncrowndamage * ncrowndamage)
                   hio_damage_rate_si_cdcd(io_si, imcdam) = hio_damage_rate_si_cdcd(io_si, imcdam) + &
                        sites(s)%term_nindivs_ustory_damage(icdam, i_scls) * days_per_year  + &
-                       (sites(s)%imort_rate_damage(icdam, i_scls) )
+                       sites(s)%imort_rate_damage(icdam, i_scls) + &
+                       sites(s)%fmort_rate_ustory_damage(icdam, i_scls)
 
                   hio_damage_cflux_si_cdcd(io_si, imcdam) = hio_damage_cflux_si_cdcd(io_si, imcdam) + &
                        sites(s)%imort_cflux_damage(icdam, i_scls) + &
-                       sites(s)%term_cflux_ustory_damage(icdam, i_scls)*g_per_kg*days_per_sec*ha_per_m2
+                       sites(s)%term_cflux_ustory_damage(icdam, i_scls)*g_per_kg*days_per_sec*ha_per_m2 + &
+                       sites(s)%fmort_cflux_canopy_damage(icdam, i_scls)
                end do
             end do
          end if
@@ -3539,12 +3552,17 @@ end subroutine flush_hvars
          sites(s)%imort_cflux_damage(:,:) = 0._r8
          sites(s)%term_cflux_canopy_damage(:,:) = 0._r8
          sites(s)%term_cflux_ustory_damage(:,:) = 0._r8
+         sites(s)%fmort_rate_canopy_damage(:,:) = 0._r8
+         sites(s)%fmort_rate_ustory_damage(:,:) = 0._r8
+         sites(s)%fmort_cflux_canopy_damage(:,:) = 0._r8
+         sites(s)%fmort_cflux_ustory_damage(:,:) = 0._r8
          sites(s)%damage_rate(:,:) = 0.0_r8
          sites(s)%damage_cflux(:,:) = 0.0_r8
          sites(s)%recovery_rate(:,:) = 0.0_r8
          sites(s)%recovery_cflux(:,:) = 0.0_r8
          sites(s)%crownarea_canopy_damage = 0._r8
          sites(s)%crownarea_ustory_damage = 0._r8
+         
          
          ! pass the recruitment rate as a flux to the history, and then reset the recruitment buffer
          do i_pft = 1, numpft

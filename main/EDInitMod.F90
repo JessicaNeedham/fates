@@ -133,6 +133,10 @@ contains
        allocate(site_in%imort_cflux_damage(1:ncrowndamage, 1:nlevsclass))
        allocate(site_in%term_cflux_canopy_damage(1:ncrowndamage, 1:nlevsclass))
        allocate(site_in%term_cflux_ustory_damage(1:ncrowndamage, 1:nlevsclass))
+       allocate(site_in%fmort_rate_canopy_damage(1:ncrowndamage, 1:nlevsclass))
+       allocate(site_in%fmort_rate_ustory_damage(1:ncrowndamage, 1:nlevsclass)) 
+       allocate(site_in%fmort_cflux_canopy_damage(1:ncrowndamage, 1:nlevsclass))
+       allocate(site_in%fmort_cflux_ustory_damage(1:ncrowndamage, 1:nlevsclass)) 
     else
        allocate(site_in%damage_cflux(1, 1))
        allocate(site_in%damage_rate(1, 1))
@@ -144,6 +148,10 @@ contains
        allocate(site_in%imort_cflux_damage(1,1))
        allocate(site_in%term_cflux_canopy_damage(1,1))
        allocate(site_in%term_cflux_ustory_damage(1,1))
+       allocate(site_in%fmort_rate_canopy_damage(1,1))
+       allocate(site_in%fmort_rate_ustory_damage(1,1))
+       allocate(site_in%fmort_cflux_canopy_damage(1,1))
+       allocate(site_in%fmort_cflux_ustory_damage(1,1))
     end if
 
     
@@ -267,7 +275,10 @@ contains
     site_in%term_cflux_ustory_damage(:,:) = 0._r8
     site_in%crownarea_canopy_damage = 0._r8
     site_in%crownarea_ustory_damage = 0._r8
-    
+    site_in%fmort_rate_canopy_damage(:,:) = 0._r8
+    site_in%fmort_rate_ustory_damage(:,:) = 0._r8
+    site_in%fmort_cflux_canopy_damage(:,:) = 0._r8
+    site_in%fmort_cflux_ustory_damage(:,:) = 0._r8
     
     ! Resources management (logging/harvesting, etc)
     site_in%resources_management%trunk_product_site  = 0.0_r8
