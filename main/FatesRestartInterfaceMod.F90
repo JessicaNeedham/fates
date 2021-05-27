@@ -1703,6 +1703,7 @@ contains
     integer  :: io_idx_si_capf ! each cohort age-class x pft index within site
     integer  :: io_idx_si_cacls ! each cohort age class index within site
     integer  :: io_idx_si_cdsc ! each damage-class x size class within site
+    integer  :: io_idx_si_cdpf ! each damage-class x size x pft within site
     integer  :: io_idx_si_cdcd ! each damage x damage within site (plus mortality) 
     integer  :: io_idx_si_cwd  ! each site-cwd index
     integer  :: io_idx_si_pft  ! each site-pft index
@@ -1881,6 +1882,7 @@ contains
           io_idx_si_cacls= io_idx_co_1st
           io_idx_si_cdcd = io_idx_co_1st
           io_idx_si_cdsc = io_idx_co_1st
+          io_idx_si_cdpf = io_idx_co_1st
           
           ! recruitment rate
           do i_pft = 1,numpft
@@ -2228,20 +2230,23 @@ contains
 
                 end do
              end do
-
+             
              do i_scls = 1, nlevsclass
-                do i_cdam = i, ncrowndamage
-                   rio_imortrate_sicdsc(io_idx_si_cdsc)       = sites(s)%imort_rate_damage(i_cdam, i_scls)
-                   rio_termnindiv_cano_sicdsc(io_idx_si_cdsc) = sites(s)%term_nindivs_canopy_damage(i_cdam, i_scls)
-                   rio_termnindiv_usto_sicdsc(io_idx_si_cdsc) = sites(s)%term_nindivs_ustory_damage(i_cdam, i_scls)
-                   rio_imortcflux_sicdsc(io_idx_si_cdsc)      = sites(s)%imort_cflux_damage(i_cdam, i_scls)
-                   rio_termcflux_cano_sicdsc(io_idx_si_cdsc)  = sites(s)%term_cflux_canopy_damage(i_cdam, i_scls)
-                   rio_termcflux_usto_sicdsc(io_idx_si_cdsc)  = sites(s)%term_cflux_ustory_damage(i_cdam, i_scls)
-                   rio_fmortrate_cano_sicdsc(io_idx_si_cdsc)  = sites(s)%fmort_rate_canopy_damage(i_cdam, i_scls)
-                   rio_fmortrate_usto_sicdsc(io_idx_si_cdsc)  = sites(s)%fmort_rate_ustory_damage(i_cdam, i_scls)
-                   rio_fmortcflux_cano_sicdsc(io_idx_si_cdsc) = sites(s)%fmort_cflux_canopy_damage(i_cdam, i_scls)
-                   rio_fmortcflux_usto_sicdsc(io_idx_si_cdsc) = sites(s)%fmort_cflux_ustory_damage(i_cdam, i_scls)
-                   io_idx_si_cdsc = io_idx_si_cdsc + 1
+                do i_cdam = 1, ncrowndamage
+                   do i_pft = 1, numpft 
+                      rio_imortrate_sicdsc(io_idx_si_cdpf)       = sites(s)%imort_rate_damage(i_cdam, i_scls, i_pft)
+                      rio_termnindiv_cano_sicdsc(io_idx_si_cdpf) = sites(s)%term_nindivs_canopy_damage(i_cdam,i_scls,i_pft)
+                      rio_termnindiv_usto_sicdsc(io_idx_si_cdpf) = sites(s)%term_nindivs_ustory_damage(i_cdam,i_scls,i_pft)
+                      rio_imortcflux_sicdsc(io_idx_si_cdsc)      = sites(s)%imort_cflux_damage(i_cdam, i_scls)
+                      rio_termcflux_cano_sicdsc(io_idx_si_cdsc)  = sites(s)%term_cflux_canopy_damage(i_cdam, i_scls)
+                      rio_termcflux_usto_sicdsc(io_idx_si_cdsc)  = sites(s)%term_cflux_ustory_damage(i_cdam, i_scls)
+                      rio_fmortrate_cano_sicdsc(io_idx_si_cdsc)  = sites(s)%fmort_rate_canopy_damage(i_cdam, i_scls)
+                      rio_fmortrate_usto_sicdsc(io_idx_si_cdsc)  = sites(s)%fmort_rate_ustory_damage(i_cdam, i_scls)
+                      rio_fmortcflux_cano_sicdsc(io_idx_si_cdsc) = sites(s)%fmort_cflux_canopy_damage(i_cdam, i_scls)
+                      rio_fmortcflux_usto_sicdsc(io_idx_si_cdsc) = sites(s)%fmort_cflux_ustory_damage(i_cdam, i_scls)
+                      io_idx_si_cdsc = io_idx_si_cdsc + 1
+                      io_idx_si_cdpf = io_idx_si_cdpf + 1
+                   end do
                 end do
              end do
 
@@ -2589,6 +2594,7 @@ contains
      integer  :: io_idx_si_cwd
      integer  :: io_idx_si_pft
      integer  :: io_idx_si_cdsc ! each damage x size class within site 
+     integer  :: io_idx_si_cdpf ! damage x size x pft within site
      
      ! Some counters (for checking mostly)
      integer  :: totalcohorts   ! total cohort count on this thread (diagnostic)
@@ -2744,6 +2750,7 @@ contains
           io_idx_si_cacls= io_idx_co_1st
           io_idx_si_cdcd = io_idx_co_1st
           io_idx_si_cdsc = io_idx_co_1st
+          io_idx_si_cdpf = io_idx_co_1st
           
           ! read seed_bank info(site-level, but PFT-resolved)
           do i_pft = 1,numpft 
@@ -3109,21 +3116,24 @@ contains
           
           if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
              do i_cdam = 1, ncrowndamage
-                do i_scls = 1, nlevsclass
-                   sites(s)%imort_rate_damage(i_cdam, i_scls)          = rio_imortrate_sicdsc(io_idx_si_cdsc)
-                   sites(s)%term_nindivs_canopy_damage(i_cdam, i_scls) = rio_termnindiv_cano_sicdsc(io_idx_si_cdsc)
-                   sites(s)%term_nindivs_ustory_damage(i_cdam, i_scls) = rio_termnindiv_usto_sicdsc(io_idx_si_cdsc)
-                   sites(s)%imort_cflux_damage(i_cdam, i_scls)         = rio_imortcflux_sicdsc(io_idx_si_cdsc)
-                   sites(s)%term_cflux_canopy_damage(i_cdam, i_scls)   = rio_termcflux_cano_sicdsc(io_idx_si_cdsc)
-                   sites(s)%term_cflux_ustory_damage(i_cdam, i_scls)   = rio_termcflux_usto_sicdsc(io_idx_si_cdsc)
-                   sites(s)%fmort_rate_canopy_damage(i_cdam, i_scls)   = rio_fmortrate_cano_sicdsc(io_idx_si_cdsc)
-                   sites(s)%fmort_rate_ustory_damage(i_cdam, i_scls)   = rio_fmortrate_usto_sicdsc(io_idx_si_cdsc)
-                   sites(s)%fmort_cflux_canopy_damage(i_cdam, i_scls)  = rio_fmortcflux_cano_sicdsc(io_idx_si_cdsc)
-                   sites(s)%fmort_cflux_ustory_damage(i_cdam, i_scls)  = rio_fmortcflux_usto_sicdsc(io_idx_si_cdsc)
-                   
+                do i_pft = 1, numpft
+                   do i_scls = 1, nlevsclass
+                      sites(s)%imort_rate_damage(i_cdam, i_scls, i_pft)   = rio_imortrate_sicdsc(io_idx_si_cdpf)
+                      sites(s)%term_nindivs_canopy_damage(i_cdam,i_scls,i_pft) = rio_termnindiv_cano_sicdsc(io_idx_si_cdpf)
+                      sites(s)%term_nindivs_ustory_damage(i_cdam,i_scls,i_pft) = rio_termnindiv_usto_sicdsc(io_idx_si_cdpf)
+                      sites(s)%imort_cflux_damage(i_cdam, i_scls)         = rio_imortcflux_sicdsc(io_idx_si_cdsc)
+                      sites(s)%term_cflux_canopy_damage(i_cdam, i_scls)   = rio_termcflux_cano_sicdsc(io_idx_si_cdsc)
+                      sites(s)%term_cflux_ustory_damage(i_cdam, i_scls)   = rio_termcflux_usto_sicdsc(io_idx_si_cdsc)
+                      sites(s)%fmort_rate_canopy_damage(i_cdam, i_scls)   = rio_fmortrate_cano_sicdsc(io_idx_si_cdsc)
+                      sites(s)%fmort_rate_ustory_damage(i_cdam, i_scls)   = rio_fmortrate_usto_sicdsc(io_idx_si_cdsc)
+                      sites(s)%fmort_cflux_canopy_damage(i_cdam, i_scls)  = rio_fmortcflux_cano_sicdsc(io_idx_si_cdsc)
+                      sites(s)%fmort_cflux_ustory_damage(i_cdam, i_scls)  = rio_fmortcflux_usto_sicdsc(io_idx_si_cdsc)
+                      io_idx_si_cdsc = io_idx_si_cdsc + 1
+                      io_idx_si_cdpf = io_idx_si_cdpf + 1
+                   end do
                 end do
              end do
-             
+
              sites(s)%crownarea_canopy_damage = rio_crownarea_cano_damage_si(io_idx_si)
              sites(s)%crownarea_ustory_damage = rio_crownarea_usto_damage_si(io_idx_si)
              

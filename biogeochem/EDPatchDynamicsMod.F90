@@ -845,8 +845,10 @@ contains
 
                          if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
 
-                            currentSite%imort_rate_damage(currentCohort%crowndamage, currentCohort%size_class) = &
-                                 currentSite%imort_rate_damage(currentCohort%crowndamage, currentCohort%size_class) + &
+                            currentSite%imort_rate_damage(currentCohort%crowndamage, &
+                                 currentCohort%size_class, currentCohort%pft) = &
+                                 currentSite%imort_rate_damage(currentCohort%crowndamage,&
+                                 currentCohort%size_class, currentCohort%pft) + &
                                  nc%n * ED_val_understorey_death / hlm_freq_day
 
                             currentSite%imort_cflux_damage(currentCohort%crowndamage, currentCohort%size_class) = &
@@ -1113,8 +1115,10 @@ contains
                               total_c * g_per_kg * days_per_sec * years_per_day * ha_per_m2
 
                          if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then 
-                            currentSite%imort_rate_damage(currentCohort%crowndamage, currentCohort%size_class) = &
-                                 currentSite%imort_rate_damage(currentCohort%crowndamage, currentCohort%size_class) + &
+                            currentSite%imort_rate_damage(currentCohort%crowndamage,&
+                                 currentCohort%size_class, currentCohort%pft) = &
+                                 currentSite%imort_rate_damage(currentCohort%crowndamage,&
+                                 currentCohort%size_class, currentCohort%pft) + &
                                  nc%n * currentPatch%fract_ldist_not_harvested * &
                                  logging_coll_under_frac / hlm_freq_day
 
@@ -1228,7 +1232,6 @@ contains
                                   ! nc_canopy_d is the new cohort that gets damaged 
                                   call copy_cohort(currentCohort, nc_d)
 
-                                  ! assume that these damaged canopy trees are still in the canopy
                                   nc_d%canopy_layer = currentCohort%canopy_layer
                                   nc_d%canopy_layer_yesterday = 1._r8 
 

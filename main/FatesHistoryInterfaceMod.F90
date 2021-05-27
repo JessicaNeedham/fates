@@ -632,7 +632,13 @@ Module FatesHistoryInterfaceMod
   integer :: ih_nplant_understory_si_cdam
   integer :: ih_nplant_si_cdpf
   integer :: ih_nplant_si_cdsc
+  integer :: ih_nplant_canopy_si_cdpf
+  integer :: ih_nplant_understory_si_cdpf
+  integer :: ih_nplant_canopy_si_cdsc
+  integer :: ih_nplant_understory_si_cdsc
   integer :: ih_mortality_si_cdsc
+  integer :: ih_mortality_canopy_si_cdpf
+  integer :: ih_mortality_understory_si_cdpf
   integer :: ih_m3_si_cdam
   integer :: ih_m3_si_cdpf
   integer :: ih_m3_si_cdsc
@@ -646,12 +652,11 @@ Module FatesHistoryInterfaceMod
   integer :: ih_m11_mortality_understory_si_cdsc
   integer :: ih_m11_mortality_canopy_si_cdpf
   integer :: ih_m11_mortality_understory_si_cdpf
-  integer :: ih_nplant_canopy_si_cdpf
-  integer :: ih_nplant_understory_si_cdpf
-  integer :: ih_nplant_canopy_si_cdsc
-  integer :: ih_nplant_understory_si_cdsc
   integer :: ih_trimming_damage_si_cdsc
   integer :: ih_ddbh_si_cdsc
+  integer :: ih_ddbh_si_cdpf
+  integer :: ih_ddbh_canopy_si_cdpf
+  integer :: ih_ddbh_understory_si_cdpf
   
   ! damage carbonflux
   integer :: ih_damage_cflux_si_cdcd
@@ -2131,6 +2136,8 @@ end subroutine flush_hvars
                hio_m3_si_cdsc                     => this%hvars(ih_m3_si_cdsc)%r82d, &
                hio_m11_si_cdpf                    => this%hvars(ih_m11_si_cdpf)%r82d, &
                hio_m11_si_cdsc                    => this%hvars(ih_m11_si_cdsc)%r82d, &
+               hio_mortality_canopy_si_cdpf         => this%hvars(ih_mortality_canopy_si_cdpf)%r82d, &
+               hio_mortality_understory_si_cdpf     => this%hvars(ih_mortality_understory_si_cdpf)%r82d, &
                hio_m3_mortality_canopy_si_cdsc     => this%hvars(ih_m3_mortality_canopy_si_cdsc)%r82d, &
                hio_m3_mortality_understory_si_cdsc => this%hvars(ih_m3_mortality_understory_si_cdsc)%r82d, &
                hio_m3_mortality_canopy_si_cdpf     => this%hvars(ih_m3_mortality_canopy_si_cdpf)%r82d, &
@@ -2151,6 +2158,9 @@ end subroutine flush_hvars
                hio_recovery_rate_si_cdcd            => this%hvars(ih_recovery_rate_si_cdcd)%r82d, & 
                hio_trimming_damage_si_cdsc        => this%hvars(ih_trimming_damage_si_cdsc)%r82d, &
                hio_ddbh_si_cdsc                   => this%hvars(ih_ddbh_si_cdsc)%r82d, &
+               hio_ddbh_si_cdpf                   => this%hvars(ih_ddbh_si_cdpf)%r82d, &
+               hio_ddbh_canopy_si_cdpf            => this%hvars(ih_ddbh_canopy_si_cdpf)%r82d, &
+               hio_ddbh_understory_si_cdpf        => this%hvars(ih_ddbh_understory_si_cdpf)%r82d, &
                hio_crownarea_canopy_damage_si     => this%hvars(ih_crownarea_canopy_damage_si)%r81d, &
                hio_crownarea_ustory_damage_si     => this%hvars(ih_crownarea_ustory_damage_si)%r81d, &
                
@@ -2832,6 +2842,9 @@ end subroutine flush_hvars
                        hio_ddbh_si_cdsc(io_si,cdsc) = hio_ddbh_si_cdsc(io_si,cdsc) + &
                             ccohort%ddbhdt*ccohort%n
 
+                       hio_ddbh_si_cdpf(io_si,cdpf) = hio_ddbh_si_cdpf(io_si,cdpf) + &
+                            ccohort%ddbhdt*ccohort%n
+
                        
                        ! add mortality to the damage rates    
                       
@@ -3016,11 +3029,20 @@ end subroutine flush_hvars
                           hio_m11_mortality_canopy_si_cdsc(io_si,cdsc) = hio_m11_mortality_canopy_si_cdsc(io_si,cdsc)+&
                                ccohort%dgmort * ccohort%n
 
+                          hio_mortality_canopy_si_cdpf(io_si,cdpf) = hio_mortality_canopy_si_cdpf(io_si,cdpf)+ &
+                               (ccohort%bmort + ccohort%hmort + ccohort%cmort + ccohort%frmort + & 
+                               ccohort%smort + ccohort%asmort + ccohort%dgmort) * ccohort%n + &
+                               (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * &
+                               ccohort%n * sec_per_day * days_per_year
+                   
                           ! nplants by damage 
                           hio_nplant_canopy_si_cdpf(io_si,cdpf) = hio_nplant_canopy_si_cdpf(io_si,cdpf) + ccohort%n
                           hio_nplant_canopy_si_cdsc(io_si,cdsc) = hio_nplant_canopy_si_cdsc(io_si,cdsc) + ccohort%n
                           hio_nplant_canopy_si_cdam(io_si,cdam) = hio_nplant_canopy_si_cdam(io_si,cdam) + ccohort%n
                           
+                          hio_ddbh_canopy_si_cdpf(io_si,cdpf) = hio_ddbh_canopy_si_cdpf(io_si,cdpf) + &
+                               ccohort%ddbhdt*ccohort%n
+                   
                        end if ! end if damage
 
 
@@ -3147,11 +3169,21 @@ end subroutine flush_hvars
                           hio_m11_mortality_understory_si_cdpf(io_si,cdpf) = hio_m11_mortality_understory_si_cdpf(io_si,cdpf)+&
                                ccohort%dgmort * ccohort%n
 
+                          ! total mortality of understory cohorts by damage x size x pft
+                          hio_mortality_understory_si_cdpf(io_si,cdpf) = hio_mortality_understory_si_cdpf(io_si,cdpf)+ &
+                               (ccohort%bmort + ccohort%hmort + ccohort%cmort + &
+                               ccohort%frmort + ccohort%smort + ccohort%asmort + ccohort%dgmort) * ccohort%n + &
+                               (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * &
+                               ccohort%n * sec_per_day * days_per_year
+
                           ! number of plants in the understory by size x damage and size x damage x pft
                           hio_nplant_understory_si_cdsc(io_si,cdsc) = hio_nplant_understory_si_cdsc(io_si,cdsc) + ccohort%n
                           hio_nplant_understory_si_cdpf(io_si,cdpf) = hio_nplant_understory_si_cdpf(io_si,cdpf) + ccohort%n
                           hio_nplant_understory_si_cdam(io_si,cdam) = hio_nplant_understory_si_cdam(io_si,cdam) + ccohort%n
 
+                          hio_ddbh_understory_si_cdpf(io_si,cdpf) = hio_ddbh_understory_si_cdpf(io_si,cdpf) + &
+                               ccohort%ddbhdt*ccohort%n
+                      
                        end if ! end if damage
 
                        hio_understory_mortality_carbonflux_si(io_si) = hio_understory_mortality_carbonflux_si(io_si) + &
@@ -3428,77 +3460,112 @@ end subroutine flush_hvars
             end do
          end do
          !
-         ! treat carbon flux from imort the same way
          
          if(hlm_use_canopy_damage .eq. itrue .or. &
               hlm_use_understory_damage .eq. itrue ) then
 
-              do icdam = 1, ncrowndamage
-                do i_scls = 1,nlevsclass
- 
-                  icdsc = (icdam-1)*nlevsclass + i_scls
+            do i_pft = 1, numpft
+               do icdam = 1, ncrowndamage
+                  do i_scls = 1,nlevsclass
 
-                  hio_mortality_si_cdsc(io_si, icdsc) = hio_mortality_si_cdsc(io_si, icdsc) + &
-                       (sites(s)%term_nindivs_canopy_damage(icdam, i_scls) * days_per_year) + &
-                       (sites(s)%term_nindivs_ustory_damage(icdam, i_scls) * days_per_year) + &
-                       sites(s)%imort_rate_damage(icdam, i_scls) + &
-                       sites(s)%fmort_rate_canopy_damage(icdam, i_scls) + &
-                       sites(s)%fmort_rate_ustory_damage(icdam, i_scls)
+                     icdsc = (icdam-1)*nlevsclass + i_scls
+                     icdpf = (icdam-1)*nlevsclass + i_scls + &
+                          (i_pft-1) * nlevsclass * ncrowndamage
+                     
+                     hio_mortality_si_cdsc(io_si, icdsc) = hio_mortality_si_cdsc(io_si, icdsc) + &
+                          (sites(s)%term_nindivs_canopy_damage(icdam, i_scls, i_pft) * days_per_year) + &
+                          (sites(s)%term_nindivs_ustory_damage(icdam, i_scls, i_pft) * days_per_year) + &
+                          sites(s)%imort_rate_damage(icdam, i_scls, i_pft) + &
+                          sites(s)%fmort_rate_canopy_damage(icdam, i_scls) + &
+                          sites(s)%fmort_rate_ustory_damage(icdam, i_scls)
 
-                  ! JN recovery is both canopy layers combined
-                  imcdam = icdam + (ncrowndamage * ncrowndamage)
-                  hio_recovery_rate_si_cdcd(io_si, imcdam) = hio_recovery_rate_si_cdcd(io_si, imcdam) + &
-                       sites(s)%term_nindivs_canopy_damage(icdam, i_scls) * days_per_year  + &
-                       sites(s)%term_nindivs_ustory_damage(icdam, i_scls) * days_per_year + &
-                       sites(s)%imort_rate_damage(icdam, i_scls) + &
-                       sites(s)%fmort_rate_canopy_damage(icdam, i_scls) + &
-                       sites(s)%fmort_rate_ustory_damage(icdam, i_scls) 
+                     hio_mortality_si_cdsc(io_si, icdsc) = hio_mortality_si_cdsc(io_si, icdsc) + &
+                          (sites(s)%term_nindivs_canopy_damage(icdam, i_scls, i_pft) * days_per_year) + &
+                          (sites(s)%term_nindivs_ustory_damage(icdam, i_scls, i_pft) * days_per_year) + &
+                          sites(s)%imort_rate_damage(icdam, i_scls, i_pft) + &
+                          sites(s)%fmort_rate_canopy_damage(icdam, i_scls) + &
+                          sites(s)%fmort_rate_ustory_damage(icdam, i_scls)
 
-                  hio_recovery_cflux_si_cdcd(io_si, imcdam) = hio_recovery_cflux_si_cdcd(io_si, imcdam) + &
-                       sites(s)%imort_cflux_damage(icdam, i_scls) + &
-                       sites(s)%term_cflux_canopy_damage(icdam, i_scls)*g_per_kg*days_per_sec*ha_per_m2 + &
-                       sites(s)%term_cflux_ustory_damage(icdam, i_scls)*g_per_kg*days_per_sec*ha_per_m2 + &
-                       sites(s)%fmort_cflux_canopy_damage(icdam, i_scls) + &
-                       sites(s)%fmort_cflux_ustory_damage(icdam, i_scls)
-                  
-                  
-               end do
-            end do
-         end if
+                     hio_mortality_canopy_si_cdpf(io_si,icdpf) = hio_mortality_canopy_si_cdpf(io_si,icdpf) + &
+                          sites(s)%term_nindivs_canopy_damage(icdam,i_scls,i_pft) * days_per_year
+
+                     hio_mortality_understory_si_cdpf(io_si,icdpf) = hio_mortality_understory_si_cdpf(io_si,icdpf) + &
+                          sites(s)%term_nindivs_ustory_damage(icdam, i_scls,i_pft) * days_per_year
+
+                     ! add imort to other mortality terms. consider imort as understory mortality even if it happens in 
+                     ! cohorts that may have been promoted as part of the patch creation, and use the pre-calculated site-level 
+                     ! values to avoid biasing the results by the dramatically-reduced number densities in cohorts that are subject to imort
+                     hio_mortality_understory_si_cdpf(io_si,icdpf) = hio_mortality_understory_si_cdpf(io_si,icdpf) + &
+                          sites(s)%imort_rate_damage(icdam, i_scls, i_pft)
+
+                     ! JN - at some point fix this so that fire is compatible with damage
+                     ! fire components of overall canopy and understory mortality
+              !       hio_mortality_canopy_si_scpf(io_si,i_scpf) = hio_mortality_canopy_si_scpf(io_si,i_scpf) + &
+               !           sites(s)%fmort_rate_canopy(i_scls, i_pft)
+                     ! the fire mortality rates for each layer are total dead, since the usable
+                     ! output will then normalize by the counts, we are allowed to sum over layers
+                !     hio_mortality_understory_si_scpf(io_si,i_scpf) = hio_mortality_understory_si_scpf(io_si,i_scpf) + &
+                 !         sites(s)%fmort_rate_ustory(i_scls, i_pft)
 
 
-         ! damage is only the canopy layer of interest
-         if(hlm_use_canopy_damage .eq. itrue ) then
-            do icdam = 1, ncrowndamage
-               do i_scls = 1,nlevsclass
-                  
-                  imcdam = icdam + (ncrowndamage * ncrowndamage)
-                  hio_damage_rate_si_cdcd(io_si, imcdam) = hio_damage_rate_si_cdcd(io_si, imcdam) + &
-                       sites(s)%term_nindivs_canopy_damage(icdam, i_scls) * days_per_year + &
-                       sites(s)%fmort_rate_canopy_damage(icdam, i_scls) 
+                     ! JN recovery is both canopy layers combined
+                     imcdam = icdam + (ncrowndamage * ncrowndamage)
+                     hio_recovery_rate_si_cdcd(io_si, imcdam) = hio_recovery_rate_si_cdcd(io_si, imcdam) + &
+                          sites(s)%term_nindivs_canopy_damage(icdam, i_scls, i_pft) * days_per_year  + &
+                          sites(s)%term_nindivs_ustory_damage(icdam, i_scls, i_pft) * days_per_year + &
+                          sites(s)%imort_rate_damage(icdam, i_scls, i_pft) + &
+                          sites(s)%fmort_rate_canopy_damage(icdam, i_scls) + &
+                          sites(s)%fmort_rate_ustory_damage(icdam, i_scls) 
 
-                  hio_damage_cflux_si_cdcd(io_si, imcdam) = hio_damage_cflux_si_cdcd(io_si, imcdam) + &
-                       sites(s)%term_cflux_canopy_damage(icdam, i_scls)*g_per_kg*days_per_sec*ha_per_m2 + &
-                       sites(s)%fmort_cflux_canopy_damage(icdam, i_scls)*g_per_kg*days_per_sec*ha_per_m2
+                     hio_recovery_cflux_si_cdcd(io_si, imcdam) = hio_recovery_cflux_si_cdcd(io_si, imcdam) + &
+                          sites(s)%imort_cflux_damage(icdam, i_scls) + &
+                          sites(s)%term_cflux_canopy_damage(icdam, i_scls)*g_per_kg*days_per_sec*ha_per_m2 + &
+                          sites(s)%term_cflux_ustory_damage(icdam, i_scls)*g_per_kg*days_per_sec*ha_per_m2 + &
+                          sites(s)%fmort_cflux_canopy_damage(icdam, i_scls) + &
+                          sites(s)%fmort_cflux_ustory_damage(icdam, i_scls)
+
+
+                  end do
                end do
             end do
          end if
 
          
+         ! damage is only the canopy layer of interest
+         if(hlm_use_canopy_damage .eq. itrue ) then
+            do icdam = 1, ncrowndamage
+               do i_scls = 1,nlevsclass
+                  do i_pft = 1, numpft
+
+                     imcdam = icdam + (ncrowndamage * ncrowndamage)
+                     hio_damage_rate_si_cdcd(io_si, imcdam) = hio_damage_rate_si_cdcd(io_si, imcdam) + &
+                          sites(s)%term_nindivs_canopy_damage(icdam, i_scls, i_pft) * days_per_year + &
+                          sites(s)%fmort_rate_canopy_damage(icdam, i_scls) 
+
+                     hio_damage_cflux_si_cdcd(io_si, imcdam) = hio_damage_cflux_si_cdcd(io_si, imcdam) + &
+                          sites(s)%term_cflux_canopy_damage(icdam, i_scls)*g_per_kg*days_per_sec*ha_per_m2 + &
+                          sites(s)%fmort_cflux_canopy_damage(icdam, i_scls)*g_per_kg*days_per_sec*ha_per_m2
+                  end do
+               end do
+            end do
+         end if
+         
          if(hlm_use_understory_damage .eq. itrue ) then
             do icdam = 1, ncrowndamage
                do i_scls = 1,nlevsclass
+                  do i_pft  = 1,numpft
 
-                  imcdam = icdam + (ncrowndamage * ncrowndamage)
-                  hio_damage_rate_si_cdcd(io_si, imcdam) = hio_damage_rate_si_cdcd(io_si, imcdam) + &
-                       sites(s)%term_nindivs_ustory_damage(icdam, i_scls) * days_per_year  + &
-                       sites(s)%imort_rate_damage(icdam, i_scls) + &
-                       sites(s)%fmort_rate_ustory_damage(icdam, i_scls)
+                     imcdam = icdam + (ncrowndamage * ncrowndamage)
+                     hio_damage_rate_si_cdcd(io_si, imcdam) = hio_damage_rate_si_cdcd(io_si, imcdam) + &
+                          sites(s)%term_nindivs_ustory_damage(icdam, i_scls, i_pft) * days_per_year  + &
+                          sites(s)%imort_rate_damage(icdam, i_scls, i_pft) + &
+                          sites(s)%fmort_rate_ustory_damage(icdam, i_scls)
 
-                  hio_damage_cflux_si_cdcd(io_si, imcdam) = hio_damage_cflux_si_cdcd(io_si, imcdam) + &
-                       sites(s)%imort_cflux_damage(icdam, i_scls) + &
-                       sites(s)%term_cflux_ustory_damage(icdam, i_scls)*g_per_kg*days_per_sec*ha_per_m2 + &
-                       sites(s)%fmort_cflux_canopy_damage(icdam, i_scls)
+                     hio_damage_cflux_si_cdcd(io_si, imcdam) = hio_damage_cflux_si_cdcd(io_si, imcdam) + &
+                          sites(s)%imort_cflux_damage(icdam, i_scls) + &
+                          sites(s)%term_cflux_ustory_damage(icdam, i_scls)*g_per_kg*days_per_sec*ha_per_m2 + &
+                          sites(s)%fmort_cflux_canopy_damage(icdam, i_scls)
+                  end do
                end do
             end do
          end if
@@ -3546,9 +3613,9 @@ end subroutine flush_hvars
          sites(s)%fmort_rate_crown(:,:) = 0._r8
          sites(s)%growthflux_fusion(:,:) = 0._r8
 
-         sites(s)%imort_rate_damage(:,:) = 0.0_r8
-         sites(s)%term_nindivs_canopy_damage(:,:) = 0.0_r8
-         sites(s)%term_nindivs_ustory_damage(:,:) = 0.0_r8
+         sites(s)%imort_rate_damage(:,:,:) = 0.0_r8
+         sites(s)%term_nindivs_canopy_damage(:,:,:) = 0.0_r8
+         sites(s)%term_nindivs_ustory_damage(:,:,:) = 0.0_r8
          sites(s)%imort_cflux_damage(:,:) = 0._r8
          sites(s)%term_cflux_canopy_damage(:,:) = 0._r8
          sites(s)%term_cflux_ustory_damage(:,:) = 0._r8
@@ -6699,7 +6766,17 @@ end subroutine update_history_hifrq
           long='damage mortality of understory plants by pft/size', use_default='inactive', &
           avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_m11_mortality_understory_si_cdpf )
-    
+
+    call this%set_history_var(vname='MORTALITY_CANOPY_CDPF', units = 'N/ha/yr',          &
+          long='mortality of canopy plants by damage/pft/size', use_default='inactive', &
+          avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
+          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_mortality_canopy_si_cdpf )
+
+    call this%set_history_var(vname='MORTALITY_UNDERSTORY_CDPF', units = 'N/ha/yr',          &
+          long='mortality of understory plants by pft/size', use_default='inactive', &
+          avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
+          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_mortality_understory_si_cdpf )
+
     call this%set_history_var(vname='M11_MORTALITY_UNDERSTORY_CDSC', units = 'indiv/ha/yr',               &
           long='damage mortality of understory trees by damage/size class', use_default='inactive',   &
           avgflag='A', vtype=site_cdsc_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
@@ -6714,7 +6791,22 @@ end subroutine update_history_hifrq
           long='ddbh annual increment growth by damage and size', use_default='inactive',   &
           avgflag='A', vtype=site_cdsc_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
           upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_ddbh_si_cdsc )
+    
+    call this%set_history_var(vname='DDBH_CDPF', units = 'cm/year/ha',               &
+          long='ddbh annual increment growth by damage x size pft', use_default='inactive',   &
+          avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
+          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_ddbh_si_cdpf )
+    
+    call this%set_history_var(vname='DDBH_CANOPY_CDPF', units = 'cm/year/ha',               &
+          long='ddbh annual canopy increment growth by damage x size pft', use_default='inactive',   &
+          avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
+          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_ddbh_canopy_si_cdpf )
 
+    call this%set_history_var(vname='DDBH_UNDERSTORY_CDPF', units = 'cm/year/ha',               &
+          long='ddbh annual understory increment growth by damage x size pft', use_default='inactive',   &
+          avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=0.0_r8,    &
+          upfreq=1, ivar=ivar, initialize=initialize_variables, index = ih_ddbh_understory_si_cdpf )
+    
     call this%set_history_var(vname='TOTVEGC_CDPF', units='kgC/ha', &
          long='total vegetation carbon mass in live plants by damage x size-class x pft', use_default='inactive', &
          avgflag='A', vtype=site_cdpf_r8, hlms='CLM:ALM', flushval=hlm_hio_ignore_val,    &

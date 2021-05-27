@@ -127,9 +127,9 @@ contains
        allocate(site_in%damage_rate(1:ncrowndamage, 1:ncrowndamage+1))
        allocate(site_in%recovery_cflux(1:ncrowndamage, 1:ncrowndamage+1))
        allocate(site_in%recovery_rate(1:ncrowndamage, 1:ncrowndamage+1))
-       allocate(site_in%term_nindivs_canopy_damage(1:ncrowndamage, 1:nlevsclass))
-       allocate(site_in%term_nindivs_ustory_damage(1:ncrowndamage, 1:nlevsclass))
-       allocate(site_in%imort_rate_damage(1:ncrowndamage, 1:nlevsclass))
+       allocate(site_in%term_nindivs_canopy_damage(1:ncrowndamage, 1:nlevsclass, 1:numpft))
+       allocate(site_in%term_nindivs_ustory_damage(1:ncrowndamage, 1:nlevsclass, 1:numpft))
+       allocate(site_in%imort_rate_damage(1:ncrowndamage, 1:nlevsclass, 1:numpft))
        allocate(site_in%imort_cflux_damage(1:ncrowndamage, 1:nlevsclass))
        allocate(site_in%term_cflux_canopy_damage(1:ncrowndamage, 1:nlevsclass))
        allocate(site_in%term_cflux_ustory_damage(1:ncrowndamage, 1:nlevsclass))
@@ -142,9 +142,9 @@ contains
        allocate(site_in%damage_rate(1, 1))
        allocate(site_in%recovery_cflux(1, 1))
        allocate(site_in%recovery_rate(1, 1))
-       allocate(site_in%term_nindivs_canopy_damage(1,1))
-       allocate(site_in%term_nindivs_ustory_damage(1,1))
-       allocate(site_in%imort_rate_damage(1,1))
+       allocate(site_in%term_nindivs_canopy_damage(1,1,1))
+       allocate(site_in%term_nindivs_ustory_damage(1,1,1))
+       allocate(site_in%imort_rate_damage(1,1,1))
        allocate(site_in%imort_cflux_damage(1,1))
        allocate(site_in%term_cflux_canopy_damage(1,1))
        allocate(site_in%term_cflux_ustory_damage(1,1))
@@ -267,9 +267,9 @@ contains
     site_in%damage_rate(:,:) = 0._r8
     site_in%recovery_cflux(:,:) = 0._r8
     site_in%recovery_rate(:,:) = 0._r8
-    site_in%imort_rate_damage(:,:) = 0._r8
-    site_in%term_nindivs_canopy_damage(:,:) = 0._r8
-    site_in%term_nindivs_ustory_damage(:,:) = 0._r8
+    site_in%imort_rate_damage(:,:,:) = 0._r8
+    site_in%term_nindivs_canopy_damage(:,:,:) = 0._r8
+    site_in%term_nindivs_ustory_damage(:,:,:) = 0._r8
     site_in%imort_cflux_damage(:,:) = 0._r8
     site_in%term_cflux_canopy_damage(:,:) = 0._r8
     site_in%term_cflux_ustory_damage(:,:) = 0._r8

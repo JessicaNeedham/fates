@@ -847,14 +847,18 @@ contains
 
           if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then 
              if( levcan==ican_upper) then
-                currentSite%term_nindivs_canopy_damage(currentCohort%crowndamage, currentCohort%size_class) = &
-                     currentSite%term_nindivs_canopy_damage(currentCohort%crowndamage,currentCohort%size_class) + currentCohort%n
+                currentSite%term_nindivs_canopy_damage(currentCohort%crowndamage, &
+                     currentCohort%size_class, currentCohort%pft) = &
+                     currentSite%term_nindivs_canopy_damage(currentCohort%crowndamage,&
+                     currentCohort%size_class, currentCohort%pft) + currentCohort%n
                 currentSite%term_cflux_canopy_damage(currentCohort%crowndamage, currentCohort%size_class) = &
                      currentSite%term_cflux_canopy_damage(currentCohort%crowndamage, currentCohort%size_class) + &
                      currentCohort%n * (struct_c+sapw_c+leaf_c+fnrt_c+store_c+repro_c)
              else
-                currentSite%term_nindivs_ustory_damage(currentCohort%crowndamage, currentCohort%size_class) = &
-                     currentSite%term_nindivs_ustory_damage(currentCohort%crowndamage,currentCohort%size_class) + currentCohort%n
+                currentSite%term_nindivs_ustory_damage(currentCohort%crowndamage,&
+                     currentCohort%size_class, currentCohort%pft) = &
+                     currentSite%term_nindivs_ustory_damage(currentCohort%crowndamage,&
+                     currentCohort%size_class, currentCohort%pft) + currentCohort%n
                 currentSite%term_cflux_ustory_damage(currentCohort%crowndamage, currentCohort%size_class) = &
                      currentSite%term_cflux_ustory_damage(currentCohort%crowndamage, currentCohort%size_class) + &
                      currentCohort%n * (struct_c+sapw_c+leaf_c+fnrt_c+store_c+repro_c)

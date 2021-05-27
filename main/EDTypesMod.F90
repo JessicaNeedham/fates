@@ -820,9 +820,9 @@ module EDTypesMod
      real(r8), allocatable :: recovery_cflux(:,:)         ! carbon flux into each damage class each timestep
      real(r8), allocatable :: recovery_rate(:,:)               ! number of individuals moving into a damage class
    
-     real(r8), allocatable :: imort_rate_damage(:,:)     ! number of individuals per damage class that die from impact mortality
-     real(r8), allocatable :: term_nindivs_canopy_damage(:,:) ! number of individuals per damage class that die from termination mortality - canopy
-     real(r8), allocatable :: term_nindivs_ustory_damage(:,:) ! number of individuals per damage class that die from termination mortality - canopy
+     real(r8), allocatable :: imort_rate_damage(:,:,:)     ! number of individuals per damage class that die from impact mortality
+     real(r8), allocatable :: term_nindivs_canopy_damage(:,:,:) ! number of individuals per damage class that die from termination mortality - canopy
+     real(r8), allocatable :: term_nindivs_ustory_damage(:,:,:) ! number of individuals per damage class that die from termination mortality - canopy
      real(r8), allocatable :: fmort_rate_canopy_damage(:,:) ! number of individuals per damage class that die from fire - canopy
      real(r8), allocatable :: fmort_rate_ustory_damage(:,:) ! number of individuals per damage class that die from fire - ustory
      real(r8), allocatable :: fmort_cflux_canopy_damage(:,:) ! cflux per damage class that die from fire - canopy
