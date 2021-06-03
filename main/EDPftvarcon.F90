@@ -95,13 +95,10 @@ module EDPftvarcon
      real(r8), allocatable :: hf_flc_threshold(:)
      real(r8), allocatable :: vcmaxha(:)
      real(r8), allocatable :: jmaxha(:)
-     real(r8), allocatable :: tpuha(:)
      real(r8), allocatable :: vcmaxhd(:)
      real(r8), allocatable :: jmaxhd(:)
-     real(r8), allocatable :: tpuhd(:)
      real(r8), allocatable :: vcmaxse(:)
      real(r8), allocatable :: jmaxse(:)
-     real(r8), allocatable :: tpuse(:)
      real(r8), allocatable :: germination_rate(:)        ! Fraction of seed mass germinating per year (yr-1)
      real(r8), allocatable :: seed_decay_rate(:)         ! Fraction of seed mass (both germinated and 
                                                          ! ungerminated), decaying per year    (yr-1)
@@ -500,10 +497,6 @@ contains
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
 
-    name = 'fates_leaf_tpuha'
-    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
-         dimension_names=dim_names, lower_bounds=dim_lower_bound)
-
     name = 'fates_leaf_vcmaxhd'
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
@@ -512,19 +505,11 @@ contains
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
 
-    name = 'fates_leaf_tpuhd'
-    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
-         dimension_names=dim_names, lower_bounds=dim_lower_bound)
-
     name = 'fates_leaf_vcmaxse'
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
 
     name = 'fates_leaf_jmaxse'
-    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
-         dimension_names=dim_names, lower_bounds=dim_lower_bound)
-
-    name = 'fates_leaf_tpuse'
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
 
@@ -855,10 +840,6 @@ contains
     call fates_params%RetreiveParameterAllocate(name=name, &
          data=this%jmaxha)
 
-    name = 'fates_leaf_tpuha'
-    call fates_params%RetreiveParameterAllocate(name=name, &
-         data=this%tpuha)
-
     name = 'fates_leaf_vcmaxhd'
     call fates_params%RetreiveParameterAllocate(name=name, &
          data=this%vcmaxhd)
@@ -867,10 +848,6 @@ contains
     call fates_params%RetreiveParameterAllocate(name=name, &
          data=this%jmaxhd)
 
-    name = 'fates_leaf_tpuhd'
-    call fates_params%RetreiveParameterAllocate(name=name, &
-         data=this%tpuhd)
-
     name = 'fates_leaf_vcmaxse'
     call fates_params%RetreiveParameterAllocate(name=name, &
          data=this%vcmaxse)
@@ -878,10 +855,6 @@ contains
     name = 'fates_leaf_jmaxse'
     call fates_params%RetreiveParameterAllocate(name=name, &
          data=this%jmaxse)
-
-    name = 'fates_leaf_tpuse'
-    call fates_params%RetreiveParameterAllocate(name=name, &
-         data=this%tpuse)
 
     name = 'fates_seed_germination_rate'
     call fates_params%RetreiveParameterAllocate(name=name, &
@@ -1380,13 +1353,10 @@ contains
         write(fates_log(),fmt0) 'hf_flc_threshold = ',EDPftvarcon_inst%hf_flc_threshold
         write(fates_log(),fmt0) 'vcmaxha = ',EDPftvarcon_inst%vcmaxha
         write(fates_log(),fmt0) 'jmaxha = ',EDPftvarcon_inst%jmaxha
-        write(fates_log(),fmt0) 'tpuha = ',EDPftvarcon_inst%tpuha
         write(fates_log(),fmt0) 'vcmaxhd = ',EDPftvarcon_inst%vcmaxhd
         write(fates_log(),fmt0) 'jmaxhd = ',EDPftvarcon_inst%jmaxhd
-        write(fates_log(),fmt0) 'tpuhd = ',EDPftvarcon_inst%tpuhd
         write(fates_log(),fmt0) 'vcmaxse = ',EDPftvarcon_inst%vcmaxse
         write(fates_log(),fmt0) 'jmaxse = ',EDPftvarcon_inst%jmaxse
-        write(fates_log(),fmt0) 'tpuse = ',EDPftvarcon_inst%tpuse
         write(fates_log(),fmt0) 'damage_frac = ',EDPftvarcon_inst%damage_frac
         write(fates_log(),fmt0) 'damage_mort_p1 = ',EDPftvarcon_inst%damage_mort_p1
         write(fates_log(),fmt0) 'damage_mort_p2 = ',EDPftvarcon_inst%damage_mort_p2
