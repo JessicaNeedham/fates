@@ -447,7 +447,7 @@ contains
                      agw_dcdd_target, bgw_dcdd_target, target_dcdd(sapw_id), target_dcdd(struct_id))
     call bleaf(dbh,ipft,cdamage, canopy_trim, target_c(leaf_id), target_dcdd(leaf_id))
     call bfineroot(dbh,ipft,canopy_trim, target_c(fnrt_id), target_dcdd(fnrt_id))
-    call bstore_allom(dbh,ipft, canopy_trim, target_c(store_id), target_dcdd(store_id))
+    call bstore_allom(dbh,ipft,cdamage, canopy_trim, target_c(store_id), target_dcdd(store_id))
     target_c(repro_id) = 0._r8
     target_dcdd(repro_id) = 0._r8
 
@@ -1468,7 +1468,7 @@ contains
                call bagw_allom(dbh_tp1,ipft,icrowndamage, branch_frac, agw_c_target_tp1)
                call bbgw_allom(dbh_tp1,ipft, branch_frac, bgw_c_target_tp1)
                call bdead_allom(agw_c_target_tp1,bgw_c_target_tp1, sapw_c_target_tp1, ipft, struct_c_target_tp1)
-               call bstore_allom(dbh_tp1,ipft, canopy_trim,store_c_target_tp1)
+               call bstore_allom(dbh_tp1,ipft,icrowndamage, canopy_trim,store_c_target_tp1)
                
                write(fates_log(),*) 'leaf_c: ',leafc_tp1, leaf_c_target_tp1,leafc_tp1-leaf_c_target_tp1
                write(fates_log(),*) 'fnrt_c: ',fnrtc_tp1, fnrt_c_target_tp1,fnrtc_tp1- fnrt_c_target_tp1
@@ -1634,7 +1634,7 @@ contains
     if(c_gain>calloc_abs_error) then
 
        ! Update carbon based allometric targets
-       call bstore_allom(dbh,ipft, canopy_trim, store_c_target)
+       call bstore_allom(dbh,ipft,icrowndamage, canopy_trim, store_c_target)
        
        ! Estimate the overflow
        store_c_target = store_c_target * (1.0_r8 + store_overflow_frac)
@@ -2152,7 +2152,7 @@ contains
         call bbgw_allom(dbh,ipft, branch_frac, bgw_c_target,bgw_dcdd_target)
         call bdead_allom(agw_c_target,bgw_c_target, sapw_c_target, ipft, struct_c_target, &
                          agw_dcdd_target, bgw_dcdd_target, sapw_dcdd_target, struct_dcdd_target)
-        call bstore_allom(dbh,ipft,canopy_trim,store_c_target,store_dcdd_target)
+        call bstore_allom(dbh,ipft,icrowndamage,canopy_trim,store_c_target,store_dcdd_target)
 
         if (mask_repro) then
            ! fraction of carbon going towards reproduction

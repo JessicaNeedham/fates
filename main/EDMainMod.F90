@@ -601,7 +601,7 @@ contains
              end if ! end if crowndamage > 1
 
              
-             ! JN fill in the diagonals
+             ! JN fill in the diagonals - i.e. those that did not recover 
              currentSite%recovery_rate(currentCohort%crowndamage, currentCohort%crowndamage) = &
                   currentSite%recovery_rate(currentCohort%crowndamage, currentCohort%crowndamage) +&
                   currentCohort%n

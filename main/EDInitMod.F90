@@ -630,7 +630,7 @@ contains
        
        call bdead_allom( c_agw, c_bgw, c_sapw, pft, c_struct )
 
-       call bstore_allom(temp_cohort%dbh, pft, &
+       call bstore_allom(temp_cohort%dbh, pft, temp_cohort%crowndamage, &
             temp_cohort%canopy_trim, c_store)
 
        temp_cohort%laimemory = 0._r8

@@ -1225,7 +1225,7 @@ contains
     else
 
        store_c = ccohort%prt%GetState(store_organ, carbon12_element)
-       call bstore_allom(ccohort%dbh,ccohort%pft,ccohort%canopy_trim,store_c_max)
+       call bstore_allom(ccohort%dbh,ccohort%pft,ccohort%crowndamage, ccohort%canopy_trim,store_c_max)
 
        ! Fraction of N per fraction of C
        ! If this is greater than 1, then we have more N in storage than

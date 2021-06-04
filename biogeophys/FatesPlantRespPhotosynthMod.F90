@@ -377,7 +377,7 @@ contains
                      call bleaf(currentCohort%dbh,currentCohort%pft,currentCohort%crowndamage, &
                           currentCohort%canopy_trim,store_c_target)
 !                     call bstore_allom(currentCohort%dbh,currentCohort%pft, &
-                     !currentCohort%canopy_trim,store_c_target)
+                     !currentCohort%crowndamage, currentCohort%canopy_trim,store_c_target)
 
                      call storage_fraction_of_target(store_c_target, & 
                            currentCohort%prt%GetState(store_organ, all_carbon_elements), &

@@ -1420,7 +1420,7 @@ contains
      call bagw_allom(dbh,ft,1,1.0_r8,c_agw)
      call bbgw_allom(dbh,ft,1.0_r8,c_bgw)
      call bdead_allom(c_agw,c_bgw,c_sapw,ft,c_struct)
-     call bstore_allom(dbh,ft,init_recruit_trim,c_store)
+     call bstore_allom(dbh,ft,1,init_recruit_trim,c_store)
 
      ! Total carbon in a newly recruited plant
      c_total = c_leaf + c_fnrt + c_sapw + c_struct + c_store

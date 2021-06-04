@@ -202,14 +202,8 @@ contains
        dgmort_vec(i) = min(1.0_r8, (real(i) - 1.0_r8) * class_width)
     end do
 
-    ! JN - could make these proper cases?
-    
-    ! 1.  JN power function
-   ! dgmort_vec = dgmort_vec**damage_mort_p1
-    ! JN but must be bounded between 0 and 1
-   ! dgmort_vec = dgmort_vec/sum(dgmort_vec)
-
-    ! 2. JN logistic function
+   
+    ! JN logistic function
     dgmort_vec = 1.0_r8 / (1.0_r8 + exp(-1.0_r8 * damage_mort_p2 * &
          (dgmort_vec - damage_mort_p1) ) )
 
@@ -223,6 +217,7 @@ contains
     return
   end subroutine get_damage_mortality
   !----------------------------------------------------------------------------------------
-  
+
+ 
 end module DamageMainMod
 
