@@ -494,7 +494,7 @@ contains
           ! Growth and Allocation (PARTEH)
           ! -----------------------------------------------------------------------------
 
-          ! JN cohort will be split during this phase to allow some fraction to recover
+          ! JN cohorts will be split during this phase to allow some fraction to recover
           ! keep track of starting population
           n_old = currentCohort%n
 
@@ -512,6 +512,7 @@ contains
           
           call currentCohort%prt%DailyPRT()
 
+          
           if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
 
              if(currentCohort%crowndamage > 1) then

@@ -1483,8 +1483,10 @@ contains
                                          currentCohort%dgmort = (currentCohort%n*currentCohort%dgmort + nextc%n*nextc%dgmort)/newn
 
                                          ! Nutrient fluxes
-                                         currentCohort%daily_n_uptake = (currentCohort%n*currentCohort%daily_n_uptake + & 
-                                              nextc%n*nextc%daily_n_uptake)/newn
+                                         currentCohort%daily_nh4_uptake = (currentCohort%n*currentCohort%daily_nh4_uptake + & 
+                                              nextc%n*nextc%daily_nh4_uptake)/newn
+                                         currentCohort%daily_no3_uptake = (currentCohort%n*currentCohort%daily_no3_uptake + & 
+                                              nextc%n*nextc%daily_no3_uptake)/newn
                                          currentCohort%daily_p_uptake = (currentCohort%n*currentCohort%daily_p_uptake + & 
                                               nextc%n*nextc%daily_p_uptake)/newn
 
@@ -1500,16 +1502,10 @@ contains
                                          currentCohort%daily_p_efflux = (currentCohort%n*currentCohort%daily_p_efflux + & 
                                               nextc%n*nextc%daily_p_efflux)/newn
 
-                                         currentCohort%daily_n_need1 = (currentCohort%n*currentCohort%daily_n_need1 + & 
-                                              nextc%n*nextc%daily_n_need1)/newn
-                                         currentCohort%daily_n_need2 = (currentCohort%n*currentCohort%daily_n_need2 + & 
-                                              nextc%n*nextc%daily_n_need2)/newn
-                                         currentCohort%daily_p_need1 = (currentCohort%n*currentCohort%daily_p_need1 + & 
-                                              nextc%n*nextc%daily_p_need1)/newn
-                                         currentCohort%daily_p_need2 = (currentCohort%n*currentCohort%daily_p_need2 + & 
-                                              nextc%n*nextc%daily_p_need2)/newn
-
-
+                                         currentCohort%daily_n_need = (currentCohort%n*currentCohort%daily_n_need + & 
+                                              nextc%n*nextc%daily_n_need)/newn
+                                         currentCohort%daily_p_need = (currentCohort%n*currentCohort%daily_p_need + & 
+                                              nextc%n*nextc%daily_p_need)/newn
 
                                          ! logging mortality, Yi Xu
                                          currentCohort%lmort_direct = (currentCohort%n*currentCohort%lmort_direct + &
