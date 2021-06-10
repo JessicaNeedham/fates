@@ -30,8 +30,6 @@ module DamageMainMod
   logical, protected :: damage_time  ! if true then damage occurs during current time step
 
   public :: get_crown_reduction
-  public :: get_crown_damage
-  public :: adjust_bdead
   public :: get_damage_frac
   public :: is_it_damage_time
   public :: damage_time
@@ -116,63 +114,9 @@ contains
     return
   end subroutine get_crown_reduction
 
-  !----------------------------------------------------------------------------------------                                                 
-  subroutine get_crown_damage(leaf_c, target_leaf_c, crowndamage)
-
-    ! This subroutine calculates which damage class a cohort should be in
-    ! based on leaf biomass relative to target leaf biomass - i.e. it allows
-    ! for cohorts to recover
-
-    use FatesInterfaceTypesMod          , only : ncrowndamage
-
-    real(r8),    intent(in)   :: leaf_c
-    real(r8),    intent(in)   :: target_leaf_c
-    integer(i4), intent(out)  :: crowndamage
-
-    ! Local variables
-    real(r8) :: frac
-    real(r8) :: class_width
-
-    frac = min(leaf_c/target_leaf_c, 1.0_r8)
-    class_width = 1.0_r8/ncrowndamage
-
-    crowndamage = max(1.0_r8, real(ceiling((1.0_r8-frac)/class_width)))
-
-    return
-  end subroutine get_crown_damage
-  
 
   !----------------------------------------------------------------------------------------
 
-  subroutine adjust_bdead(bt_sap, dbt_sapdd, bt_agb, dbt_agbdd, agb_frac, branch_frac, &
-    crown_reduction)
-
-    ! This subroutine scales target allometries to the damaged state -
-    ! this is only for use in ForceDBH where we compare actual and target structural biomass
-    ! to find a dbh. Since actual structural biomass has been reduced target biomass needs to also
-    ! be reduced or the search algorimthm in ForceDBH will fail. This is only called when crown damage
-    ! is greater than 1. 
-
-    real(r8), intent(inout) :: bt_sap
-    real(r8), intent(inout) :: dbt_sapdd
-    real(r8), intent(inout) :: bt_agb
-    real(r8), intent(inout) :: dbt_agbdd
-    real(r8), intent(in) :: agb_frac
-    real(r8), intent(in) :: branch_frac
-    real(r8), intent(in) :: crown_reduction
-   
-    
-    bt_sap = bt_sap * agb_frac * branch_frac * (1.0_r8 - crown_reduction)
-    dbt_sapdd = dbt_sapdd * agb_frac * branch_frac * (1.0_r8 - crown_reduction)
-
-    bt_agb = bt_agb * branch_frac * (1.0_r8 - crown_reduction)
-    dbt_agbdd = dbt_agbdd * branch_frac * (1.0_r8 - crown_reduction)
-
-    return
-  end subroutine adjust_bdead
-  
-
-  !----------------------------------------------------------------------------------------
 
   subroutine get_damage_mortality(crowndamage,pft, dgmort)
 

@@ -403,10 +403,9 @@ contains
       
       if(crowndamage > 1) then
          call get_crown_reduction(crowndamage, crown_reduction)
-         bagw = (bagw * (1.0_r8 - crown_reduction) * branch_frac) + (bagw * (1.0_r8 - branch_frac))
+         bagw = bagw - (bagw * branch_frac * crown_reduction)
          if(present(dbagwdd))then
-            dbagwdd = (dbagwdd * (1.0_r8 - crown_reduction) * branch_frac) + &
-                 (dbagwdd * (1.0_r8 - branch_frac))
+            dbagwdd = dbagwdd - (dbagwdd * branch_frac * crown_reduction)
          end if
       end if
 
@@ -831,10 +830,15 @@ contains
                           ! should not trip, and only in small plants
 
     real(r8) :: crown_reduction
+    real(r8) :: agb_frac
+    
     ! Constrain sapwood so that its above ground portion be no larger than 
     ! X% of total woody/fibrous (ie non leaf/fineroot) tissues
     real(r8),parameter :: max_frac = 0.95_r8 
 
+    agb_frac = prt_params%allom_agb_frac(ipft)
+      
+    
     select case(int(prt_params%allom_smode(ipft)))
        ! ---------------------------------------------------------------------
        ! Currently only one sapwood allometry model. the slope
@@ -852,10 +856,9 @@ contains
        if(crowndamage > 1)then
 
           call get_crown_reduction(crowndamage, crown_reduction)
-          bsap = (bsap * branch_frac * (1.0_r8 - crown_reduction)) + (bsap * (1.0_r8-branch_frac))
+          bsap = bsap - (bsap * agb_frac *  branch_frac * crown_reduction)
           if(present(dbsapdd))then
-             dbsapdd = (dbsapdd*(1.0_r8 - crown_reduction)*branch_frac) + &
-                  (dbsapdd * (1.0_r8 - branch_frac))
+             dbsapdd = dbsapdd - (dbsapdd * agb_frac * branch_frac * crown_reduction)
           end if
        end if
        
@@ -2314,7 +2317,6 @@ subroutine ForceDBH( ipft, canopy_trim, d, h, bdead, bl, crowndamage, crown_redu
      ! the predicted structure based on the searched diameter is within a tolerance.
      ! ============================================================================
   use FatesConstantsMod     , only : calloc_abs_error
-  use DamageMainMod         , only : adjust_bdead
      ! Arguments
 
 
@@ -2363,16 +2365,6 @@ subroutine ForceDBH( ipft, canopy_trim, d, h, bdead, bl, crowndamage, crown_redu
         call bagw_allom(d,ipft,crowndamage, branch_frac, bt_agw,dbt_agw_dd)
         call bbgw_allom(d,ipft, branch_frac, bt_bgw,dbt_bgw_dd)
 
-        ! JN - bdead is actual not target biomass. Since this is reduced in damaged trees
-        ! but is used here to back calculate dbh we need to find the equivalent damaged version of
-        ! the target allometries to compare it to. 
-        ! this might not be completely accurate because of allocation etc moving things from
-        ! allometric targets and simple 20% damage loss etc. 
-       ! if(present(crown_reduction)) then     
-        !   call adjust_bdead(bt_sap, dbt_sap_dd, bt_agw, dbt_agw_dd, &
-         !       agb_frac, branch_frac, crown_reduction)
-        !end if
-
         call bdead_allom(bt_agw,bt_bgw, bt_sap, ipft, bt_dead, dbt_agw_dd, &
              dbt_bgw_dd, dbt_sap_dd, dbt_dead_dd)
 
@@ -2391,12 +2383,6 @@ subroutine ForceDBH( ipft, canopy_trim, d, h, bdead, bl, crowndamage, crown_redu
            call bagw_allom(d_try,ipft,crowndamage, branch_frac, bt_agw,dbt_agw_dd)
            call bbgw_allom(d_try,ipft, branch_frac, bt_bgw,dbt_bgw_dd)
 
-
-           ! JN - see above
-          ! if(present(crown_reduction)) then
-           !   call adjust_bdead(bt_sap, dbt_sap_dd, bt_agw, dbt_agw_dd, &
-            !       agb_frac, branch_frac, crown_reduction)
-          ! end if
 
            call bdead_allom(bt_agw,bt_bgw, bt_sap, ipft, bt_dead_try, dbt_agw_dd, &
                 dbt_bgw_dd, dbt_sap_dd, dbt_dead_dd_try)

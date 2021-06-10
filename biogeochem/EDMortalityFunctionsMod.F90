@@ -159,7 +159,8 @@ contains
        ! Carbon Starvation induced mortality.
        if ( cohort_in%dbh  >  0._r8 ) then
 
-          call bleaf(cohort_in%dbh,cohort_in%pft,cohort_in%crowndamage,cohort_in%canopy_trim,leaf_c)
+          ! JN leaf biomass here needs to be the undamaged version!
+          call bleaf(cohort_in%dbh,cohort_in%pft,1,cohort_in%canopy_trim,leaf_c)
           store_c = cohort_in%prt%GetState(store_organ,all_carbon_elements)
 
           call storage_fraction_of_target(leaf_c, store_c, frac)
