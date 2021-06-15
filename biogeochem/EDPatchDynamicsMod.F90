@@ -518,6 +518,10 @@ contains
     real(r8) :: struct_m_pre
     real(r8) :: struct_m_post
     real(r8) :: struct_loss_prt
+    real(r8) :: store_m_pre
+    real(r8) :: store_m_post
+    real(r8) :: store_loss_prt
+   
     
     real(r8) :: cd_n
     real(r8) :: cd_n_total
@@ -545,6 +549,7 @@ contains
     leaf_loss_prt = 0.0_r8
     sapw_loss_prt = 0.0_r8
     struct_loss_prt = 0.0_r8
+    store_loss_prt = 0.0_r8
     patch_damage_litter = 0.0_r8
  
     ! zero the diagnostic disturbance rate fields
@@ -1276,13 +1281,18 @@ contains
                                   struct_loss_prt = struct_loss_prt + (struct_m_pre - struct_m_post)* &
                                        nc_d%n
 
-
-                                  store_c  = nc_d%prt%GetState(store_organ, all_carbon_elements)
+                                  store_m_pre = nc_d%prt%GetState(store_organ, all_carbon_elements)
+                                  call PRTDamageLosses(nc_d%prt, store_organ, mass_frac * &
+                                       nc_d%branch_frac * agb_frac)
+                                  store_m_post = nc_d%prt%GetState(store_organ, all_carbon_elements)
+                                  store_loss_prt = store_loss_prt + (store_m_pre - store_m_post)* &
+                                       nc_d%n
+                                  
                                   fnrt_c  = nc_d%prt%GetState(fnrt_organ, all_carbon_elements)
 
                                   currentSite%damage_cflux(currentCohort%crowndamage, cd) = &
                                        currentSite%damage_cflux(currentCohort%crowndamage, cd) + &
-                                       (leaf_m_post + sapw_m_post + struct_m_post + fnrt_c + store_c) * cd_n * &
+                                       (leaf_m_post + sapw_m_post + struct_m_post + store_m_post + fnrt_c) * cd_n * &
                                        hlm_days_per_year
 
                                   currentSite%damage_rate(currentCohort%crowndamage, cd) = &
@@ -1504,7 +1514,7 @@ contains
     call set_patchno(currentSite)
 
     write(fates_log(),*) 'JN site level damage litter = ', total_litter_d
-    write(fates_log(),*) 'JN site level damage loss   = ', leaf_loss_prt+sapw_loss_prt+struct_loss_prt
+    write(fates_log(),*) 'JN site level damage loss   = ', leaf_loss_prt+sapw_loss_prt+struct_loss_prt+store_loss_prt
 
     return
   end subroutine spawn_patches
@@ -2337,6 +2347,7 @@ contains
     real(r8) :: sapw_m               ! sapwood mass [kg]
     real(r8) :: struct_m             ! structure mass [kg]
     real(r8) :: repro_m              ! reproductive mass [kg]
+    real(r8) :: store_m              ! storage mass [kg]
     real(r8) :: remainder_area       ! current patch area after donation [m2]
     real(r8) :: retain_frac          ! Fraction of mass to be retained
     real(r8) :: retain_m2            ! area normalization for litter mass destined to old patch [m-2]
@@ -2411,7 +2422,8 @@ contains
           sapw_m   = currentCohort%prt%GetState(sapw_organ, element_id)
           struct_m = currentCohort%prt%GetState(struct_organ, element_id)
           leaf_m   = currentCohort%prt%GetState(leaf_organ, element_id) !kg
-          repro_m  = currentCohort%prt%GetState(repro_organ, element_id) 
+          repro_m  = currentCohort%prt%GetState(repro_organ, element_id)
+          store_m  = currentCohort%prt%GetState(store_organ, element_id)
 
           if(prt_params%woody(currentCohort%pft)==1) then
 
@@ -2440,21 +2452,15 @@ contains
 
                 ! now to get the number of damaged trees we multiply by damage frac
                 num_trees_cd = num_trees * cd_frac
-
-             !   write(fates_log(),*) 'JN litter cd_n : ', num_trees_cd
                 
                 ! if non negligable get litter
                 if (num_trees_cd > nearzero ) then
 
                    call get_crown_reduction(cd, crown_reduction)
 
-                  ! write(fates_log(),*) 'JN litter mass : ', crown_reduction
                    
                    ! leaf loss in kg
                    leaf_loss =  (leaf_m + repro_m) * crown_reduction
-                   !write(fates_log(),*) 'JN litter leaf loss : ', leaf_m * crown_reduction
-                   !write(fates_log(),*) 'JN litter repro loss : ', repro_m * crown_reduction
-                   
                    leaf_donatable_mass = num_trees_cd * leaf_loss
 
                    do dcmpy=1,ndcmpy
@@ -2470,10 +2476,8 @@ contains
                         leaf_donatable_mass
 
                    ! branch loss
-                   branch_loss = (sapw_m + struct_m) * crown_reduction * &
+                   branch_loss = (sapw_m + struct_m + store_m) * crown_reduction * &
                         currentCohort%branch_frac * agb_frac * num_trees_cd
-
-                   
                    
                    do c=1,(ncwd_no_trunk)
 

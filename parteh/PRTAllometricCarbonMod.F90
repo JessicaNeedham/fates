@@ -710,39 +710,14 @@ contains
             max(store_c, targetn_store_c) + max(sapw_c, targetn_sapw_c) + &
             max(struct_c, targetn_struct_c)) 
 
-       ! write(fates_log(),*) 'JN prt allometic c checks'
-       ! write(fates_log(),*) ' crown damage : ', crowndamage
-       
-       ! write(fates_log(),*) 'leaf c         : ', sum(leaf_c(1:nleafage))
-       ! write(fates_log(),*) 'target leaf c  : ', targetn_leaf_c
-   
-       ! write(fates_log(),*) 'fnrt_c       c : ', fnrt_c
-       ! write(fates_log(),*) 'target fnrt_c  : ', targetn_fnrt_c
-
-       ! write(fates_log(),*) 'store_c        : ', store_c
-       ! write(fates_log(),*) 'target store_c : ', targetn_store_c
-      
-       ! write(fates_log(),*) 'sapw_c         : ', sapw_c
-       ! write(fates_log(),*) 'target sapw_c  : ', targetn_sapw_c
-      
-       ! write(fates_log(),*) 'struct_c       : ', struct_c
-       ! write(fates_log(),*) 'target struct_c: ', targetn_struct_c
-     
-
-    !   write(fates_log(),*) ' nc carbon : ', mass_dminus1
-     !  write(fates_log(),*) ' cc carbon : ', mass_d
        ! Carbon needed to get from current mass to allometric target mass of next damage class up
        recovery_demand = mass_dminus1 - mass_d
-      ! write(fates_log(),*) ' recovery demand : ', recovery_demand
-
        
        ! 3. How many trees can get there with excess carbon?
        max_recover_n =  carbon_balance * n / recovery_demand 
-!       write(fates_log(),*) 'max_recover_n : ', max_recover_n
 
        ! 4. Use the scalar to decide how many to recover
        n_recover = max_recover_n * damage_recovery_scalar
-       !write(fates_log(),*) ' n_recover : ', n_recover
 
        ! carbon balance needs to be updated
 
@@ -762,16 +737,11 @@ contains
           carbon_balance = (n * carbon_balance - (recovery_demand * n_recover)) /(n-n_recover)
        end if
 
-      ! write(fates_log(),*) 'carbon balance : ', carbon_balance
-       
-       ! 5. Need to create a new cohort here - 
        ! we reduce number density here and continue on with daily prt for the
        ! part of the cohort that is not recovering - staying fixed on its
        ! current reduced allometries
        n = n - n_recover
 
-       ! The portion of the cohort not moving to a lower damage class now
-       ! allocate their carbon according to current allometric targets.
        ! Outside of parteh we will copy the cohort and allow the
        ! recovery portion to change allometric targets.
        
