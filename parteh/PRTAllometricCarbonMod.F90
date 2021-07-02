@@ -404,7 +404,7 @@ contains
     real(r8) ::  intgr_params(num_bc_in+1)                 ! The boundary conditions to this routine,
                                                          ! are pressed into an array that is also
                                                          ! passed to the integrators
-                                                         ! JN add one because we pass crown damage also
+                                                         ! add one because we pass crown damage also
                                                          ! which is not a bc_in
     
 
@@ -476,7 +476,7 @@ contains
     call bagw_allom(dbh,ipft, crowndamage, branch_frac, target_agw_c)
     
     ! Target total below ground biomass in woody/fibrous tissues [kgC] 
-    call bbgw_allom(dbh,ipft, branch_frac, target_bgw_c)
+    call bbgw_allom(dbh,ipft,target_bgw_c)
     
     ! Target total dead (structrual) biomass [kgC]
     call bdead_allom( target_agw_c, target_bgw_c, target_sapw_c, ipft, target_struct_c)
@@ -691,7 +691,7 @@ contains
        ! Target total above ground biomass in woody/fibrous tissues  [kgC]
        call bagw_allom(dbh,ipft, crowndamage-1, branch_frac, targetn_agw_c)
        ! Target total below ground biomass in woody/fibrous tissues [kgC] 
-       call bbgw_allom(dbh,ipft, branch_frac, targetn_bgw_c)
+       call bbgw_allom(dbh,ipft,targetn_bgw_c)
        ! Target total dead (structrual) biomass [kgC]
        call bdead_allom( targetn_agw_c, targetn_bgw_c, targetn_sapw_c, ipft, targetn_struct_c)
        ! Target fine-root biomass and deriv. according to allometry and trimming [kgC, kgC/cm]
@@ -1054,7 +1054,7 @@ contains
         call bfineroot(dbh,ipft,canopy_trim,ct_fnrt,ct_dfnrtdd)
         call bsap_allom(dbh,ipft, crowndamage, branch_frac, canopy_trim,sapw_area,ct_sap,ct_dsapdd)
         call bagw_allom(dbh,ipft,crowndamage, branch_frac, ct_agw,ct_dagwdd)
-        call bbgw_allom(dbh,ipft, branch_frac, ct_bgw, ct_dbgwdd)        
+        call bbgw_allom(dbh,ipft,ct_bgw, ct_dbgwdd)        
         call bdead_allom(ct_agw,ct_bgw, ct_sap, ipft, ct_dead, &
                          ct_dagwdd, ct_dbgwdd, ct_dsapdd, ct_ddeaddd)
         call bstore_allom(dbh,ipft,crowndamage, canopy_trim,ct_store,ct_dstoredd)
@@ -1264,7 +1264,7 @@ contains
         ! Get allometric targets for this dbh and crown damage class
         call bsap_allom(dbh, ipft, crowndamage, branch_frac, canopy_trim, sapw_area, target_sapw_c)
         call bagw_allom(dbh, ipft, crowndamage, branch_frac, target_agw_c)
-        call bbgw_allom(dbh, ipft, branch_frac, target_bgw_c)
+        call bbgw_allom(dbh, ipft, target_bgw_c)
         call bdead_allom(target_agw_c, target_bgw_c, target_sapw_c, ipft, target_struct_c)
         if(leaf_status ==2)then
            call bleaf(dbh, ipft, crowndamage, canopy_trim, target_leaf_c)

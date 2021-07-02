@@ -505,33 +505,31 @@ contains
     real(r8) :: leaf_burn_frac               ! fraction of leaves burned in fire
                                              ! for both woody and grass species
     real(r8) :: leaf_m                       ! leaf mass during partial burn calculations
-    real(r8) :: total_litter_d               ! debugging
-    real(r8) :: patch_damage_litter
-    
-    real(r8) :: mass_frac
-    real(r8) :: leaf_m_pre
-    real(r8) :: leaf_m_post
-    real(r8) :: leaf_loss_prt
-    real(r8) :: sapw_m_pre
-    real(r8) :: sapw_m_post
-    real(r8) :: sapw_loss_prt
-    real(r8) :: struct_m_pre
-    real(r8) :: struct_m_post
-    real(r8) :: struct_loss_prt
-    real(r8) :: store_m_pre
-    real(r8) :: store_m_post
-    real(r8) :: store_loss_prt
-   
-    
-    real(r8) :: cd_n
-    real(r8) :: cd_n_total
-    integer :: cd
-    real(r8) :: cd_frac
-    real(r8) :: agb_frac
+
+    real(r8) :: total_litter_d               ! total litter from damage
+    real(r8) :: patch_damage_litter          ! patch level litter from damage
+    real(r8) :: mass_frac                    ! mass to remove from damaged cohorts
+    real(r8) :: leaf_m_pre                   ! leaf mass pre damage
+    real(r8) :: leaf_m_post                  ! leaf mass post damage
+    real(r8) :: leaf_loss_prt                ! leaf mass lost
+    real(r8) :: sapw_m_pre                   ! sapw mass pre damage
+    real(r8) :: sapw_m_post                  ! sapw mass post damage
+    real(r8) :: sapw_loss_prt                ! sapw mass lost
+    real(r8) :: struct_m_pre                 ! struct mass pre damage
+    real(r8) :: struct_m_post                ! struct mass post damage
+    real(r8) :: struct_loss_prt              ! struct mass lost
+    real(r8) :: store_m_pre                  ! storage mass pre damage
+    real(r8) :: store_m_post                 ! storage mass post damage
+    real(r8) :: store_loss_prt               ! storage mass lost
+    real(r8) :: cd_n                         ! number in new damaged cohort
+    real(r8) :: cd_n_total                   ! total number damaged
+    integer :: cd                            ! crowndamage counter
+    real(r8) :: cd_frac                      ! fraction of cohort going to new damage class
+    real(r8) :: agb_frac                     ! agoveground biomass fraction of cohort 
 
     logical  :: found_youngest_primary       ! logical for finding the first primary forest patch
 
-    real(r8) :: frac
+    real(r8), parameter          :: damage_error_fail = 1.0e-6_r8
     
     !--------------------------------------------------------------------- 
     
@@ -738,7 +736,7 @@ contains
                 end if
              end if
 
-             ! in kg - for debugging
+             ! in kg - for mass conservation checking
              total_litter_d = total_litter_d + patch_damage_litter
 
              ! --------------------------------------------------------------------------
@@ -963,21 +961,23 @@ contains
 
                    end if
                    
-                   ! JN also track fire damage mortality and cflux along size x damage axis
+                   ! also track fire damage mortality and cflux along size x damage axis
                    if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
                       if(levcan==ican_upper) then
-                         currentSite%fmort_rate_canopy_damage(currentCohort%crowndamage, currentCohort%size_class) = &
-                              currentSite%fmort_rate_canopy_damage(currentCohort%crowndamage, currentCohort%size_class) + &
-                              nc%n * currentCohort%fire_mort / hlm_freq_day
+                         currentSite%fmort_rate_canopy_damage(currentCohort%crowndamage, currentCohort%size_class, &
+                              currentCohort%pft) = &
+                              currentSite%fmort_rate_canopy_damage(currentCohort%crowndamage, currentCohort%size_class,&
+                              currentCohort%pft) +  nc%n * currentCohort%fire_mort / hlm_freq_day
 
                          currentSite%fmort_cflux_canopy_damage(currentCohort%crowndamage, currentCohort%size_class) = &
                               currentSite%fmort_cflux_canopy_damage(currentCohort%crowndamage, currentCohort%size_class) + &
                               (nc%n * currentCohort%fire_mort) * &
                               total_c * g_per_kg * days_per_sec * ha_per_m2
                       else
-                         currentSite%fmort_rate_ustory_damage(currentCohort%crowndamage, currentCohort%size_class) = &
-                              currentSite%fmort_rate_ustory_damage(currentCohort%crowndamage, currentCohort%size_class) + &
-                              nc%n * currentCohort%fire_mort / hlm_freq_day
+                         currentSite%fmort_rate_ustory_damage(currentCohort%crowndamage, currentCohort%size_class, &
+                              currentCohort%pft) = &
+                              currentSite%fmort_rate_ustory_damage(currentCohort%crowndamage, currentCohort%size_class, &
+                              currentCohort%pft) +   nc%n * currentCohort%fire_mort / hlm_freq_day
 
                          currentSite%fmort_cflux_ustory_damage(currentCohort%crowndamage, currentCohort%size_class) = &
                               currentSite%fmort_cflux_ustory_damage(currentCohort%crowndamage, currentCohort%size_class) + &
@@ -1337,10 +1337,6 @@ contains
 
                             end do ! end crowndamage loop
 
-
-                            frac = cd_n_total/CurrentCohort%n
-                            !  write(fates_log(),*) 'JN spawn patches frac: ', frac
-
                             ! Reduce currentCohort%n now based on sum of all new damage classes  
                             currentCohort%n = currentCohort%n - cd_n_total
 
@@ -1513,8 +1509,14 @@ contains
     call check_patch_area(currentSite)
     call set_patchno(currentSite)
 
-    write(fates_log(),*) 'JN site level damage litter = ', total_litter_d
-    write(fates_log(),*) 'JN site level damage loss   = ', leaf_loss_prt+sapw_loss_prt+struct_loss_prt+store_loss_prt
+    ! Stop run if the amount of litter from damage does not match the biomass lost from damaged cohorts
+    if ( abs(total_litter_d - (leaf_loss_prt + sapw_loss_prt + &
+         struct_loss_prt + store_loss_prt)) > damage_error_fail ) then
+       write(fates_log(),*) 'Damage to litter does not match biomass loss'
+       write(fates_log(),*) 'Damage to litter: ',total_litter_d, 'error: ',total_litter_d - (leaf_loss_prt+&
+            sapw_loss_prt + struct_loss_prt + store_loss_prt)
+       call endrun(msg=errMsg(sourcefile, __LINE__))
+    end if
 
     return
   end subroutine spawn_patches
@@ -2332,7 +2334,7 @@ contains
     type(ed_patch_type) , intent(inout), target :: currentPatch
     type(ed_patch_type) , intent(inout), target :: newPatch
     real(r8)            , intent(in)            :: patch_site_areadis
-    real(r8), intent(out) :: total_damage_litter   ! just for debugging purposes
+    real(r8), intent(out) :: total_damage_litter   
 
     ! !LOCAL VARIABLES:
     type(ed_cohort_type), pointer      :: currentCohort

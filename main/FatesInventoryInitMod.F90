@@ -1014,7 +1014,7 @@ contains
          
          temp_cohort%n           = c_nplant * cpatch%area / real(ncohorts_to_create,r8)
          temp_cohort%dbh         = c_dbh
-         temp_cohort%crowndamage = 1
+         temp_cohort%crowndamage = 1  ! assume undamaged 
 
          call h_allom(c_dbh,temp_cohort%pft,temp_cohort%hite)
          temp_cohort%canopy_trim = 1.0_r8
@@ -1022,13 +1022,11 @@ contains
          call bagw_allom(temp_cohort%dbh,temp_cohort%pft, &
               temp_cohort%crowndamage, temp_cohort%branch_frac, c_agw)
          ! Calculate coarse root biomass from allometry
-         call bbgw_allom(temp_cohort%dbh,temp_cohort%pft,&
-              temp_cohort%branch_frac, c_bgw)
+         call bbgw_allom(temp_cohort%dbh,temp_cohort%pft,c_bgw)
          
          ! Calculate the leaf biomass (calculates a maximum first, then applies canopy trim
          ! and sla scaling factors)
 
-         ! JN: assume no damage - could potentially read in damage data down the line
          call bleaf(temp_cohort%dbh,temp_cohort%pft,1,&
               temp_cohort%canopy_trim,c_leaf)
          

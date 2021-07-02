@@ -1536,6 +1536,8 @@ contains
           currentCohort%treelai = tree_lai(leaf_c, currentCohort%pft, currentCohort%c_area, &
                                            currentCohort%n, currentCohort%canopy_layer,     &
                                            currentPatch%canopy_layer_tlai,currentCohort%vcmax25top )    
+
+          ! For stems use undamaged crown area 
           call carea_allom(currentCohort%dbh, currentCohort%n, currentSite%spread,&
                currentCohort%pft, 1, target_c_area)
           currentCohort%treesai = tree_sai(currentCohort%pft,  &

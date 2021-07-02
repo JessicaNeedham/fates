@@ -211,11 +211,11 @@ module FatesRestartInterfaceMod
   integer :: ir_prt_base     ! Base index for all PRT variables
 
   ! Damage x damage or damage x size
-  integer :: ir_imortrate_sicdsc
-  integer :: ir_termnindiv_cano_sicdsc
-  integer :: ir_termnindiv_usto_sicdsc
-  integer :: ir_fmortrate_cano_sicdsc
-  integer :: ir_fmortrate_usto_sicdsc
+  integer :: ir_imortrate_sicdpf
+  integer :: ir_termnindiv_cano_sicdpf
+  integer :: ir_termnindiv_usto_sicdpf
+  integer :: ir_fmortrate_cano_sicdpf
+  integer :: ir_fmortrate_usto_sicdpf
   integer :: ir_imortcflux_sicdsc
   integer :: ir_termcflux_cano_sicdsc
   integer :: ir_termcflux_usto_sicdsc
@@ -1260,27 +1260,27 @@ contains
     call this%set_restart_var(vname='fates_imortrate_dam', vtype=cohort_r8, &
          long_name='fates diagnostics on impact mortality by damage class', &
          units='indiv/ha/year', flushval = flushzero, &
-         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_imortrate_sicdsc)
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_imortrate_sicdpf)
 
     call this%set_restart_var(vname='fates_termn_cano_dam', vtype=cohort_r8, &
          long_name='fates diagnostics on termination mortality by damage class -canopy', &
          units='indiv/ha/year', flushval = flushzero, &
-         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_termnindiv_cano_sicdsc)
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_termnindiv_cano_sicdpf)
 
     call this%set_restart_var(vname='fates_termn_usto_dam', vtype=cohort_r8, &
          long_name='fates diagnostics on termination mortality by damage class -understory', &
          units='indiv/ha/year', flushval = flushzero, &
-         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_termnindiv_usto_sicdsc)
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_termnindiv_usto_sicdpf)
 
     call this%set_restart_var(vname='fates_fmortrate_cano_dam', vtype=cohort_r8, &
          long_name='fates diagnostics on fire mortality by damage class', &
          units='indiv/ha/year', flushval = flushzero, &
-         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_fmortrate_cano_sicdsc)
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_fmortrate_cano_sicdpf)
 
     call this%set_restart_var(vname='fates_fmortrate_usto_dam', vtype=cohort_r8, &
          long_name='fates diagnostics on fire mortality by damage class', &
          units='indiv/ha/year', flushval = flushzero, &
-         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_fmortrate_usto_sicdsc)
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_fmortrate_usto_sicdpf)
 
     call this%set_restart_var(vname='fates_imortcflux_dam', vtype=cohort_r8, &
          long_name='biomass of indivs killed due to impact mort by damage class', &
@@ -1828,15 +1828,15 @@ contains
            rio_fmortcarea_cano_si      => this%rvars(ir_fmortcarea_cano_si)%r81d, &
            rio_fmortcarea_usto_si      => this%rvars(ir_fmortcarea_usto_si)%r81d, &
 
-           ! JN damage
-           rio_imortrate_sicdsc        => this%rvars(ir_imortrate_sicdsc)%r81d, &
+           ! damage
+           rio_imortrate_sicdpf        => this%rvars(ir_imortrate_sicdpf)%r81d, &
            rio_imortcflux_sicdsc       => this%rvars(ir_imortcflux_sicdsc)%r81d, &
            rio_termcflux_cano_sicdsc   => this%rvars(ir_termcflux_cano_sicdsc)%r81d, &
-           rio_termnindiv_cano_sicdsc  => this%rvars(ir_termnindiv_cano_sicdsc)%r81d, &
+           rio_termnindiv_cano_sicdpf  => this%rvars(ir_termnindiv_cano_sicdpf)%r81d, &
            rio_termcflux_usto_sicdsc   => this%rvars(ir_termcflux_usto_sicdsc)%r81d, &
-           rio_termnindiv_usto_sicdsc  => this%rvars(ir_termnindiv_usto_sicdsc)%r81d, &
-           rio_fmortrate_cano_sicdsc   => this%rvars(ir_fmortrate_cano_sicdsc)%r81d, &
-           rio_fmortrate_usto_sicdsc   => this%rvars(ir_fmortrate_usto_sicdsc)%r81d, &
+           rio_termnindiv_usto_sicdpf  => this%rvars(ir_termnindiv_usto_sicdpf)%r81d, &
+           rio_fmortrate_cano_sicdpf   => this%rvars(ir_fmortrate_cano_sicdpf)%r81d, &
+           rio_fmortrate_usto_sicdpf   => this%rvars(ir_fmortrate_usto_sicdpf)%r81d, &
            rio_fmortcflux_cano_sicdsc  => this%rvars(ir_fmortcflux_cano_sicdsc)%r81d, &
            rio_fmortcflux_usto_sicdsc  => this%rvars(ir_fmortcflux_usto_sicdsc)%r81d, &
            rio_damage_cflux_sicd       => this%rvars(ir_damage_cflux_sicd)%r81d, &
@@ -2196,7 +2196,7 @@ contains
              io_idx_si_sc = io_idx_si_sc + 1
           end do
 
-          ! JN - this only copies live portions of transitions - but that's ok because the mortality
+          ! this only copies live portions of transitions - but that's ok because the mortality
           ! bit only needs to be added for history outputs
           if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
              do icdi = 1,ncrowndamage
@@ -2220,14 +2220,14 @@ contains
              do i_scls = 1, nlevsclass
                 do i_cdam = 1, ncrowndamage
                    do i_pft = 1, numpft 
-                      rio_imortrate_sicdsc(io_idx_si_cdpf)       = sites(s)%imort_rate_damage(i_cdam, i_scls, i_pft)
-                      rio_termnindiv_cano_sicdsc(io_idx_si_cdpf) = sites(s)%term_nindivs_canopy_damage(i_cdam,i_scls,i_pft)
-                      rio_termnindiv_usto_sicdsc(io_idx_si_cdpf) = sites(s)%term_nindivs_ustory_damage(i_cdam,i_scls,i_pft)
+                      rio_imortrate_sicdpf(io_idx_si_cdpf)       = sites(s)%imort_rate_damage(i_cdam, i_scls, i_pft)
+                      rio_termnindiv_cano_sicdpf(io_idx_si_cdpf) = sites(s)%term_nindivs_canopy_damage(i_cdam,i_scls,i_pft)
+                      rio_termnindiv_usto_sicdpf(io_idx_si_cdpf) = sites(s)%term_nindivs_ustory_damage(i_cdam,i_scls,i_pft)
                       rio_imortcflux_sicdsc(io_idx_si_cdsc)      = sites(s)%imort_cflux_damage(i_cdam, i_scls)
                       rio_termcflux_cano_sicdsc(io_idx_si_cdsc)  = sites(s)%term_cflux_canopy_damage(i_cdam, i_scls)
                       rio_termcflux_usto_sicdsc(io_idx_si_cdsc)  = sites(s)%term_cflux_ustory_damage(i_cdam, i_scls)
-                      rio_fmortrate_cano_sicdsc(io_idx_si_cdsc)  = sites(s)%fmort_rate_canopy_damage(i_cdam, i_scls)
-                      rio_fmortrate_usto_sicdsc(io_idx_si_cdsc)  = sites(s)%fmort_rate_ustory_damage(i_cdam, i_scls)
+                      rio_fmortrate_cano_sicdpf(io_idx_si_cdpf)  = sites(s)%fmort_rate_canopy_damage(i_cdam, i_scls, i_pft)
+                      rio_fmortrate_usto_sicdpf(io_idx_si_cdpf)  = sites(s)%fmort_rate_ustory_damage(i_cdam, i_scls, i_pft)
                       rio_fmortcflux_cano_sicdsc(io_idx_si_cdsc) = sites(s)%fmort_cflux_canopy_damage(i_cdam, i_scls)
                       rio_fmortcflux_usto_sicdsc(io_idx_si_cdsc) = sites(s)%fmort_cflux_ustory_damage(i_cdam, i_scls)
                       io_idx_si_cdsc = io_idx_si_cdsc + 1
@@ -2700,19 +2700,19 @@ contains
           rio_fmortcarea_cano_si      => this%rvars(ir_fmortcarea_cano_si)%r81d, &
           rio_fmortcarea_usto_si      => this%rvars(ir_fmortcarea_usto_si)%r81d, &
 
-       ! JN Damage
+       ! Damage
           rio_damage_cflux_sicd       => this%rvars(ir_damage_cflux_sicd)%r81d, &
           rio_damage_rate_sicd        => this%rvars(ir_damage_rate_sicd)%r81d, & 
           rio_recovery_cflux_sicd     => this%rvars(ir_recovery_cflux_sicd)%r81d, &
           rio_recovery_rate_sicd      => this%rvars(ir_recovery_rate_sicd)%r81d, & 
-          rio_imortrate_sicdsc        => this%rvars(ir_imortrate_sicdsc)%r81d, &
-          rio_termnindiv_cano_sicdsc  => this%rvars(ir_termnindiv_cano_sicdsc)%r81d, &
-          rio_termnindiv_usto_sicdsc  => this%rvars(ir_termnindiv_usto_sicdsc)%r81d, &
+          rio_imortrate_sicdpf        => this%rvars(ir_imortrate_sicdpf)%r81d, &
+          rio_termnindiv_cano_sicdpf  => this%rvars(ir_termnindiv_cano_sicdpf)%r81d, &
+          rio_termnindiv_usto_sicdpf  => this%rvars(ir_termnindiv_usto_sicdpf)%r81d, &
           rio_imortcflux_sicdsc       => this%rvars(ir_imortcflux_sicdsc)%r81d, &
           rio_termcflux_cano_sicdsc   => this%rvars(ir_termcflux_cano_sicdsc)%r81d, &
           rio_termcflux_usto_sicdsc   => this%rvars(ir_termcflux_usto_sicdsc)%r81d, &
-          rio_fmortrate_cano_sicdsc   => this%rvars(ir_fmortrate_cano_sicdsc)%r81d, &
-          rio_fmortrate_usto_sicdsc   => this%rvars(ir_fmortrate_usto_sicdsc)%r81d, &
+          rio_fmortrate_cano_sicdpf   => this%rvars(ir_fmortrate_cano_sicdpf)%r81d, &
+          rio_fmortrate_usto_sicdpf   => this%rvars(ir_fmortrate_usto_sicdpf)%r81d, &
           rio_fmortcflux_cano_sicdsc  => this%rvars(ir_fmortcflux_cano_sicdsc)%r81d, &
           rio_fmortcflux_usto_sicdsc  => this%rvars(ir_fmortcflux_usto_sicdsc)%r81d, &
           rio_crownarea_cano_damage_si=> this%rvars(ir_crownarea_cano_si)%r81d, &
@@ -3099,14 +3099,14 @@ contains
              do i_cdam = 1, ncrowndamage
                 do i_pft = 1, numpft
                    do i_scls = 1, nlevsclass
-                      sites(s)%imort_rate_damage(i_cdam, i_scls, i_pft)   = rio_imortrate_sicdsc(io_idx_si_cdpf)
-                      sites(s)%term_nindivs_canopy_damage(i_cdam,i_scls,i_pft) = rio_termnindiv_cano_sicdsc(io_idx_si_cdpf)
-                      sites(s)%term_nindivs_ustory_damage(i_cdam,i_scls,i_pft) = rio_termnindiv_usto_sicdsc(io_idx_si_cdpf)
+                      sites(s)%imort_rate_damage(i_cdam, i_scls, i_pft)   = rio_imortrate_sicdpf(io_idx_si_cdpf)
+                      sites(s)%term_nindivs_canopy_damage(i_cdam,i_scls,i_pft) = rio_termnindiv_cano_sicdpf(io_idx_si_cdpf)
+                      sites(s)%term_nindivs_ustory_damage(i_cdam,i_scls,i_pft) = rio_termnindiv_usto_sicdpf(io_idx_si_cdpf)
                       sites(s)%imort_cflux_damage(i_cdam, i_scls)         = rio_imortcflux_sicdsc(io_idx_si_cdsc)
                       sites(s)%term_cflux_canopy_damage(i_cdam, i_scls)   = rio_termcflux_cano_sicdsc(io_idx_si_cdsc)
                       sites(s)%term_cflux_ustory_damage(i_cdam, i_scls)   = rio_termcflux_usto_sicdsc(io_idx_si_cdsc)
-                      sites(s)%fmort_rate_canopy_damage(i_cdam, i_scls)   = rio_fmortrate_cano_sicdsc(io_idx_si_cdsc)
-                      sites(s)%fmort_rate_ustory_damage(i_cdam, i_scls)   = rio_fmortrate_usto_sicdsc(io_idx_si_cdsc)
+                      sites(s)%fmort_rate_canopy_damage(i_cdam, i_scls, i_pft)   = rio_fmortrate_cano_sicdpf(io_idx_si_cdpf)
+                      sites(s)%fmort_rate_ustory_damage(i_cdam, i_scls, i_pft)   = rio_fmortrate_usto_sicdpf(io_idx_si_cdpf)
                       sites(s)%fmort_cflux_canopy_damage(i_cdam, i_scls)  = rio_fmortcflux_cano_sicdsc(io_idx_si_cdsc)
                       sites(s)%fmort_cflux_ustory_damage(i_cdam, i_scls)  = rio_fmortcflux_usto_sicdsc(io_idx_si_cdsc)
                       io_idx_si_cdsc = io_idx_si_cdsc + 1
@@ -3118,7 +3118,7 @@ contains
              sites(s)%crownarea_canopy_damage = rio_crownarea_cano_damage_si(io_idx_si)
              sites(s)%crownarea_ustory_damage = rio_crownarea_usto_damage_si(io_idx_si)
              
-             ! JN - this only copies live portions of transitions - but that's ok because the mortality
+             ! this only copies live portions of transitions - but that's ok because the mortality
              ! bit only needs to be added for history outputs
              do icdi = 1,ncrowndamage
                 do icdj = 1,ncrowndamage+1

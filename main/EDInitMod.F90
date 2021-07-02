@@ -135,8 +135,8 @@ contains
        allocate(site_in%imort_cflux_damage(1:ncrowndamage, 1:nlevsclass))
        allocate(site_in%term_cflux_canopy_damage(1:ncrowndamage, 1:nlevsclass))
        allocate(site_in%term_cflux_ustory_damage(1:ncrowndamage, 1:nlevsclass))
-       allocate(site_in%fmort_rate_canopy_damage(1:ncrowndamage, 1:nlevsclass))
-       allocate(site_in%fmort_rate_ustory_damage(1:ncrowndamage, 1:nlevsclass)) 
+       allocate(site_in%fmort_rate_canopy_damage(1:ncrowndamage, 1:nlevsclass, 1:numpft))
+       allocate(site_in%fmort_rate_ustory_damage(1:ncrowndamage, 1:nlevsclass, 1:numpft)) 
        allocate(site_in%fmort_cflux_canopy_damage(1:ncrowndamage, 1:nlevsclass))
        allocate(site_in%fmort_cflux_ustory_damage(1:ncrowndamage, 1:nlevsclass)) 
     else
@@ -150,8 +150,8 @@ contains
        allocate(site_in%imort_cflux_damage(1,1))
        allocate(site_in%term_cflux_canopy_damage(1,1))
        allocate(site_in%term_cflux_ustory_damage(1,1))
-       allocate(site_in%fmort_rate_canopy_damage(1,1))
-       allocate(site_in%fmort_rate_ustory_damage(1,1))
+       allocate(site_in%fmort_rate_canopy_damage(1,1,1))
+       allocate(site_in%fmort_rate_ustory_damage(1,1,1))
        allocate(site_in%fmort_cflux_canopy_damage(1,1))
        allocate(site_in%fmort_cflux_ustory_damage(1,1))
     end if
@@ -275,8 +275,8 @@ contains
     site_in%term_cflux_ustory_damage(:,:) = 0._r8
     site_in%crownarea_canopy_damage = 0._r8
     site_in%crownarea_ustory_damage = 0._r8
-    site_in%fmort_rate_canopy_damage(:,:) = 0._r8
-    site_in%fmort_rate_ustory_damage(:,:) = 0._r8
+    site_in%fmort_rate_canopy_damage(:,:,:) = 0._r8
+    site_in%fmort_rate_ustory_damage(:,:,:) = 0._r8
     site_in%fmort_cflux_canopy_damage(:,:) = 0._r8
     site_in%fmort_cflux_ustory_damage(:,:) = 0._r8
     
@@ -613,8 +613,7 @@ contains
             1.0_r8, c_agw)
 
        ! Calculate coarse root biomass from allometry
-       call bbgw_allom(temp_cohort%dbh,pft, &
-            1.0_r8, c_bgw)
+       call bbgw_allom(temp_cohort%dbh,pft,c_bgw)
 
        ! Calculate the leaf biomass from allometry
        ! (calculates a maximum first, then applies canopy trim)

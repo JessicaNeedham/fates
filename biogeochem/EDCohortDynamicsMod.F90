@@ -522,7 +522,7 @@ contains
 
     ! VEGETATION STRUCTURE
     currentCohort%pft                = fates_unset_int  ! pft number
-    currentCohort%crowndamage       = fates_unset_int  ! Crown damage class
+    currentCohort%crowndamage        = fates_unset_int  ! Crown damage class
     currentCohort%indexnumber        = fates_unset_int  ! unique number for each cohort. (within clump?)
     currentCohort%canopy_layer       = fates_unset_int  ! canopy status of cohort (1 = canopy, 2 = understorey, etc.)   
     currentCohort%canopy_layer_yesterday       = nan  ! recent canopy status of cohort (1 = canopy, 2 = understorey, etc.)   
@@ -1296,26 +1296,16 @@ contains
                                             currentCohort%dbh = (currentCohort%n*currentCohort%dbh         &
                                                  + nextc%n*nextc%dbh)/newn
 
-
+                                            
                                             if( prt_params%woody(currentCohort%pft) == itrue ) then
-                                               
-                                               if( currentCohort%crowndamage > 1) then
-                                                  call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
 
-                                                  call ForceDBH( currentCohort%pft,&
-                                                       currentCohort%canopy_trim, &
-                                                       currentCohort%dbh, currentCohort%hite, &
-                                                       bdead = currentCohort%prt%GetState(struct_organ,all_carbon_elements), &
-                                                       crowndamage = currentCohort%crowndamage, &
-                                                       crown_reduction = crown_reduction,&
-                                                       branch_frac = currentCohort%branch_frac)
-                                               else
-                                                  call ForceDBH( currentCohort%pft,&
-                                                       currentCohort%canopy_trim, &
-                                                       currentCohort%dbh, currentCohort%hite, &
-                                                       bdead = currentCohort%prt%GetState(struct_organ,all_carbon_elements))
+                                               call ForceDBH( currentCohort%pft,&
+                                                    currentCohort%canopy_trim, &
+                                                    currentCohort%dbh, currentCohort%hite, &
+                                                    bdead = currentCohort%prt%GetState(struct_organ,all_carbon_elements), &
+                                                    crowndamage = currentCohort%crowndamage, &
+                                                    branch_frac = currentCohort%branch_frac)
 
-                                               end if
                                             end if
                                             !
                                             call carea_allom(currentCohort%dbh,newn,currentSite%spread,currentCohort%pft,&
@@ -1349,22 +1339,12 @@ contains
                                          !
                                          if( prt_params%woody(currentCohort%pft) == itrue ) then
                                             
-                                            if( currentCohort%crowndamage > 1) then
-                                               call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
-
-                                               call ForceDBH( currentCohort%pft,&
-                                                    currentCohort%canopy_trim, &
-                                                    currentCohort%dbh, currentCohort%hite, &
-                                                    bdead = currentCohort%prt%GetState(struct_organ,all_carbon_elements), &
-                                                    crowndamage = currentCohort%crowndamage, &
-                                                    crown_reduction = crown_reduction,&
-                                                    branch_frac = currentCohort%branch_frac)
-                                            else
-                                               call ForceDBH( currentCohort%pft,&
-                                                    currentCohort%canopy_trim, &
-                                                    currentCohort%dbh, currentCohort%hite, &
-                                                    bdead = currentCohort%prt%GetState(struct_organ,all_carbon_elements))
-                                            end if
+                                            call ForceDBH( currentCohort%pft,&
+                                                 currentCohort%canopy_trim, &
+                                                 currentCohort%dbh, currentCohort%hite, &
+                                                 bdead = currentCohort%prt%GetState(struct_organ,all_carbon_elements), &
+                                                 crowndamage = currentCohort%crowndamage, &
+                                                 branch_frac = currentCohort%branch_frac)
 
                                          end if
                                          !
@@ -2154,7 +2134,7 @@ contains
        call bagw_allom(dbh,ipft, icrowndamage, branch_frac, target_agw_c)
        
        ! Target total below ground biomass in woody/fibrous tissues [kgC] 
-       call bbgw_allom(dbh,ipft, branch_frac, target_bgw_c)
+       call bbgw_allom(dbh,ipft,target_bgw_c)
        
        ! Target total dead (structrual) biomass [kgC]
        call bdead_allom( target_agw_c, target_bgw_c, target_sapw_c, ipft, target_struct_c)
@@ -2167,31 +2147,15 @@ contains
        
        if( (struct_c - target_struct_c ) > calloc_abs_error ) then
 
-          if( currentCohort%crowndamage > 1) then
-             call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
-
-
-             call ForceDBH( ipft,canopy_trim, dbh, hite_out, bdead=struct_c, &
-                  crowndamage = icrowndamage, &
-                  crown_reduction = crown_reduction, &
-                  branch_frac = branch_frac)
-
-          else
-             call get_crown_reduction(currentCohort%crowndamage, crown_reduction)
-
-             call ForceDBH( ipft,canopy_trim, dbh, hite_out, bdead=struct_c, &
-                  crowndamage = icrowndamage, &
-                  crown_reduction = crown_reduction, &
-                  branch_frac = branch_frac)
-
-          end if
+          call ForceDBH( ipft,canopy_trim, dbh, hite_out, bdead=struct_c, &
+               crowndamage = icrowndamage, branch_frac = branch_frac)
 
           delta_dbh = dbh - currentCohort%dbh 
           delta_hite = hite_out - currentCohort%hite
           currentCohort%dbh  = dbh
           currentCohort%hite = hite_out
        end if
-       
+
     else
 
        ! This returns the sum of leaf carbon over all (age) bins

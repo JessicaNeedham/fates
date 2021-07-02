@@ -651,7 +651,7 @@ contains
                           
                         if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
  
-                           ! JN if using above ground portion to estimate below ground portion we need
+                           ! If using above ground portion to estimate below ground portion we need
                            ! to estimate the undamaged aboveground portion first
                             sapw_n = sapw_n / &
                                 (1.0_r8 - (agb_frac * branch_frac * (1.0_r8-crown_reduction)))

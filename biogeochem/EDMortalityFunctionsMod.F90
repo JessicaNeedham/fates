@@ -116,7 +116,7 @@ contains
        asmort = 0.0_r8
     end if
 
-    ! JN Damage dependent mortality
+    ! Damage dependent mortality
     if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
        call get_damage_mortality(cohort_in%crowndamage, cohort_in%pft, dgmort)
     else
@@ -159,7 +159,6 @@ contains
        ! Carbon Starvation induced mortality.
        if ( cohort_in%dbh  >  0._r8 ) then
 
-          ! JN leaf biomass here needs to be the undamaged version!
           call bleaf(cohort_in%dbh,cohort_in%pft,cohort_in%crowndamage,cohort_in%canopy_trim,leaf_c)
           store_c = cohort_in%prt%GetState(store_organ,all_carbon_elements)
 
@@ -243,7 +242,7 @@ contains
     real(r8) :: frmort   ! freezing mortality rate (fraction per year)
     real(r8) :: smort    ! size dependent senescence mortality rate (fraction per year)
     real(r8) :: asmort   ! age dependent senescence mortality rate (fraction per year)
-    real(r8) :: dgmort   ! damage mortality (fraction per year0
+    real(r8) :: dgmort   ! damage mortality (fraction per year)
     real(r8) :: dndt_logging      ! Mortality rate (per day) associated with the a logging event
     integer  :: ipft              ! local copy of the pft index
    

@@ -494,7 +494,7 @@ contains
           ! Growth and Allocation (PARTEH)
           ! -----------------------------------------------------------------------------
 
-          ! JN cohorts will be split during this phase to allow some fraction to recover
+          ! cohorts will be split during this phase to allow some fraction to recover
           ! keep track of starting population
           n_old = currentCohort%n
 
@@ -508,7 +508,7 @@ contains
           repro_c0 = currentCohort%prt%GetState(repro_organ, all_carbon_elements)
 
           total_c0 = sapw_c0 + struct_c0 + leaf_c0 + fnrt_c0 + store_c0 + repro_c0
-          cc_carbon = 0.0_r8 ! JN need to set it here to avoid nan errors if conditionsn aren't met below
+          cc_carbon = 0.0_r8 ! need to set it here to avoid nan errors if conditions aren't met below
           
           call currentCohort%prt%DailyPRT()
 
@@ -601,7 +601,7 @@ contains
              end if ! end if crowndamage > 1
 
              
-             ! JN fill in the diagonals - i.e. those that did not recover 
+             ! fill in the diagonals - i.e. those that did not recover 
              currentSite%recovery_rate(currentCohort%crowndamage, currentCohort%crowndamage) = &
                   currentSite%recovery_rate(currentCohort%crowndamage, currentCohort%crowndamage) +&
                   currentCohort%n
@@ -750,7 +750,7 @@ contains
        currentPatch => currentPatch%older
    end do
 
-   ! JN - if crown damage is on then we need to update canopy structure because we
+   ! if crown damage is on then we need to update canopy structure because we
    ! have split the cohorts
    if(hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then
       call canopy_structure(currentSite, bc_in)

@@ -128,34 +128,28 @@ contains
     real(r8),    intent(out) :: dgmort
 
     ! local variables
-    integer(i4) :: i
-    real(r8), allocatable :: dgmort_vec(:)
     real(r8) :: damage_mort_p1
     real(r8) :: damage_mort_p2
     real(r8) :: class_width
-
+    real(r8) :: crown_loss
+    
     class_width = 1.0_r8/real(ncrowndamage)
     
     ! parameter to determine slope of exponential
     damage_mort_p1 = EDPftvarcon_inst%damage_mort_p1(pft)
     damage_mort_p2 = EDPftvarcon_inst%damage_mort_p2(pft)
-    
-    ! JN - set up a vector of damage mortality values 
-    allocate(dgmort_vec(1:ncrowndamage))
-    do i = 1,ncrowndamage
-       dgmort_vec(i) = min(1.0_r8, (real(i) - 1.0_r8) * class_width)
-    end do
 
-   
-    ! JN logistic function
-    dgmort_vec = 1.0_r8 / (1.0_r8 + exp(-1.0_r8 * damage_mort_p2 * &
-         (dgmort_vec - damage_mort_p1) ) )
-
+    ! make damage mortality a function of crownloss and not crowndamage
+    ! class so that it doesn't need to be re-parameterised if the number
+    ! of damage classes change.
+    crown_loss = min(1.0_r8, (real(crowndamage) - 1.0_r8) * class_width)
     
     if (crowndamage .eq. 1 ) then
        dgmort = 0.0_r8
     else
-       dgmort = dgmort_vec(crowndamage)
+       dgmort = 1.0_r8 / (1.0_r8 + exp(-1.0_r8 * damage_mort_p2 * &
+            (crown_loss - damage_mort_p1) ) )
+
     end if
 
     return

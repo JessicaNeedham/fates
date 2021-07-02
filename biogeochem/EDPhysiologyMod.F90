@@ -1658,7 +1658,7 @@ contains
        call bsap_allom(temp_cohort%dbh,ft,temp_cohort%crowndamage, temp_cohort%branch_frac, &
             temp_cohort%canopy_trim,a_sapw, c_sapw)
        call bagw_allom(temp_cohort%dbh,ft,temp_cohort%crowndamage, temp_cohort%branch_frac, c_agw)
-       call bbgw_allom(temp_cohort%dbh,ft, temp_cohort%branch_frac, c_bgw)
+       call bbgw_allom(temp_cohort%dbh,ft,c_bgw)
        call bdead_allom(c_agw,c_bgw,c_sapw,ft,c_struct)
        call bstore_allom(temp_cohort%dbh,ft, temp_cohort%crowndamage, &
             temp_cohort%canopy_trim,c_store)

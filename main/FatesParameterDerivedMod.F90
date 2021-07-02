@@ -165,24 +165,7 @@ contains
           this%damage_transitions(i, :, ft) = this%damage_transitions(i, :, ft)/SUM(this%damage_transitions(i, :, ft))
        end do
 
-
-        ! JN BCI field data - NO recovery 
-        ! this%damage_transitions(:,:,ft) = 0.0_r8
-        ! this%damage_transitions(:,1,ft) = (/0.9386876816, 0.0, 0.0, 0.0, 0.0/)
-        ! this%damage_transitions(:,2,ft) = (/0.0380617036, 0.563389392, 0.0, 0.0, 0.0 /)
-        ! this%damage_transitions(:,3,ft) = (/0.0059803264, 0.065976714, 0.37819026, 0.0, 0.0 /)
-        ! this%damage_transitions(:,4,ft) = (/0.0021797451, 0.010349288, 0.05800464, 0.33552632, 0.0/)
-        ! this%damage_transitions(:,5,ft) = (/0.0009501453, 0.004527814, 0.01160093, 0.10526316, 0.500000/)
-
- !       JN BCI field data - RECOVERY
-         ! this%damage_transitions(:,:,ft) = 0.0_r8
-         ! this%damage_transitions(:,1,ft) = (/0.9386876816, 0.269081501, 0.17865429, 0.08552632, 0.000000/)
-         ! this%damage_transitions(:,2,ft) = (/0.0380617036, 0.563389392, 0.24593968, 0.09868421, 0.093750/)
-         ! this%damage_transitions(:,3,ft) = (/0.0059803264, 0.065976714, 0.37819026, 0.07236842, 0.015625/)
-         ! this%damage_transitions(:,4,ft) = (/0.0021797451, 0.010349288, 0.05800464, 0.33552632, 0.093750/)
-         ! this%damage_transitions(:,5,ft) = (/0.0009501453, 0.004527814, 0.01160093, 0.10526316, 0.500000/)
-        
-        write(fates_log(),'(a/,5(F12.6,1x))') 'JN annual transition matrix : ', this%damage_transitions(:,:,ft)
+        write(fates_log(),'(a/,5(F12.6,1x))') 'annual transition matrix : ', this%damage_transitions(:,:,ft)
      end do
 
 

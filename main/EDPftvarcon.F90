@@ -112,9 +112,9 @@ module EDPftvarcon
 
 
      ! Damage parameters
-     real(r8), allocatable :: damage_frac(:)
-     real(r8), allocatable :: damage_mort_p1(:)
-     real(r8), allocatable :: damage_mort_p2(:)
+     real(r8), allocatable :: damage_frac(:)             ! Fraction of each cohort damaged per year
+     real(r8), allocatable :: damage_mort_p1(:)          ! Inflection point for damage mortality function
+     real(r8), allocatable :: damage_mort_p2(:)          ! Rate parameter for damage mortality function
      
      ! Fire Parameters (No PFT vector capabilities in their own routines)
      ! See fire/SFParamsMod.F90 for bulk of fire parameters
