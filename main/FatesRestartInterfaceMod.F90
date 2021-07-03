@@ -154,6 +154,8 @@ module FatesRestartInterfaceMod
   integer :: ir_fnrt_litt
   integer :: ir_seed_litt
   integer :: ir_seedgerm_litt
+  integer :: ir_seed_decay_litt
+  integer :: ir_seedgerm_decay_litt
   integer :: ir_seed_prod_co
   integer :: ir_livegrass_pa
   integer :: ir_age_pa
@@ -979,6 +981,17 @@ contains
            units='kg/m2', veclength=num_elements, flushval = flushzero, &
            hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_seedgerm_litt)
 
+
+    call this%RegisterCohortVector(symbol_base='fates_seed_frag', vtype=cohort_r8, &
+            long_name_base='seed bank fragmentation flux (non-germinated)',  &
+            units='kg/m2', veclength=num_elements, flushval = flushzero, &
+            hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_seed_decay_litt)
+
+    call this%RegisterCohortVector(symbol_base='fates_seedgerm_frag', vtype=cohort_r8, &
+           long_name_base='seed bank fragmentation flux (germinated)',  &
+           units='kg/m2', veclength=num_elements, flushval = flushzero, &
+           hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_seedgerm_decay_litt)
+    
     call this%RegisterCohortVector(symbol_base='fates_ag_cwd_frag', vtype=cohort_r8, &
             long_name_base='above ground CWD frag flux',  &
             units='kg/m2/day', veclength=num_elements, flushval = flushzero, &
@@ -2117,6 +2130,8 @@ contains
                  do i = 1,numpft
                     this%rvars(ir_seed_litt+el)%r81d(io_idx_pa_pft) = litt%seed(i)
                     this%rvars(ir_seedgerm_litt+el)%r81d(io_idx_pa_pft) = litt%seed_germ(i)
+                    this%rvars(ir_seed_decay_litt+el)%r81d(io_idx_pa_pft) = litt%seed_decay(i)
+                    this%rvars(ir_seedgerm_decay_litt+el)%r81d(io_idx_pa_pft) = litt%seed_germ_decay(i)
                     io_idx_pa_pft = io_idx_pa_pft + 1
                  end do
 
@@ -2972,6 +2987,8 @@ contains
                  do i = 1,numpft
                      litt%seed(i)       = this%rvars(ir_seed_litt+el)%r81d(io_idx_pa_pft)
                      litt%seed_germ(i)  = this%rvars(ir_seedgerm_litt+el)%r81d(io_idx_pa_pft)
+                     litt%seed_decay(i)       = this%rvars(ir_seed_decay_litt+el)%r81d(io_idx_pa_pft)
+                     litt%seed_germ_decay(i)  = this%rvars(ir_seedgerm_decay_litt+el)%r81d(io_idx_pa_pft)
                      io_idx_pa_pft      = io_idx_pa_pft + 1
                   end do
 
