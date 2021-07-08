@@ -25,7 +25,8 @@ from scipy.io import netcdf
 
 pft_dim_name = 'fates_pft'
 prt_dim_name = 'fates_prt_organs'
-
+hydr_dim_name = 'fates_hydr_organs'
+litter_dim_name = 'fates_litterclass'
 
 class timetype:
 
@@ -165,6 +166,8 @@ def main(argv):
         # Idenfity if this variable has pft dimension
         pft_dim_found = -1
         prt_dim_found = -1
+        litter_dim_found = -1
+        hydr_dim_found = -1
         pft_dim_len   = len(fp_in.variables.get(key).dimensions)
 
         for idim, name in enumerate(fp_in.variables.get(key).dimensions):
@@ -173,6 +176,10 @@ def main(argv):
                 pft_dim_found = idim
             if(name==prt_dim_name):
                 prt_dim_found = idim
+            if(name==litter_dim_name):
+                litter_dim_found = idim
+            if(name==hydr_dim_name):
+                hydr_dim_found = idim
 
 
         # Copy over the input data
@@ -180,7 +187,7 @@ def main(argv):
         if( pft_dim_len == 0 ):
             out_var = fp_out.createVariable(key,'d',(fp_in.variables.get(key).dimensions))
             out_var.assignValue(float(fp_in.variables.get(key).data))
-        elif( (pft_dim_found==-1) & (prt_dim_found==-1) ):
+        elif( (pft_dim_found==-1) & (prt_dim_found==-1) & (litter_dim_found ==-1) & (hydr_dim_found==-1) ):
             out_var = fp_out.createVariable(key,'d',(fp_in.variables.get(key).dimensions))
             out_var[:] = in_var[:]
         elif( (pft_dim_found==0) & (pft_dim_len==1) ):           # 1D fates_pft
@@ -215,7 +222,23 @@ def main(argv):
         elif( prt_dim_found==0 ):
             out_var = fp_out.createVariable(key,'d',(fp_in.variables.get(key).dimensions))
             out_var[:] = in_var[:]
-            
+
+        elif( (litter_dim_found==0) & (pft_dim_len==2) ):          # fates_litter - string_length
+            out_var = fp_out.createVariable(key,'c',(fp_in.variables.get(key).dimensions))
+            out_var[:] = in_var[:]
+
+        elif( litter_dim_found==0 ):
+            out_var = fp_out.createVariable(key,'d',(fp_in.variables.get(key).dimensions))
+            out_var[:] = in_var[:]
+
+        elif( (hydr_dim_found==0) & (pft_dim_len==2) ):          # fates_prt_organs - string_length
+            out_var = fp_out.createVariable(key,'c',(fp_in.variables.get(key).dimensions))
+            out_var[:] = in_var[:]
+
+        elif( hydr_dim_found==0 ):
+            out_var = fp_out.createVariable(key,'d',(fp_in.variables.get(key).dimensions))
+            out_var[:] = in_var[:]
+       
         else:
             print('This variable has a dimensioning that we have not considered yet.')
             print('Please add this condition to the logic above this statement.')
