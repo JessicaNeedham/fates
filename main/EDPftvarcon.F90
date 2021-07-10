@@ -308,6 +308,7 @@ contains
   subroutine Register_PFT(this, fates_params)
 
     use FatesParametersInterface, only : fates_parameters_type, param_string_length
+    use FatesParametersInterface, only : dimension_name_pft, dimension_shape_1d
     use FatesParametersInterface, only : dimension_name_hlm_pftno, dimension_shape_2d
     
     implicit none

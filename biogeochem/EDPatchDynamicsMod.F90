@@ -1518,6 +1518,12 @@ contains
        call endrun(msg=errMsg(sourcefile, __LINE__))
     end if
 
+    if (damage_time) then
+       write(fates_log(),*) 'Damage to litter: ',total_litter_d
+       write(fates_log(),*) 'Damage from trees:',leaf_loss_prt+ &
+            sapw_loss_prt + struct_loss_prt + store_loss_prt
+    end if
+    
     return
   end subroutine spawn_patches
 
@@ -2317,7 +2323,6 @@ contains
     !
     ! !USES:
     use DamageMainMod,     only : get_crown_reduction
-    !  use DamageMainMod,     only : get_disturbance_canopy_damage_frac
     use DamageMainMod    , only : get_damage_frac
     use SFParamsMod      , only : SF_val_cwd_frac
     use FatesInterfaceTypesMod , only : ncrowndamage
