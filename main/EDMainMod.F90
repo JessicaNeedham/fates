@@ -570,7 +570,8 @@ contains
                    call PRTDamageRecoveryFluxes(nc%prt, repro_organ, repro_c0, repro_c, cc_repro_c)
                    call PRTDamageRecoveryFluxes(nc%prt, sapw_organ, sapw_c0, sapw_c, cc_sapw_c)
                    call PRTDamageRecoveryFluxes(nc%prt, struct_organ, struct_c0, struct_c, cc_struct_c)
-                   call PRTDamageRecoveryFluxes(nc%prt, store_organ, store_c0, store_c, cc_store_c)
+                   ! call PRTDamageRecoveryFluxes(nc%prt, store_organ, store_c0, store_c, cc_store_c) ! comment out for
+                   ! low C mort version
                    call PRTDamageRecoveryFluxes(nc%prt, fnrt_organ, fnrt_c0, fnrt_c, cc_fnrt_c)
 
                    ! update crown area

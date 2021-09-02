@@ -1281,18 +1281,19 @@ contains
                                   struct_loss_prt = struct_loss_prt + (struct_m_pre - struct_m_post)* &
                                        nc_d%n
 
-                                  store_m_pre = nc_d%prt%GetState(store_organ, all_carbon_elements)
-                                  call PRTDamageLosses(nc_d%prt, store_organ, mass_frac * &
-                                       nc_d%branch_frac * agb_frac)
-                                  store_m_post = nc_d%prt%GetState(store_organ, all_carbon_elements)
-                                  store_loss_prt = store_loss_prt + (store_m_pre - store_m_post)* &
-                                       nc_d%n
+                                  ! store_m_pre = nc_d%prt%GetState(store_organ, all_carbon_elements)
+                                  ! call PRTDamageLosses(nc_d%prt, store_organ, mass_frac * &
+                                  !      nc_d%branch_frac * agb_frac)
+                                  ! store_m_post = nc_d%prt%GetState(store_organ, all_carbon_elements)
+                                  ! store_loss_prt = store_loss_prt + (store_m_pre - store_m_post)* &
+                                  !      nc_d%n
                                   
                                   fnrt_c  = nc_d%prt%GetState(fnrt_organ, all_carbon_elements)
 
                                   currentSite%damage_cflux(currentCohort%crowndamage, cd) = &
                                        currentSite%damage_cflux(currentCohort%crowndamage, cd) + &
-                                       (leaf_m_post + sapw_m_post + struct_m_post + store_m_post + fnrt_c) * cd_n * &
+                                       (leaf_m_post + sapw_m_post + struct_m_post + fnrt_c) * cd_n * &
+                                       !store_m_post + fnrt_c) * cd_n * &
                                        hlm_days_per_year
 
                                   currentSite%damage_rate(currentCohort%crowndamage, cd) = &
@@ -1521,7 +1522,7 @@ contains
     if (damage_time) then
        write(fates_log(),*) 'Damage to litter: ',total_litter_d
        write(fates_log(),*) 'Damage from trees:',leaf_loss_prt+ &
-            sapw_loss_prt + struct_loss_prt + store_loss_prt
+            sapw_loss_prt + struct_loss_prt ! + store_loss_prt
     end if
     
     return
@@ -2482,7 +2483,7 @@ contains
                         leaf_donatable_mass
 
                    ! branch loss
-                   branch_loss = (sapw_m + struct_m + store_m) * crown_reduction * &
+                   branch_loss = (sapw_m + struct_m ) * crown_reduction * & !+ store_m) * crown_reduction * &
                         currentCohort%branch_frac * agb_frac * num_trees_cd
                    
                    do c=1,(ncwd_no_trunk)
