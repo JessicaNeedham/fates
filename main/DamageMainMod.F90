@@ -109,8 +109,9 @@ contains
     real(r8) :: class_width
 
     class_width = 1.0_r8/ncrowndamage
-    crown_reduction = min(1.0_r8, (real(crowndamage) - 1.0_r8) * class_width)
-
+!    crown_reduction = min(1.0_r8, (real(crowndamage) - 1.0_r8) * class_width)
+    crown_reduction = 0.0_r8
+    
     return
   end subroutine get_crown_reduction
 
