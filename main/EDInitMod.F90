@@ -40,10 +40,13 @@ module EDInitMod
   use FatesInterfaceTypesMod         , only : hlm_use_planthydro
   use FatesInterfaceTypesMod         , only : hlm_use_inventory_init
   use FatesInterfaceTypesMod         , only : hlm_use_fixed_biogeog
+  use FatesInterfaceTypesMod         , only : hlm_use_canopy_damage
+  use FatesInterfaceTypesMod         , only : hlm_use_understory_damage
   use FatesInterfaceTypesMod         , only : numpft
   use FatesInterfaceTypesMod         , only : nleafage
   use FatesInterfaceTypesMod         , only : nlevsclass
   use FatesInterfaceTypesMod         , only : nlevcoage
+  use FatesInterfaceTypesMod         , only : ncrowndamage
   use FatesInterfaceTypesMod         , only : nlevage
   use FatesAllometryMod         , only : h2d_allom
   use FatesAllometryMod         , only : bagw_allom
@@ -120,7 +123,41 @@ contains
     allocate(site_in%growthflux_fusion(1:nlevsclass,1:numpft))
     allocate(site_in%mass_balance(1:num_elements))
     allocate(site_in%flux_diags(1:num_elements))
-   
+
+    if (hlm_use_canopy_damage .eq. itrue .or. hlm_use_understory_damage .eq. itrue) then 
+       allocate(site_in%damage_cflux(1:ncrowndamage, 1:ncrowndamage+1))
+       allocate(site_in%damage_rate(1:ncrowndamage, 1:ncrowndamage+1))
+       allocate(site_in%recovery_cflux(1:ncrowndamage, 1:ncrowndamage+1))
+       allocate(site_in%recovery_rate(1:ncrowndamage, 1:ncrowndamage+1))
+       allocate(site_in%term_nindivs_canopy_damage(1:ncrowndamage, 1:nlevsclass, 1:numpft))
+       allocate(site_in%term_nindivs_ustory_damage(1:ncrowndamage, 1:nlevsclass, 1:numpft))
+       allocate(site_in%imort_rate_damage(1:ncrowndamage, 1:nlevsclass, 1:numpft))
+       allocate(site_in%imort_cflux_damage(1:ncrowndamage, 1:nlevsclass))
+       allocate(site_in%term_cflux_canopy_damage(1:ncrowndamage, 1:nlevsclass))
+       allocate(site_in%term_cflux_ustory_damage(1:ncrowndamage, 1:nlevsclass))
+       allocate(site_in%fmort_rate_canopy_damage(1:ncrowndamage, 1:nlevsclass, 1:numpft))
+       allocate(site_in%fmort_rate_ustory_damage(1:ncrowndamage, 1:nlevsclass, 1:numpft)) 
+       allocate(site_in%fmort_cflux_canopy_damage(1:ncrowndamage, 1:nlevsclass))
+       allocate(site_in%fmort_cflux_ustory_damage(1:ncrowndamage, 1:nlevsclass)) 
+    else
+       allocate(site_in%damage_cflux(1, 1))
+       allocate(site_in%damage_rate(1, 1))
+       allocate(site_in%recovery_cflux(1, 1))
+       allocate(site_in%recovery_rate(1, 1))
+       allocate(site_in%term_nindivs_canopy_damage(1,1,1))
+       allocate(site_in%term_nindivs_ustory_damage(1,1,1))
+       allocate(site_in%imort_rate_damage(1,1,1))
+       allocate(site_in%imort_cflux_damage(1,1))
+       allocate(site_in%term_cflux_canopy_damage(1,1))
+       allocate(site_in%term_cflux_ustory_damage(1,1))
+       allocate(site_in%fmort_rate_canopy_damage(1,1,1))
+       allocate(site_in%fmort_rate_ustory_damage(1,1,1))
+       allocate(site_in%fmort_cflux_canopy_damage(1,1))
+       allocate(site_in%fmort_cflux_ustory_damage(1,1))
+    end if
+
+    
+    
     site_in%nlevsoil   = bc_in%nlevsoil
     allocate(site_in%rootfrac_scr(site_in%nlevsoil))
     allocate(site_in%zi_soil(0:site_in%nlevsoil))
@@ -182,7 +219,7 @@ contains
     site_in%water_memory(:)  = nan
     site_in%vegtemp_memory(:) = nan              ! record of last 10 days temperature for senescence model.
 
-
+    
     ! FIRE 
     site_in%acc_ni           = 0.0_r8     ! daily nesterov index accumulating over time. time unlimited theoretically.
     site_in%NF               = 0.0_r8     ! daily lightning strikes per km2 
@@ -201,13 +238,18 @@ contains
     site_in%term_nindivs_ustory(:,:) = 0._r8
     site_in%term_carbonflux_canopy = 0._r8
     site_in%term_carbonflux_ustory = 0._r8
+    site_in%term_crownarea_canopy = 0._r8
+    site_in%term_crownarea_ustory = 0._r8
     site_in%recruitment_rate(:) = 0._r8
     site_in%imort_rate(:,:) = 0._r8
     site_in%imort_carbonflux = 0._r8
+    site_in%imort_crownarea = 0._r8
     site_in%fmort_rate_canopy(:,:) = 0._r8
     site_in%fmort_rate_ustory(:,:) = 0._r8
     site_in%fmort_carbonflux_canopy = 0._r8
     site_in%fmort_carbonflux_ustory = 0._r8
+    site_in%fmort_crownarea_canopy = 0._r8
+    site_in%fmort_crownarea_ustory = 0._r8
     site_in%fmort_rate_cambial(:,:) = 0._r8
     site_in%fmort_rate_crown(:,:) = 0._r8
 
@@ -219,6 +261,24 @@ contains
     site_in%demotion_carbonflux = 0._r8
     site_in%promotion_rate(:) = 0._r8
     site_in%promotion_carbonflux = 0._r8
+
+    ! damage transition info
+    site_in%damage_cflux(:,:) = 0._r8
+    site_in%damage_rate(:,:) = 0._r8
+    site_in%recovery_cflux(:,:) = 0._r8
+    site_in%recovery_rate(:,:) = 0._r8
+    site_in%imort_rate_damage(:,:,:) = 0._r8
+    site_in%term_nindivs_canopy_damage(:,:,:) = 0._r8
+    site_in%term_nindivs_ustory_damage(:,:,:) = 0._r8
+    site_in%imort_cflux_damage(:,:) = 0._r8
+    site_in%term_cflux_canopy_damage(:,:) = 0._r8
+    site_in%term_cflux_ustory_damage(:,:) = 0._r8
+    site_in%crownarea_canopy_damage = 0._r8
+    site_in%crownarea_ustory_damage = 0._r8
+    site_in%fmort_rate_canopy_damage(:,:,:) = 0._r8
+    site_in%fmort_rate_ustory_damage(:,:,:) = 0._r8
+    site_in%fmort_cflux_canopy_damage(:,:) = 0._r8
+    site_in%fmort_cflux_ustory_damage(:,:) = 0._r8
     
     ! Resources management (logging/harvesting, etc)
     site_in%resources_management%trunk_product_site  = 0.0_r8
@@ -353,6 +413,8 @@ contains
      real(r8) :: biomass_stock
      real(r8) :: litter_stock
      real(r8) :: seed_stock
+     real(r8) :: litter_leaf
+     real(r8) :: live_leaf
      
      type(ed_site_type),  pointer :: sitep
      type(ed_patch_type), pointer :: newp
@@ -486,7 +548,8 @@ contains
     ! initialize new cohorts on bare ground
     !
     ! !USES:
-    !
+    use FatesParameterDerivedMod , only : param_derived
+    
     ! !ARGUMENTS    
     type(ed_site_type), intent(inout),  pointer  :: site_in
     type(ed_patch_type), intent(inout), pointer  :: patch_in
@@ -497,6 +560,8 @@ contains
     class(prt_vartypes),pointer  :: prt_obj
     integer  :: cstatus
     integer  :: pft
+    integer  :: crowndamage ! which crown damage class
+    real     :: branch_frac ! fraction of biomass in branches
     integer  :: iage       ! index for leaf age loop
     integer  :: el         ! index for element loop
     integer  :: element_id ! element index consistent with defs in PRTGeneric
@@ -532,33 +597,40 @@ contains
        temp_cohort%pft         = pft
        temp_cohort%n           = EDPftvarcon_inst%initd(pft) * patch_in%area
        temp_cohort%hite        = EDPftvarcon_inst%hgt_min(pft)
-       
+       temp_cohort%branch_frac = param_derived%branch_frac(pft)
 
+       ! Assume no damage to begin with - since we assume no damage
+       ! we do not need to initialise branch frac just yet. 
+       temp_cohort%crowndamage = 1
+       
        ! Calculate the plant diameter from height
        call h2d_allom(temp_cohort%hite,pft,temp_cohort%dbh)
 
        temp_cohort%canopy_trim = 1.0_r8
 
        ! Calculate total above-ground biomass from allometry
-       call bagw_allom(temp_cohort%dbh,pft,c_agw)
+       call bagw_allom(temp_cohort%dbh,pft,temp_cohort%crowndamage, &
+            1.0_r8, c_agw)
 
        ! Calculate coarse root biomass from allometry
        call bbgw_allom(temp_cohort%dbh,pft,c_bgw)
 
        ! Calculate the leaf biomass from allometry
        ! (calculates a maximum first, then applies canopy trim)
-       call bleaf(temp_cohort%dbh,pft,temp_cohort%canopy_trim,c_leaf)
+       call bleaf(temp_cohort%dbh,pft,temp_cohort%crowndamage, temp_cohort%canopy_trim,c_leaf)
 
        ! Calculate fine root biomass from allometry
        ! (calculates a maximum and then trimming value)
        call bfineroot(temp_cohort%dbh,pft,temp_cohort%canopy_trim,c_fnrt)
 
        ! Calculate sapwood biomass
-       call bsap_allom(temp_cohort%dbh,pft,temp_cohort%canopy_trim,a_sapw,c_sapw)
+       call bsap_allom(temp_cohort%dbh,pft,temp_cohort%crowndamage, 1.0_r8,&
+            temp_cohort%canopy_trim,a_sapw,c_sapw)
        
        call bdead_allom( c_agw, c_bgw, c_sapw, pft, c_struct )
 
-       call bstore_allom(temp_cohort%dbh, pft, temp_cohort%canopy_trim, c_store)
+       call bstore_allom(temp_cohort%dbh, pft, temp_cohort%crowndamage, &
+            temp_cohort%canopy_trim, c_store)
 
        temp_cohort%laimemory = 0._r8
        temp_cohort%sapwmemory = 0._r8
@@ -663,9 +735,10 @@ contains
        call prt_obj%CheckInitialConditions()
 
        call create_cohort(site_in, patch_in, pft, temp_cohort%n, temp_cohort%hite, &
-            temp_cohort%coage, temp_cohort%dbh, prt_obj, temp_cohort%laimemory, &
+            temp_cohort%coage, temp_cohort%dbh, prt_obj, temp_cohort%laimemory,&
             temp_cohort%sapwmemory, temp_cohort%structmemory, cstatus, rstatus,        &
-             temp_cohort%canopy_trim, 1, site_in%spread, bc_in)
+            temp_cohort%canopy_trim, 1, temp_cohort%crowndamage, temp_cohort%branch_frac, &
+            site_in%spread, bc_in)
 
        deallocate(temp_cohort) ! get rid of temporary cohort
 
