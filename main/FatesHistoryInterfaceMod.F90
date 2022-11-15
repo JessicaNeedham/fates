@@ -5599,13 +5599,13 @@ end subroutine update_history_hifrq
 
     call this%set_history_var(vname='FATES_TVEG24', units='degree_Celsius', &
          long='fates 24-hr running mean vegetation temperature by site', &
-         use_default='active', &
+         use_default='inactive', &
          avgflag='A', vtype=site_r8, hlms='CLM:ALM', upfreq=1, &
          ivar=ivar, initialize=initialize_variables, index = ih_tveg24_si )
 
     call this%set_history_var(vname='FATES_TVEG', units='degree_Celsius', &
          long='fates instantaneous mean vegetation temperature by site', &
-         use_default='active', &
+         use_default='inactive', &
          avgflag='A', vtype=site_r8, hlms='CLM:ALM', upfreq=2, &
          ivar=ivar, initialize=initialize_variables, index = ih_tveg_si )
 
