@@ -2869,7 +2869,7 @@ contains
           write(fates_log(),*) 'disabling the endrun statement following this message.'
           write(fates_log(),*) 'FATES may or may not continue to operate within error'
           write(fates_log(),*) 'tolerances, but will generate another fail if it does not.' 
-          call endrun(msg=errMsg(sourcefile, __LINE__))
+!          call endrun(msg=errMsg(sourcefile, __LINE__))
           
           ! Note to user. If you DO decide to remove the end-run above this line
           ! Make sure that you keep the pointer below this line, or you will get
