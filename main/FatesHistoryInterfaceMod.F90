@@ -647,6 +647,8 @@ module FatesHistoryInterfaceMod
   integer :: ih_fabi_sha_si_cnlfpft
   integer :: ih_parprof_dir_si_cnlfpft
   integer :: ih_parprof_dif_si_cnlfpft
+  integer :: ih_ts_net_uptake_si_cnlfpft
+  
 
   ! indices to site x crown damage variables
   ! site x crown damage x pft x sizeclass
@@ -3947,6 +3949,7 @@ end subroutine flush_hvars
                hio_parsun_z_si_cnlf     => this%hvars(ih_parsun_z_si_cnlf)%r82d, &
                hio_parsha_z_si_cnlf     => this%hvars(ih_parsha_z_si_cnlf)%r82d, &
                hio_ts_net_uptake_si_cnlf => this%hvars(ih_ts_net_uptake_si_cnlf)%r82d, &
+               hio_ts_net_uptake_si_cnlfpft => this%hvars(ih_ts_net_uptake_si_cnlfpft)%r82d, &
                hio_parsun_z_si_cnlfpft  => this%hvars(ih_parsun_z_si_cnlfpft)%r82d, &
                hio_parsha_z_si_cnlfpft  => this%hvars(ih_parsha_z_si_cnlfpft)%r82d, &
                hio_laisun_z_si_cnlf     => this%hvars(ih_laisun_z_si_cnlf)%r82d, &
@@ -4170,6 +4173,14 @@ end subroutine flush_hvars
                   cnlf_indx = ileaf + (ican-1) * nlevleaf
                   hio_ts_net_uptake_si_cnlf(io_si, cnlf_indx) = hio_ts_net_uptake_si_cnlf(io_si, cnlf_indx) + &
                        ccohort%ts_net_uptake(ileaf) * per_dt_tstep * ccohort%c_area * area_inv
+           
+                  do ipft=1,numpft
+                     ! calculate where we are on multiplexed dimensions
+                     cnlfpft_indx = ileaf + (ican-1) * nlevleaf + (ipft-1) * nlevleaf * nclmax
+                     hio_ts_net_uptake_si_cnlfpft(io_si, cnlfpft_indx) = &
+                          hio_ts_net_uptake_si_cnlfpft(io_si, cnlfpft_indx) + &
+                          ccohort%ts_net_uptake(ileaf) * per_dt_tstep * ccohort%c_area * area_inv
+                  end do
                end do
 
                ccohort => ccohort%taller
@@ -4207,6 +4218,8 @@ end subroutine flush_hvars
                           cpatch%parprof_pft_dir_z(ican,ipft,ileaf) * cpatch%area * AREA_INV
                      hio_parprof_dif_si_cnlfpft(io_si,cnlfpft_indx) = hio_parprof_dif_si_cnlfpft(io_si,cnlfpft_indx) + &
                           cpatch%parprof_pft_dif_z(ican,ipft,ileaf) * cpatch%area * AREA_INV
+                     !
+                    
                      !
                      ! summarize across all PFTs
                      hio_parsun_z_si_cnlf(io_si,cnlf_indx) = hio_parsun_z_si_cnlf(io_si,cnlf_indx) + &
@@ -5555,13 +5568,13 @@ end subroutine update_history_hifrq
 
     call this%set_history_var(vname='FATES_TVEG24', units='degree_Celsius', &
          long='fates 24-hr running mean vegetation temperature by site', &
-         use_default='active', &
+         use_default='inactive', &
          avgflag='A', vtype=site_r8, hlms='CLM:ALM', upfreq=1, &
          ivar=ivar, initialize=initialize_variables, index = ih_tveg24_si )
 
     call this%set_history_var(vname='FATES_TVEG', units='degree_Celsius', &
          long='fates instantaneous mean vegetation temperature by site', &
-         use_default='active', &
+         use_default='inactive', &
          avgflag='A', vtype=site_r8, hlms='CLM:ALM', upfreq=2, &
          ivar=ivar, initialize=initialize_variables, index = ih_tveg_si )
 
@@ -5836,6 +5849,14 @@ end subroutine update_history_hifrq
          use_default='inactive', avgflag='A', vtype=site_cnlf_r8,              &
          hlms='CLM:ALM', upfreq=2, ivar=ivar, initialize=initialize_variables, &
          index = ih_ts_net_uptake_si_cnlf)
+
+    call this%set_history_var(vname='FATES_NET_C_UPTAKE_CLLLPF',                 &
+         units='kg m-2 s-1',                                                   &
+         long='net carbon uptake in kg carbon per m2 per second by each canopy and leaf layer and PFT per unit ground area (i.e. divide by CROWNAREA_CLLL to make per leaf area)', &
+         use_default='inactive', avgflag='A', vtype=site_cnlfpft_r8,              &
+         hlms='CLM:ALM', upfreq=2, ivar=ivar, initialize=initialize_variables, &
+         index = ih_ts_net_uptake_si_cnlfpft)
+
 
     call this%set_history_var(vname='FATES_CROWNAREA_CLLL', units='m2 m-2',    &
          long='total crown area that is occupied by leaves in each canopy and leaf layer', &
