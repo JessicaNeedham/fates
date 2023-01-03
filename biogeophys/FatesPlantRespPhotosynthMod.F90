@@ -2062,6 +2062,8 @@ subroutine LeafLayerMaintenanceRespiration_Atkin_etal_2017(lnc_top, &
    ! Locals
    real(r8) :: lmr25   ! leaf layer: leaf maintenance respiration rate at 25C (umol CO2/m**2/s)
    real(r8) :: r_0     ! base respiration rate, PFT-dependent (umol CO2/m**2/s)
+   real(r8) :: r_1     ! N sensitivy of respiration rate, PFT-dependent (umol CO2/m**2/s / (gN/(m2 leaf)))
+   real(r8) :: r_2     ! temp sensitiviy of respiration rate, PFT-dependent (umol CO2/m**2/s/degree C)
    real(r8) :: r_t_ref ! acclimated ref respiration rate (umol CO2/m**2/s)
    real(r8) :: lnc     ! Leaf nitrogen content per unit area at this level [gN/m2] 
    real(r8) :: lmr25top  ! canopy top leaf maint resp rate at 25C for this pft (umol CO2/m**2/s)
@@ -2072,8 +2074,8 @@ subroutine LeafLayerMaintenanceRespiration_Atkin_etal_2017(lnc_top, &
    real(r8), parameter :: b = 0.1012_r8       ! (degrees C**-1)
    real(r8), parameter :: c = -0.0005_r8      ! (degrees C**-2)
    real(r8), parameter :: TrefC = 25._r8      ! (degrees C)
-   real(r8), parameter :: r_1 = 0.2061_r8     ! (umol CO2/m**2/s / (gN/(m2 leaf))) 
-   real(r8), parameter :: r_2 = -0.0402_r8    ! (umol CO2/m**2/s/degree C)
+   !real(r8), parameter :: r_1 = 0.2061_r8     ! (umol CO2/m**2/s / (gN/(m2 leaf))) 
+   !real(r8), parameter :: r_2 = -0.0402_r8    ! (umol CO2/m**2/s/degree C)
 
    ! parameter values of r_0 as listed in Atkin et al 2017: (umol CO2/m**2/s) 
    ! Broad-leaved trees  1.7560
@@ -2087,7 +2089,10 @@ subroutine LeafLayerMaintenanceRespiration_Atkin_etal_2017(lnc_top, &
 
       ! r_0 currently put into the EDPftvarcon_inst%dev_arbitrary_pft
       ! all figs in Atkin et al 2017 stop at zero Celsius so we will assume acclimation is fixed below that
-      r_0 = EDPftvarcon_inst%dev_arbitrary_pft(ft)
+      r_0 = EDPftvarcon_inst%maintresp_atkin2017_baserate(ft)
+      r_1 = EDPftvarcon_inst%maintresp_atkin2017_Nscalar(ft)
+      r_2 = EDPftvarcon_inst%maintresp_atkin2017_tscalar(ft)
+
       r_t_ref = r_0 + r_1 * lnc + r_2 * max(0._r8, (tgrowth - tfrz) )
 
       lmr = r_t_ref * exp(b * (veg_tempk - tfrz - TrefC) + c * ((veg_tempk-tfrz)**2 - TrefC**2))

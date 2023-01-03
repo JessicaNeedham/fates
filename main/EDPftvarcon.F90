@@ -142,6 +142,12 @@ module EDPftvarcon
      ! Nutrient Aquisition (ECA & RD)
 
 
+     ! Respiration Parameters
+     
+     real(r8), allocatable :: maintresp_atkin2017_baserate(:)
+     real(r8), allocatable :: maintresp_atkin2017_Nscalar(:)
+     real(r8), allocatable :: maintresp_atkin2017_tscalar(:)
+
      !real(r8), allocatable :: rd_vmax_n(:)             ! maximum production rate for plant n uptake   [gN/gC/s]
      real(r8), allocatable :: decompmicc(:)             ! microbial decomposer biomass gC/m3
                                                         ! on root surface
@@ -451,6 +457,18 @@ contains
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
 
     name = 'fates_damage_recovery_scalar'
+    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
+         dimension_names=dim_names, lower_bounds=dim_lower_bound)
+
+    name = 'fates_maintresp_atkin2017_baserate'
+    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
+         dimension_names=dim_names, lower_bounds=dim_lower_bound)
+
+    name = 'fates_maintresp_atkin2017_Nscalar'
+    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
+         dimension_names=dim_names, lower_bounds=dim_lower_bound)
+
+    name = 'fates_maintresp_atkin2017_tscalar'
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
 
@@ -802,6 +820,18 @@ contains
     name = 'fates_damage_recovery_scalar'
     call fates_params%RetrieveParameterAllocate(name=name, &
          data=this%damage_recovery_scalar)
+
+    name = 'fates_maintresp_atkin2017_baserate'
+    call fates_params%RetrieveParameterAllocate(name=name, &
+         data=this%maintresp_atkin2017_baserate)
+    
+    name = 'fates_maintresp_atkin2017_Nscalar'
+    call fates_params%RetrieveParameterAllocate(name=name, &
+         data=this%maintresp_atkin2017_Nscalar)
+    
+    name = 'fates_maintresp_atkin2017_tscalar'
+    call fates_params%RetrieveParameterAllocate(name=name, &
+         data=this%maintresp_atkin2017_tscalar)
 
     name = 'fates_fire_alpha_SH'
     call fates_params%RetrieveParameterAllocate(name=name, &
