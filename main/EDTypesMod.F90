@@ -326,6 +326,8 @@ module EDTypesMod
                                                          ! It may be possible to not respire at desired rate
                                                          ! because of low carbon stores, and thus build
                                                          ! up a deficit. This tracks that deficit. kgC/indiv
+     real(r8) ::  resp_m_unreduced                       ! Diagnostic-only unreduced maintenance respiration:  kgC/indiv/timestep 
+     real(r8) ::  resp_excess                            ! Respiration of excess carbon kgC/indiv/day
      real(r8) ::  livestem_mr                            ! Live stem        maintenance respiration: kgC/indiv/s
                                                          ! (Above ground)
      real(r8) ::  livecroot_mr                           ! Live stem        maintenance respiration: kgC/indiv/s

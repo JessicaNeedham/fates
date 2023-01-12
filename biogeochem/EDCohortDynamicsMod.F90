@@ -587,6 +587,8 @@ contains
     currentCohort%rdark              = nan
     currentCohort%resp_m             = nan ! Maintenance respiration.  kGC/cohort/year
     currentCohort%resp_m_def         = nan ! Maintenance respiration deficit kgC/plant
+    currentCohort%resp_m_unreduced   = nan ! Diagnostic-only unreduced Maintenance respiration.  kGC/cohort/year
+    currentCohort%resp_excess        = nan ! Respiration of excess (unallocatable) carbon (kg/indiv/day)
     currentCohort%livestem_mr        = nan ! Live stem maintenance respiration. kgC/indiv/s-1
     currentCohort%livecroot_mr       = nan ! Coarse root maintenance respiration. kgC/indiv/s-1
     currentCohort%froot_mr           = nan ! Fine root maintenance respiration. kgC/indiv/s-1
@@ -644,6 +646,8 @@ contains
     currentCohort%rdark              = 0._r8
     currentCohort%resp_m             = 0._r8
     currentCohort%resp_m_def         = 0._r8
+    currentCohort%resp_m_unreduced   = 0._r8
+    currentCohort%resp_excess         = 0._r8
     currentCohort%resp_g_tstep       = 0._r8
     currentCohort%livestem_mr        = 0._r8
     currentCohort%livecroot_mr       = 0._r8
@@ -1882,6 +1886,8 @@ contains
     n%rdark           = o%rdark
     n%resp_m          = o%resp_m
     n%resp_m_def      = o%resp_m_def
+    n%resp_m_unreduced= o%resp_m_unreduced
+    n%resp_excess     = o%resp_excess
     n%resp_g_tstep    = o%resp_g_tstep
     n%livestem_mr     = o%livestem_mr
     n%livecroot_mr    = o%livecroot_mr

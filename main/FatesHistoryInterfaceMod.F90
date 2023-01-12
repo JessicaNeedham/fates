@@ -281,6 +281,7 @@ module FatesHistoryInterfaceMod
   integer :: ih_gpp_understory_si
   integer :: ih_canopy_biomass_si
   integer :: ih_understory_biomass_si
+  integer :: ih_maint_resp_unreduced_si
 
   integer :: ih_primaryland_fusion_error_si
   integer :: ih_disturbance_rate_p2p_si
@@ -4035,6 +4036,7 @@ end subroutine flush_hvars
                hio_fabi_sha_top_si_can  => this%hvars(ih_fabi_sha_top_si_can)%r82d, &
                hio_parsun_top_si_can     => this%hvars(ih_parsun_top_si_can)%r82d, &
                hio_parsha_top_si_can     => this%hvars(ih_parsha_top_si_can)%r82d, &
+               hio_maint_resp_unreduced_si  => this%hvars(ih_maint_resp_unreduced_si)%r81d, &
                hio_tveg   => this%hvars(ih_tveg_si)%r81d)
 
       ! Flush the relevant history variables
@@ -4124,6 +4126,9 @@ end subroutine flush_hvars
                         resp_g * n_perm2 * per_dt_tstep
                   hio_maint_resp_si(io_si) = hio_maint_resp_si(io_si) + &
                         ccohort%resp_m * n_perm2 * per_dt_tstep
+
+                  hio_maint_resp_unreduced_si(io_si) = hio_maint_resp_unreduced_si(io_si) + &
+                        ccohort%resp_m_unreduced * n_perm2 * per_dt_tstep
 
                   ! Add up the total Net Ecosystem Production
                   ! for this timestep.  [kgC/m2/s]
@@ -5680,6 +5685,18 @@ end subroutine update_history_hifrq
          upfreq=2, ivar=ivar, initialize=initialize_variables,                 &
          index = ih_maint_resp_si)
 
+    call this%set_history_var(vname='FATES_MAINT_RESP_UNREDUCED', units='kg m-2 s-1',    &
+         long='diagnostic maintenance respiration if the low-carbon-storage reduction is ignored', &
+         use_default='active', avgflag='A', vtype=site_r8, hlms='CLM:ALM',     &
+         upfreq=2, ivar=ivar, initialize=initialize_variables,                 &
+         index = ih_maint_resp_unreduced_si)
+
+    call this%set_history_var(vname='FATES_EXCESS_RESP', units='kg m-2 s-1',    &
+         long='respiration of un-allocatable carbon gain', &
+         use_default='active', avgflag='A', vtype=site_r8, hlms='CLM:ALM',     &
+         upfreq=5, ivar=ivar, initialize=initialize_variables,                 &
+         index = ih_excess_resp_si)
+    
     ! Canopy resistance
 
     call this%set_history_var(vname='FATES_STOMATAL_COND_AP',                  &
