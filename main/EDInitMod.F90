@@ -172,7 +172,7 @@ contains
     allocate(site_in%dz_soil(site_in%nlevsoil))
     allocate(site_in%z_soil(site_in%nlevsoil))
 
-    if (hlm_use_nocomp .eq. itrue) then
+    if (hlm_use_nocomp .eq. itrue .and. hlm_use_fixed_biogeog .eq. itrue) then
        allocate(site_in%area_pft(0:numpft))
     else  ! SP and nocomp require a bare-ground patch.
        allocate(site_in%area_pft(1:numpft))  
@@ -391,6 +391,7 @@ contains
           sites(s)%acc_NI     = acc_NI
           sites(s)%NF         = 0.0_r8
           sites(s)%NF_successful  = 0.0_r8
+          sites(s)%area_pft(:) = 0.0_r8
 
           if(hlm_use_fixed_biogeog.eq.itrue)then
              ! MAPPING OF FATES PFTs on to HLM_PFTs
@@ -398,7 +399,6 @@ contains
              ! where pft_areafrac is the area of land in each HLM PFT and (from surface dataset)
              ! hlm_pft_map is the area of that land in each FATES PFT (from param file)
 
-             sites(s)%area_pft(1:numpft) = 0._r8
              do hlm_pft = 1,size( EDPftvarcon_inst%hlm_pft_map,2)
                 do fates_pft = 1,numpft ! loop round all fates pfts for all hlm pfts
                    sites(s)%area_pft(fates_pft) = sites(s)%area_pft(fates_pft) + &
@@ -452,8 +452,6 @@ contains
 
                 if(sumarea.lt.area)then !make some bare ground
                    sites(s)%area_pft(0) = area - sumarea
-                else
-                   sites(s)%area_pft(0) = 0.0_r8
                 end if
              end if !sp mode
           end if !fixed biogeog
