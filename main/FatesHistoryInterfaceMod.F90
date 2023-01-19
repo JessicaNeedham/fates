@@ -51,6 +51,7 @@ module FatesHistoryInterfaceMod
   use FatesInterfaceTypesMod        , only : hlm_model_day
   use FatesInterfaceTypesMod        , only : nlevcoage
   use FatesInterfaceTypesMod        , only : hlm_use_nocomp
+  use FatesInterfaceTypesMod        , only : hlm_use_fixed_biogeog
   use FatesAllometryMod             , only : CrownDepth
 
   use EDPftvarcon              , only : EDPftvarcon_inst
@@ -5632,7 +5633,7 @@ end subroutine update_history_hifrq
 
     call this%set_history_var(vname='FATES_TVEG24', units='degree_Celsius', &
          long='fates 24-hr running mean vegetation temperature by site', &
-         use_default='inactive', &
+         use_default='active', &
          avgflag='A', vtype=site_r8, hlms='CLM:ALM', upfreq=1, &
          ivar=ivar, initialize=initialize_variables, index = ih_tveg24_si )
 
@@ -5644,7 +5645,7 @@ end subroutine update_history_hifrq
 
     call this%set_history_var(vname='FATES_TVEG', units='degree_Celsius', &
          long='fates instantaneous mean vegetation temperature by site', &
-         use_default='inactive', &
+         use_default='active', &
          avgflag='A', vtype=site_r8, hlms='CLM:ALM', upfreq=2, &
          ivar=ivar, initialize=initialize_variables, index = ih_tveg_si )
 
@@ -5691,11 +5692,11 @@ end subroutine update_history_hifrq
          upfreq=2, ivar=ivar, initialize=initialize_variables,                 &
          index = ih_maint_resp_unreduced_si)
 
-    call this%set_history_var(vname='FATES_EXCESS_RESP', units='kg m-2 s-1',    &
-         long='respiration of un-allocatable carbon gain', &
-         use_default='active', avgflag='A', vtype=site_r8, hlms='CLM:ALM',     &
-         upfreq=5, ivar=ivar, initialize=initialize_variables,                 &
-         index = ih_excess_resp_si)
+    ! call this%set_history_var(vname='FATES_EXCESS_RESP', units='kg m-2 s-1',    &
+    !      long='respiration of un-allocatable carbon gain', &
+    !      use_default='active', avgflag='A', vtype=site_r8, hlms='CLM:ALM',     &
+    !      upfreq=5, ivar=ivar, initialize=initialize_variables,                 &
+    !      index = ih_excess_resp_si)
     
     ! Canopy resistance
 
