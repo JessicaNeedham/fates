@@ -599,6 +599,8 @@ module FatesHistoryInterfaceMod
   integer :: ih_agesince_anthrodist_si_age
   integer :: ih_secondaryforest_area_si_age
   integer :: ih_area_burnt_si_age
+  integer :: ih_bdead_si_age
+  
   ! integer :: ih_fire_rate_of_spread_front_si_age
   integer :: ih_fire_intensity_si_age
   integer :: ih_fire_sum_fuel_si_age
@@ -2450,6 +2452,7 @@ end subroutine flush_hvars
                hio_agesince_anthrodist_si_age     => this%hvars(ih_agesince_anthrodist_si_age)%r82d, &
                hio_secondaryforest_area_si_age    => this%hvars(ih_secondaryforest_area_si_age)%r82d, &
                hio_area_burnt_si_age              => this%hvars(ih_area_burnt_si_age)%r82d, &
+               hio_bdead_si_age                   => this%hvars(ih_bdead_si_age)%r82d, & 
                ! hio_fire_rate_of_spread_front_si_age  => this%hvars(ih_fire_rate_of_spread_front_si_age)%r82d, &
                hio_fire_intensity_si_age          => this%hvars(ih_fire_intensity_si_age)%r82d, &
                hio_fire_sum_fuel_si_age           => this%hvars(ih_fire_sum_fuel_si_age)%r82d, &
@@ -2870,6 +2873,8 @@ end subroutine flush_hvars
                   hio_bdead_si(io_si) = hio_bdead_si(io_si)  + n_perm2 * struct_m
                   hio_balive_si(io_si) = hio_balive_si(io_si) + n_perm2 * alive_m
 
+                  hio_bdead(io_si, cpatch%age_class) = hio_bdead_si(io_si,cpatch%age_class) + n_perm2 * struct_m
+                  
                   hio_agb_si(io_si) = hio_agb_si(io_si) + n_perm2 *            &
                   ( leaf_m + (sapw_m + struct_m + store_m) * prt_params%allom_agb_frac(ccohort%pft) )
 
@@ -5733,6 +5738,12 @@ end subroutine update_history_hifrq
          use_default='active', avgflag='A', vtype=site_age_r8, hlms='CLM:ALM', &
          upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
          index = ih_area_burnt_si_age)
+
+    call this%set_history_var(vname='FATES_STRUCTC_AP', units='kg m-2',          &
+         long='structural biomass in kg carbon in each age bin per m2 land area',        &
+         use_default='active', avgflag='A', vtype=site_age_r8, hlms='CLM:ALM', &
+         upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
+         index = ih_bdead_si_age)
 
     call this%set_history_var(vname='FATES_FIRE_INTENSITY_BURNFRAC_AP',        &
          units='J m-1 s-1', &
