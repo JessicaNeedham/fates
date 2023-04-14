@@ -2915,6 +2915,7 @@ end subroutine flush_hvars
                        ccohort%treelai*ccohort%c_area * AREA_INV
 
                   ! JFN
+                  dbh = ccohort%dbh
                   hio_ba_si_pft(io_si,ft) = hio_ba_si_pft(io_si,ft) + &
                        0.25_r8*pi_const*((dbh/100.0_r8)**2.0_r8)*ccohort%n / m2_per_ha
 
