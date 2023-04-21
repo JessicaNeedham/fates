@@ -3910,11 +3910,14 @@ end subroutine flush_hvars
          hio_mortality_carbonflux_si_pft(io_si,i_pft) = hio_mortality_carbonflux_si_pft(io_si,i_pft) + &
               (sites(s)%fmort_carbonflux_canopy(i_pft) + &
               sites(s)%fmort_carbonflux_ustory(i_pft) + &
-              sites(s)%imort_carbonflux(i_pft) ) / g_per_kg  ! cdk
-   
+              sites(s)%imort_carbonflux(i_pft) ) / g_per_kg + & ! cdk
+              sites(s)%term_carbonflux_ustory(i_pft) * days_per_sec * ha_per_m2 + &
+              sites(s)%term_carbonflux_canopy(i_pft) * days_per_sec * ha_per_m2 ! jfn
+              
          hio_firemortality_carbonflux_si_pft(io_si,i_pft) = sites(s)%fmort_carbonflux_canopy(i_pft) / g_per_kg
       end do
 
+      
       ! add imort and fmort to aboveground woody mortality 
       do i_pft = 1, numpft
          do i_scls = 1,nlevsclass
