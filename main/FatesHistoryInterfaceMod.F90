@@ -3966,7 +3966,7 @@ end subroutine flush_hvars
       ! pass the recruitment rate as a flux to the history, and then reset the recruitment buffer
       do i_pft = 1, numpft
          hio_recruitment_si_pft(io_si,i_pft) = sites(s)%recruitment_rate(i_pft) * days_per_year / m2_per_ha
-         hio_recruitment_cflux_si_pft(io_si,i_pft) = sites(s)%recruitment_cflux(i_pft) * days_per_year / m2_per_ha
+         hio_recruitment_cflux_si_pft(io_si,i_pft) = sites(s)%recruitment_cflux(i_pft) * ha_per_m2 * days_per_sec
       end do
       sites(s)%recruitment_rate(:) = 0._r8
       sites(s)%recruitment_cflux(:) = 0._r8
