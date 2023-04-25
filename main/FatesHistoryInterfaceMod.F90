@@ -583,6 +583,13 @@ module FatesHistoryInterfaceMod
   integer :: ih_nocomp_pftnpatches_si_pft
   integer :: ih_nocomp_pftburnedarea_si_pft
 
+  ! recruit  carbon fluxes by organ (by pft)
+  integer :: ih_leaf_recruit_flux_si_pft
+  integer :: ih_fnrt_recruit_flux_si_pft
+  integer :: ih_sapw_recruit_flux_si_pft
+  integer :: ih_struct_recruit_flux_si_pft
+  integer :: ih_store_recruit_flux_si_pft
+  
   ! indices to (site x patch-age) variables
   integer :: ih_area_si_age
   integer :: ih_lai_si_age
@@ -2474,7 +2481,7 @@ end subroutine flush_hvars
                hio_mortality_understory_si_scag     => this%hvars(ih_mortality_understory_si_scag)%r82d, &
                hio_site_cstatus_si                  => this%hvars(ih_site_cstatus_si)%r81d, &
                hio_site_dstatus_si                  => this%hvars(ih_site_dstatus_si)%r81d )
-
+               
     ! Split up the associate statement as the nag compiler has a limit on line continuation  
     associate( hio_gdd_si                           => this%hvars(ih_gdd_si)%r81d, &
                hio_site_ncolddays_si                => this%hvars(ih_site_ncolddays_si)%r81d, &
@@ -2489,7 +2496,12 @@ end subroutine flush_hvars
                hio_meanliqvol_si                    => this%hvars(ih_meanliqvol_si)%r81d, &
                hio_cbal_err_fates_si                => this%hvars(ih_cbal_err_fates_si)%r81d, &
                hio_err_fates_si                     => this%hvars(ih_err_fates_si)%r82d, &
-               hio_lai_si                           => this%hvars(ih_lai_si)%r81d )
+               hio_lai_si                           => this%hvars(ih_lai_si)%r81d, &
+               hio_leaf_recruit_flux_si_pft         => this%hvars(ih_leaf_recruit_flux_si_pft, &
+               hio_fnrt_recruit_flux_si_pft         => this%hvars(ih_fnrt_recruit_flux_si_pft, &
+               hio_sapw_recruit_flux_si_pft         => this%hvars(ih_sapw_recruit_flux_si_pft, &
+               hio_struct_recruit_flux_si_pft         => this%hvars(ih_struct_recruit_flux_si_pft, &
+               hio_store_recruit_flux_si_pft         => this%hvars(ih_store_recruit_flux_si_pft )
 
    ! If we don't have dynamics turned on, we just abort these diagnostics
    if (hlm_use_ed_st3.eq.itrue) return
@@ -3628,6 +3640,18 @@ end subroutine flush_hvars
                   days_per_year / m2_per_ha
                ccohort%size_class_lasttimestep = 1
 
+               ! jfn - add organ recruit fluxes here - kg C m-2 sec-1 
+               hio_leaf_recruit_flux_si_pft(io_si,ft) = hio_leaf_recruit_flux_si_pft(io_si,ft) + &
+                    leaf_m * n_perm2 / days_per_year / sec_per_day
+               hio_sapw_recruit_flux_si_pft(io_si,ft) = hio_sapw_recruit_flux_si_pft(io_si,ft) + &
+                    sapw_m * n_perm2 / days_per_year / sec_per_day
+               hio_struct_recruit_flux_si_pft(io_si,ft) = hio_struct_recruit_flux_si_pft(io_si,ft) + &
+                    struct_m * n_perm2 / days_per_year / sec_per_day
+               hio_fnrt_recruit_flux_si_pft(io_si,ft) = hio_fnrt_recruit_flux_si_pft(io_si,ft) + &
+                    fnrt_m * n_perm2 / days_per_year / sec_per_day
+               hio_store_recruit_flux_si_pft(io_si,ft) = hio_store_recruit_flux_si_pft(io_si,ft) + &
+                    store_m * n_perm2 / days_per_year / sec_per_day
+               
             end if notnew
 
             ! resolve some canopy area profiles, both total and of occupied leaves
@@ -8107,6 +8131,36 @@ end subroutine update_history_hifrq
           use_default='active', avgflag='A', vtype=site_r8, hlms='CLM:ALM',    &
           upfreq=1, ivar=ivar, initialize=initialize_variables,                &
           index = ih_npp_stor_si)
+
+    call this%set_history_var(vname='FATES_LEAF_RECRUIT_FLUX_PF', units='kg m-2 s-1',   &
+         long='allocation to leaf tissues in recruits', &
+         use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM',    &
+         upfreq=1, ivar=ivar, initialize=initialize_variables,                &
+         index = ih_leaf_recruit_flux_si_pft)
+    
+    call this%set_history_var(vname='FATES_FNRT_RECRUIT_FLUX_PF', units='kg m-2 s-1',   &
+         long='allocation to fine root tissues in recruits', &
+         use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM',    &
+         upfreq=1, ivar=ivar, initialize=initialize_variables,                &
+         index = ih_fnrt_recruit_flux_si_pft)
+
+    call this%set_history_var(vname='FATES_SAPWOOD_RECRUIT_FLUX_PF', units='kg m-2 s-1',   &
+         long='allocation to sapwood tissues in recruits', &
+         use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM',    &
+         upfreq=1, ivar=ivar, initialize=initialize_variables,                &
+         index = ih_sapw_recruit_flux_si_pft)
+
+    call this%set_history_var(vname='FATES_STRUCT_RECRUIT_FLUX_PF', units='kg m-2 s-1',   &
+         long='allocation to structural tissues in recruits', &
+         use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM',    &
+         upfreq=1, ivar=ivar, initialize=initialize_variables,                &
+         index = ih_struct_recruit_flux_si_pft)
+
+    call this%set_history_var(vname='FATES_STORE_RECRUIT_FLUX_PF', units='kg m-2 s-1',   &
+         long='allocation to store tissues in recruits', &
+         use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM',    &
+         upfreq=1, ivar=ivar, initialize=initialize_variables,                &
+         index = ih_store_recruit_flux_si_pft)
 
 
     ! PLANT HYDRAULICS
