@@ -568,6 +568,7 @@ module FatesHistoryInterfaceMod
   integer :: ih_nindivs_si_pft
   integer :: ih_nindivs_sec_si_pft
   integer :: ih_recruitment_si_pft
+  integer :: ih_recruitment_cflux_si_pft
   integer :: ih_mortality_si_pft
   integer :: ih_mortality_carbonflux_si_pft
   integer :: ih_hydraulicmortality_carbonflux_si_pft
@@ -2236,6 +2237,7 @@ end subroutine flush_hvars
                hio_nindivs_si_pft      => this%hvars(ih_nindivs_si_pft)%r82d, &
                hio_nindivs_sec_si_pft  => this%hvars(ih_nindivs_sec_si_pft)%r82d, &
                hio_recruitment_si_pft  => this%hvars(ih_recruitment_si_pft)%r82d, &
+               hio_recruitment_cflux_si_pft => this%hvars(ih_recruitment_cflux_si_pft)%r82d, &
                hio_mortality_si_pft    => this%hvars(ih_mortality_si_pft)%r82d, &
                hio_mortality_carbonflux_si_pft  => this%hvars(ih_mortality_carbonflux_si_pft)%r82d, &
                hio_cstarvmortality_carbonflux_si_pft  => this%hvars(ih_cstarvmortality_carbonflux_si_pft)%r82d, &
@@ -3957,8 +3959,10 @@ end subroutine flush_hvars
       ! pass the recruitment rate as a flux to the history, and then reset the recruitment buffer
       do i_pft = 1, numpft
          hio_recruitment_si_pft(io_si,i_pft) = sites(s)%recruitment_rate(i_pft) * days_per_year / m2_per_ha
+         hio_recruitment_cflux_si_pft(io_si,i_pft) = sites(s)%recruitment_cflux(i_pft) 
       end do
       sites(s)%recruitment_rate(:) = 0._r8
+      sites(s)%recruitment_cflux(:) = 0._r8
 
       ! summarize all of the mortality fluxes by PFT
       do i_pft = 1, numpft
@@ -5512,6 +5516,13 @@ end subroutine update_history_hifrq
          use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM', &
          upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
          index=ih_recruitment_si_pft)
+
+    call this%set_history_var(vname='FATES_RECRUITMENT_CFLUX_PF',                    &
+         units='kg C m-2 s-1',                                                     &
+         long='PFT-level recruitment cflux in kgC m-2 s-1',  &
+         use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM', &
+         upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
+         index=ih_recruitment_cflux_si_pft)
 
     call this%set_history_var(vname='FATES_MORTALITY_PF', units='m-2 yr-1',    &
          long='PFT-level mortality rate in number of individuals per m2 land area per year', &

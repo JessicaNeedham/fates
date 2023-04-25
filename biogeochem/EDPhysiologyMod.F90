@@ -2282,7 +2282,11 @@ contains
              ! keep track of how many individuals were recruited for passing to history
              currentSite%recruitment_rate(ft) = currentSite%recruitment_rate(ft) + temp_cohort%n
 
-
+             ! jfn - m_repro is 0, units are kg C m-2 sec-1 
+             currentSite%recruitment_cflux(ft) = currentSite%recruitment_cflux(ft) + &
+                  temp_cohort%n * (m_struct + m_leaf + m_fnrt + m_sapw + m_store + m_repro) * &
+                  ha_per_m2 * days_per_sec 
+             
         endif any_recruits
        endif !use_this_pft
     enddo  !pft loop

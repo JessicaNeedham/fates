@@ -204,6 +204,7 @@ module FatesRestartInterfaceMod
   integer :: ir_seed_bank_sift
   integer :: ir_spread_si
   integer :: ir_recrate_sift
+  integer :: ir_reccflux_sift
   integer :: ir_use_this_pft_sift
   integer :: ir_area_pft_sift
   integer :: ir_fmortrate_cano_siscpf
@@ -1208,6 +1209,11 @@ contains
          units='indiv/ha/day', flushval = flushzero, &
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_recrate_sift)
 
+    call this%set_restart_var(vname='fates_reccflux', vtype=cohort_r8, &
+         long_name='fates diagnostics on recruitment', &
+         units='kgC/m2/sec', flushval = flushzero, &
+         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_reccflux_sift)
+
     call this%set_restart_var(vname='fates_use_this_pft', vtype=cohort_int, & !should this be cohort_int as above?
          long_name='in fixed biogeog mode, is pft in gridcell?', &
          units='0/1', flushval = flushone, &
@@ -1957,6 +1963,7 @@ contains
            rio_recl2fr_sipfcl          => this%rvars(ir_recl2fr_sipfcl)%r81d, &
            rio_vegtempmem_sitm         => this%rvars(ir_vegtempmem_sitm)%r81d, &
            rio_recrate_sift            => this%rvars(ir_recrate_sift)%r81d, &
+           rio_reccflux_sift           => this%rvars(ir_reccflux_sift)%r81d, &
            rio_use_this_pft_sift       => this%rvars(ir_use_this_pft_sift)%int1d, &
            rio_area_pft_sift           => this%rvars(ir_area_pft_sift)%r81d, &
            rio_fmortrate_cano_siscpf   => this%rvars(ir_fmortrate_cano_siscpf)%r81d, &
@@ -2035,6 +2042,7 @@ contains
           ! recruitment rate
           do i_pft = 1,numpft
              rio_recrate_sift(io_idx_co_1st+i_pft-1)   = sites(s)%recruitment_rate(i_pft)
+             rio_reccflux_sift(io_idx_co_1st+i_pft-1)   = sites(s)%recruitment_cflux(i_pft)
           end do
 
           do i_pft = 1,numpft
@@ -2859,6 +2867,7 @@ contains
           rio_watermem_siwm           => this%rvars(ir_watermem_siwm)%r81d, &
           rio_vegtempmem_sitm         => this%rvars(ir_vegtempmem_sitm)%r81d, &
           rio_recrate_sift            => this%rvars(ir_recrate_sift)%r81d, &
+          rio_reccflux_sift           => this%rvars(ir_reccflux_sift)%r81d, &
           rio_use_this_pft_sift       => this%rvars(ir_use_this_pft_sift)%int1d, &
           rio_area_pft_sift           => this%rvars(ir_area_pft_sift)%r81d,&
           rio_fmortrate_cano_siscpf   => this%rvars(ir_fmortrate_cano_siscpf)%r81d, &
@@ -2927,6 +2936,7 @@ contains
           ! read seed_bank info(site-level, but PFT-resolved)
           do i_pft = 1,numpft
              sites(s)%recruitment_rate(i_pft) = rio_recrate_sift(io_idx_co_1st+i_pft-1)
+             sites(s)%recruitment_cflux(i_pft) = rio_reccflux_sift(io_idx_co_1st+i_pft-1)
           enddo
 
           ! variables for fixed biogeography mode. These are currently used in restart even when this is off.
