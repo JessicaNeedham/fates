@@ -2493,17 +2493,17 @@ end subroutine flush_hvars
                hio_dleafoff_si                      => this%hvars(ih_dleafoff_si)%r81d, &
                hio_dleafon_si                       => this%hvars(ih_dleafon_si)%r81d, &
                hio_tveg24                           => this%hvars(ih_tveg24_si)%r81d, &
-               hio_tlongterm                           => this%hvars(ih_tlongterm_si)%r81d, &
+               hio_tlongterm                        => this%hvars(ih_tlongterm_si)%r81d, &
                hio_tgrowth                          => this%hvars(ih_tgrowth_si)%r81d, &
                hio_meanliqvol_si                    => this%hvars(ih_meanliqvol_si)%r81d, &
                hio_cbal_err_fates_si                => this%hvars(ih_cbal_err_fates_si)%r81d, &
                hio_err_fates_si                     => this%hvars(ih_err_fates_si)%r82d, &
                hio_lai_si                           => this%hvars(ih_lai_si)%r81d, &
-               hio_leaf_recruit_flux_si_pft         => this%hvars(ih_leaf_recruit_flux_si_pft, &
-               hio_fnrt_recruit_flux_si_pft         => this%hvars(ih_fnrt_recruit_flux_si_pft, &
-               hio_sapw_recruit_flux_si_pft         => this%hvars(ih_sapw_recruit_flux_si_pft, &
-               hio_struct_recruit_flux_si_pft         => this%hvars(ih_struct_recruit_flux_si_pft, &
-               hio_store_recruit_flux_si_pft         => this%hvars(ih_store_recruit_flux_si_pft )
+               hio_leaf_recruit_flux_si_pft         => this%hvars(ih_leaf_recruit_flux_si_pft)%r82d, &
+               hio_fnrt_recruit_flux_si_pft         => this%hvars(ih_fnrt_recruit_flux_si_pft)%r82d, &
+               hio_sapw_recruit_flux_si_pft         => this%hvars(ih_sapw_recruit_flux_si_pft)%r82d, &
+               hio_struct_recruit_flux_si_pft       => this%hvars(ih_struct_recruit_flux_si_pft)%r82d, &
+               hio_store_recruit_flux_si_pft        => this%hvars(ih_store_recruit_flux_si_pft)%r82d )
 
    ! If we don't have dynamics turned on, we just abort these diagnostics
    if (hlm_use_ed_st3.eq.itrue) return
@@ -3966,7 +3966,7 @@ end subroutine flush_hvars
       ! pass the recruitment rate as a flux to the history, and then reset the recruitment buffer
       do i_pft = 1, numpft
          hio_recruitment_si_pft(io_si,i_pft) = sites(s)%recruitment_rate(i_pft) * days_per_year / m2_per_ha
-         hio_recruitment_cflux_si_pft(io_si,i_pft) = sites(s)%recruitment_cflux(i_pft) 
+         hio_recruitment_cflux_si_pft(io_si,i_pft) = sites(s)%recruitment_cflux(i_pft) * days_per_year / m2_per_ha
       end do
       sites(s)%recruitment_rate(:) = 0._r8
       sites(s)%recruitment_cflux(:) = 0._r8
