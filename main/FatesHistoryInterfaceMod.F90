@@ -3642,7 +3642,14 @@ end subroutine flush_hvars
                   days_per_year / m2_per_ha
                ccohort%size_class_lasttimestep = 1
 
-               ! jfn - add organ recruit fluxes here - kg C m-2 sec-1 
+               ! jfn - add organ recruit fluxes here - kg C m-2 sec-1
+               ! recalculate mass terms - to make sure they are carbon
+               sapw_m   = ccohort%prt%GetState(sapw_organ, carbon12_element)
+               struct_m = ccohort%prt%GetState(struct_organ, carbon12_element)
+               leaf_m   = ccohort%prt%GetState(leaf_organ, carbon12_element)
+               fnrt_m   = ccohort%prt%GetState(fnrt_organ, carbon12_element)
+               store_m  = ccohort%prt%GetState(store_organ, carbon12_element)
+               
                hio_leaf_recruit_flux_si_pft(io_si,ft) = hio_leaf_recruit_flux_si_pft(io_si,ft) + &
                     leaf_m * n_perm2 / days_per_year / sec_per_day
                hio_sapw_recruit_flux_si_pft(io_si,ft) = hio_sapw_recruit_flux_si_pft(io_si,ft) + &
