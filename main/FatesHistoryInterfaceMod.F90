@@ -3651,15 +3651,15 @@ end subroutine flush_hvars
                store_m  = ccohort%prt%GetState(store_organ, carbon12_element)
                
                hio_leaf_recruit_flux_si_pft(io_si,ft) = hio_leaf_recruit_flux_si_pft(io_si,ft) + &
-                    leaf_m * n_perm2 / days_per_year / sec_per_day
+                    leaf_m * n_perm2 / sec_per_day
                hio_sapw_recruit_flux_si_pft(io_si,ft) = hio_sapw_recruit_flux_si_pft(io_si,ft) + &
-                    sapw_m * n_perm2 / days_per_year / sec_per_day
+                    sapw_m * n_perm2 / sec_per_day
                hio_struct_recruit_flux_si_pft(io_si,ft) = hio_struct_recruit_flux_si_pft(io_si,ft) + &
-                    struct_m * n_perm2 / days_per_year / sec_per_day
+                    struct_m * n_perm2 / sec_per_day
                hio_fnrt_recruit_flux_si_pft(io_si,ft) = hio_fnrt_recruit_flux_si_pft(io_si,ft) + &
-                    fnrt_m * n_perm2 / days_per_year / sec_per_day
+                    fnrt_m * n_perm2 / sec_per_day
                hio_store_recruit_flux_si_pft(io_si,ft) = hio_store_recruit_flux_si_pft(io_si,ft) + &
-                    store_m * n_perm2 / days_per_year / sec_per_day
+                    store_m * n_perm2 / sec_per_day
                
             end if notnew
 
