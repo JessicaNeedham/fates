@@ -95,7 +95,7 @@ module EDParamsMod
    integer, public :: n_uptake_mode
    integer, public :: p_uptake_mode
 
-   real(r8), parameter, public :: tsoil_thresh_hmort = -2.0_r8 ! Soil temperature threshold below which hydraulic failure mortality is off (non-hydro only)
+   real(r8), parameter, public :: soil_tfrz_thresh = -2.0_r8 ! Soil temperature threshold below which hydraulic failure mortality is off (non-hydro only) in degrees  C
    
    integer, parameter, public :: nclmax = 2                ! Maximum number of canopy layers
 
