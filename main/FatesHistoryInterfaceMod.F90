@@ -4938,7 +4938,7 @@ end subroutine flush_hvars
                   cnlfpft_indx = ileaf + (ican-1) * nlevleaf + (ipft-1) * nlevleaf * nclmax
                   hio_ts_net_uptake_si_cnlfpft(io_si, cnlfpft_indx) = &
                        hio_ts_net_uptake_si_cnlfpft(io_si, cnlfpft_indx) + &
-                       ccohort%ts_net_uptake(ileaf) * per_dt_tstep * ccohort%c_area * area_inv
+                       ccohort%ts_net_uptake(ileaf) * dt_tstep_inv * ccohort%c_area * area_inv
                end do
 
                ccohort => ccohort%taller
