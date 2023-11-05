@@ -712,6 +712,7 @@ module FatesHistoryInterfaceMod
   integer :: ih_parprof_dir_si_cnlfpft
   integer :: ih_parprof_dif_si_cnlfpft
   integer :: ih_crownfrac_clllpf
+  integer :: ih_ts_net_uptake_si_cnlfpft
   
   
   integer :: ih_fabd_sun_si_cnlfpft
@@ -2487,7 +2488,7 @@ end subroutine flush_hvars
                hio_cwd_ag_out_si_cwdsc              => this%hvars(ih_cwd_ag_out_si_cwdsc)%r82d, &
                hio_cwd_bg_out_si_cwdsc              => this%hvars(ih_cwd_bg_out_si_cwdsc)%r82d, &
                hio_crownarea_si_cnlf                => this%hvars(ih_crownarea_si_cnlf)%r82d, &
-               hio_crownarea_cl                 => this%hvars(ih_crownarea_cl)%r82d, &
+               hio_crownarea_cl                     => this%hvars(ih_crownarea_cl)%r82d, &
                hio_nplant_si_scag                   => this%hvars(ih_nplant_si_scag)%r82d, &
                hio_nplant_canopy_si_scag            => this%hvars(ih_nplant_canopy_si_scag)%r82d, &
                hio_nplant_understory_si_scag        => this%hvars(ih_nplant_understory_si_scag)%r82d, &
@@ -3678,7 +3679,7 @@ end subroutine flush_hvars
             do ileaf=1,ccohort%nv
                cnlf_indx = ileaf + (ican-1) * nlevleaf
                hio_crownarea_si_cnlf(io_si, cnlf_indx) = hio_crownarea_si_cnlf(io_si, cnlf_indx) + &
-                  ccohort%c_area / AREA
+                    ccohort%c_area / AREA
             end do
 
             ccohort => ccohort%taller
@@ -4762,6 +4763,7 @@ end subroutine flush_hvars
                hio_parsun_z_si_cnlf                => this%hvars(ih_parsun_z_si_cnlf)%r82d, &
                hio_parsha_z_si_cnlf                => this%hvars(ih_parsha_z_si_cnlf)%r82d, &
                hio_ts_net_uptake_si_cnlf           => this%hvars(ih_ts_net_uptake_si_cnlf)%r82d, &
+               hio_ts_net_uptake_si_cnlfpft        => this%hvars(ih_ts_net_uptake_si_cnlfpft)%r82d, &
                hio_parsun_z_si_cnlfpft             => this%hvars(ih_parsun_z_si_cnlfpft)%r82d, &
                hio_parsha_z_si_cnlfpft             => this%hvars(ih_parsha_z_si_cnlfpft)%r82d, &
                hio_laisun_z_si_cnlf                => this%hvars(ih_laisun_z_si_cnlf)%r82d, &
@@ -4932,6 +4934,11 @@ end subroutine flush_hvars
                   cnlf_indx = ileaf + (ican-1) * nlevleaf
                   hio_ts_net_uptake_si_cnlf(io_si, cnlf_indx) = hio_ts_net_uptake_si_cnlf(io_si, cnlf_indx) + &
                        ccohort%ts_net_uptake(ileaf) * dt_tstep_inv * ccohort%c_area * area_inv
+
+                  cnlfpft_indx = ileaf + (ican-1) * nlevleaf + (ipft-1) * nlevleaf * nclmax
+                  hio_ts_net_uptake_si_cnlfpft(io_si, cnlfpft_indx) = &
+                       hio_ts_net_uptake_si_cnlfpft(io_si, cnlfpft_indx) + &
+                       ccohort%ts_net_uptake(ileaf) * per_dt_tstep * ccohort%c_area * area_inv
                end do
 
                ccohort => ccohort%taller
@@ -7159,6 +7166,13 @@ end subroutine flush_hvars
             hlms='CLM:ALM', upfreq=upfreq_hifr_multi, ivar=ivar, initialize=initialize_variables, &
             index = ih_ts_net_uptake_si_cnlf)
 
+       call this%set_history_var(vname='FATES_NET_C_UPTAKE_CLLLPF',                 &
+         units='kg m-2 s-1',                                                   &
+         long='net carbon uptake in kg carbon per m2 per second by each canopy and leaf layer and PFT per unit ground area (i.e. divide by CROWNAREA_CLLLPF to make per leaf area)', &
+         use_default='inactive', avgflag='A', vtype=site_cnlfpft_r8,              &
+         hlms='CLM:ALM', upfreq=2, ivar=ivar, initialize=initialize_variables, &
+         index = ih_ts_net_uptake_si_cnlfpft)
+
        call this%set_history_var(vname='FATES_CROWNFRAC_CLLLPF', units='m2 m-2', &
             long='area fraction of the canopy footprint occupied by each canopy-leaf-pft layer', &
             use_default='inactive', avgflag='A', vtype=site_cnlfpft_r8,           &
@@ -7186,7 +7200,7 @@ end subroutine flush_hvars
         use_default='inactive', avgflag='A', vtype=site_cnlf_r8,              &
         hlms='CLM:ALM', upfreq=1, ivar=ivar, initialize=initialize_variables, &
         index = ih_crownarea_si_cnlf)
-   
+
    call this%set_history_var(vname='FATES_CROWNAREA_CL', units='m2 m-2',      &
             long='area fraction of the canopy footprint occupied by each canopy-leaf layer', use_default='active',   &
             avgflag='A', vtype=site_can_r8, hlms='CLM:ALM', upfreq=1,             &
