@@ -49,6 +49,9 @@ module FATESPlantRespPhotosynthMod
   use EDParamsMod,       only : maintresp_leaf_model
   use FatesConstantsMod, only : lmrmodel_ryan_1991
   use FatesConstantsMod, only : lmrmodel_atkin_etal_2017
+  use FatesConstantsMod, only : vertical_scaling_atkin
+  use FatesConstantsMod, only : vertical_scaling_lamour
+  use FatesConstantsMod, only : vertical_scaling_lloyd
   use PRTGenericMod,     only : prt_carbon_allom_hyp
   use PRTGenericMod,     only : prt_cnp_flex_allom_hyp
   use PRTGenericMod,     only : carbon12_element
@@ -594,6 +597,7 @@ contains
 
                                call LeafLayerMaintenanceRespiration_Atkin_etal_2017(lnc_top, &  ! in
                                     nscaler,                            &  ! in
+                                    cumulative_lai,                     &  ! in
                                     ft,                                 &  ! in
                                     bc_in(s)%t_veg_pa(ifp),             &  ! in
                                     bc_in(s)%dayl_factor_pa(ifp),       &  ! in
@@ -2235,13 +2239,14 @@ end subroutine LeafLayerMaintenanceRespiration_Ryan_1991
 ! ====================================================================================   
 
 subroutine LeafLayerMaintenanceRespiration_Atkin_etal_2017(lnc_top, &
-   nscaler,   &
-   ft,        &
-   veg_tempk, &
-   dayl_factor, &
-   tgrowth,   &
-   lmr)
-
+     nscaler,   &
+     cumulative_lai, &
+     ft,        &
+     veg_tempk, &
+     dayl_factor, &
+     tgrowth,   &
+     lmr)
+  
 
    use FatesConstantsMod, only : tfrz => t_water_freeze_k_1atm
    use FatesConstantsMod, only : umolC_to_kgC
@@ -2249,19 +2254,23 @@ subroutine LeafLayerMaintenanceRespiration_Atkin_etal_2017(lnc_top, &
    use EDPftvarcon      , only : EDPftvarcon_inst
 
    ! Arguments
-   real(r8), intent(in)  :: lnc_top      ! Leaf nitrogen content per unit area at canopy top [gN/m2]
-   integer,  intent(in)  :: ft           ! (plant) Functional Type Index
-   real(r8), intent(in)  :: nscaler      ! Scale for leaf nitrogen profile
-   real(r8), intent(in)  :: veg_tempk    ! vegetation temperature  (degrees K)
-   real(r8), intent(in) :: dayl_factor       ! daylength scaling factor (0-1)
-   real(r8), intent(in)  :: tgrowth      ! lagged vegetation temperature averaged over acclimation timescale (degrees K)
-   real(r8), intent(out) :: lmr          ! Leaf Maintenance Respiration  (umol CO2/m**2/s)
+   real(r8), intent(in)  :: lnc_top          ! Leaf nitrogen content per unit area at canopy top [gN/m2]
+   integer,  intent(in)  :: ft               ! (plant) Functional Type Index
+   real(r8), intent(in)  :: nscaler          ! Scale for leaf nitrogen profile
+   real(r8), intent(in)  :: cumulative_lai   ! cumulative lai above the current leaf layer
+   real(r8), intent(in)  :: veg_tempk        ! vegetation temperature  (degrees K)
+   real(r8), intent(in)  :: dayl_factor      ! daylength scaling factor (0-1)
+   real(r8), intent(in)  :: tgrowth          ! lagged vegetation temperature averaged over acclimation timescale (degrees K)
+   real(r8), intent(out) :: lmr              ! Leaf Maintenance Respiration  (umol CO2/m**2/s)
 
    ! Locals
    real(r8) :: lmr25   ! leaf layer: leaf maintenance respiration rate at 25C (umol CO2/m**2/s)
    real(r8) :: r_0     ! base respiration rate, PFT-dependent (umol CO2/m**2/s)
    real(r8) :: r_t_ref ! acclimated ref respiration rate (umol CO2/m**2/s)
    real(r8) :: lmr25top  ! canopy top leaf maint resp rate at 25C for this pft (umol CO2/m**2/s)
+   real(r8) :: lamour_slope ! slope of decrease in respiration with lai
+   real(r8) :: lnc       ! leaf nitrogen content - for use in  Atkin vertical scaling
+   real(r8) :: rdark_scaler ! scaler for respiration with vertical profile - for use in Lamour vertical scaling scheme
 
    ! Parameters
    ! values from Atkin et al., 2017 https://doi.org/10.1007/978-3-319-68703-2_6
@@ -2285,7 +2294,35 @@ subroutine LeafLayerMaintenanceRespiration_Atkin_etal_2017(lnc_top, &
    ! r_0 currently put into the EDPftvarcon_inst%dev_arbitrary_pft
    ! all figs in Atkin et al 2017 stop at zero Celsius so we will assume acclimation is fixed below that
    r_0 = EDPftvarcon_inst%maintresp_leaf_atkin2017_baserate(ft)
-   r_t_ref = nscaler * (r_0 + r_1 * lnc_top + r_2 * max(0._r8, (tgrowth - tfrz) ))
+   lamour_slope = EDPftvarcon_inst%maintresp_leaf_lamour2023_slope(ft)
+   
+   ! JFN 06/23 - Adding in some new nscalers to test vertical scaling of respiration through the canopy
+   ! kn = exp(0.00963_r8 * vcmax25top - 2.43_r8)
+   ! nscaler = exp(-kn * cumulative_lai)
+   
+   select case(maintresp_vert_scaling_model)
+
+   case (vertical_scaling_atkin)  ! negative exponential with offset - Atkin et al. 2017
+
+      lnc = lnc_top * nscaler
+      r_t_ref = ( r_0  + r_1 * lnc  + r_2 * max(0._r8, (tgrowth - tfrz) ) ) 
+
+   case (vertical_scaling_lamour) ! Linear - Lamour et al. 2023
+
+      rdark_scaler = 1.0_r8 + (lamour_slope * cumulative_lai)  
+      r_t_ref = rdark_scaler * (r_0 + r_1 * lnc_top + r_2 * max(0._r8, (tgrowth - tfrz) ))
+
+   case (vertical_scaling_lloyd) ! negative exponential - Lloyd et al. 2015
+
+      r_t_ref = nscaler * (r_0 + r_1 * lnc_top + r_2 * max(0._r8, (tgrowth - tfrz) )) 
+
+   case DEFAULT
+
+      write(fates_log(),*) 'You specified an unknown respiration vertical scaling scheme'
+      write(fates_log(),*) 'Aborting'
+      call endrun(msg=errMsg(sourcefile, __LINE__)) 
+
+   end select
 
    lmr = r_t_ref * exp(b * (veg_tempk - tfrz - TrefC) + c * ((veg_tempk-tfrz)**2 - TrefC**2))
 

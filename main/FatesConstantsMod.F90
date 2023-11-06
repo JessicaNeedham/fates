@@ -137,6 +137,11 @@ integer, parameter, public :: isemi_stress_decid = 2 ! If the PFT is stress (dro
   integer, parameter, public :: lmrmodel_ryan_1991         = 1
   integer, parameter, public :: lmrmodel_atkin_etal_2017   = 2
 
+  ! integer labels for specifying vertical scaling scheme for atkin respiration
+  integer, parameter, public :: vertical_scaling_lloyd        = 1
+  integer, parameter, public :: vertical_scaling_atkin        = 2
+  integer, parameter, public :: vertical_scaling_lamour       = 3
+
   ! Error Tolerances
 
   ! Allowable error in carbon allocations, should be applied to estimates
