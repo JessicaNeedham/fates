@@ -6663,42 +6663,42 @@ end subroutine flush_hvars
          ivar=ivar, initialize=initialize_variables, index = ih_rad_error_si)
 
     call this%set_history_var(vname='FATES_VIS_SOLVE_ERROR', units='-',          &
-         long='mean two-stream solver error for VIS', use_default='active',            &
+         long='mean two-stream solver error for VIS', use_default='inactive',            &
          avgflag='A', vtype=site_r8, hlms='CLM:ALM', upfreq=2,                 &
          ivar=ivar, initialize=initialize_variables, index = ih_vis_solve_err_si)
     
     call this%set_history_var(vname='FATES_NIR_SOLVE_ERROR', units='-',          &
-         long='mean two-stream solver error for NIR', use_default='active',            &
+         long='mean two-stream solver error for NIR', use_default='inactive',            &
          avgflag='A', vtype=site_r8, hlms='CLM:ALM', upfreq=2,                 &
          ivar=ivar, initialize=initialize_variables, index = ih_nir_solve_err_si)
     
     call this%set_history_var(vname='FATES_VIS_CONSV_ERROR', units='-',          &
-         long='mean two-stream conservation error for VIS', use_default='active',            &
+         long='mean two-stream conservation error for VIS', use_default='inactive',            &
          avgflag='A', vtype=site_r8, hlms='CLM:ALM', upfreq=2,                 &
          ivar=ivar, initialize=initialize_variables, index = ih_vis_consv_err_si)
 
     call this%set_history_var(vname='FATES_NIR_CONSV_ERROR', units='-',          &
-         long='mean two-stream conservation error for NIR', use_default='active',            &
+         long='mean two-stream conservation error for NIR', use_default='inactive',            &
          avgflag='A', vtype=site_r8, hlms='CLM:ALM', upfreq=2,                 &
          ivar=ivar, initialize=initialize_variables, index = ih_nir_consv_err_si)
 
     call this%set_history_var(vname='FATES_VIS_SOLVE_ERROR_AGE', units='-',          &
-         long='mean two-stream solver error for VIS by patch age', use_default='active',            &
+         long='mean two-stream solver error for VIS by patch age', use_default='inactive',            &
          avgflag='A', vtype=site_age_r8, hlms='CLM:ALM', upfreq=2,                 &
          ivar=ivar, initialize=initialize_variables, index = ih_vis_solve_err_age_si)
 
     call this%set_history_var(vname='FATES_NIR_SOLVE_ERROR_AGE', units='-',          &
-         long='mean two-stream solver error for NIR by patch age', use_default='active',            &
+         long='mean two-stream solver error for NIR by patch age', use_default='inactive',            &
          avgflag='A', vtype=site_age_r8, hlms='CLM:ALM', upfreq=2,                 &
          ivar=ivar, initialize=initialize_variables, index = ih_nir_solve_err_age_si)
 
     call this%set_history_var(vname='FATES_VIS_CONSV_ERROR_AGE', units='-',          &
-         long='mean two-stream conservation error for VIS by patch age', use_default='active',            &
+         long='mean two-stream conservation error for VIS by patch age', use_default='inactive',            &
          avgflag='A', vtype=site_age_r8, hlms='CLM:ALM', upfreq=2,                 &
          ivar=ivar, initialize=initialize_variables, index = ih_vis_consv_err_age_si)
     
     call this%set_history_var(vname='FATES_NIR_CONSV_ERROR_AGE', units='-',          &
-         long='mean two-stream conservation error for NIR by patch age', use_default='active',            &
+         long='mean two-stream conservation error for NIR by patch age', use_default='inactive',            &
          avgflag='A', vtype=site_age_r8, hlms='CLM:ALM', upfreq=2,                 &
          ivar=ivar, initialize=initialize_variables, index = ih_nir_consv_err_age_si)
     
