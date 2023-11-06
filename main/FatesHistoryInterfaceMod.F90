@@ -4930,6 +4930,7 @@ end subroutine flush_hvars
 
                !!! canopy leaf carbon balance
                ican = ccohort%canopy_layer
+               ipft = ccohort%pft
                do ileaf=1,ccohort%nv
                   cnlf_indx = ileaf + (ican-1) * nlevleaf
                   hio_ts_net_uptake_si_cnlf(io_si, cnlf_indx) = hio_ts_net_uptake_si_cnlf(io_si, cnlf_indx) + &
