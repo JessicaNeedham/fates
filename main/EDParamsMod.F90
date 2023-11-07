@@ -34,6 +34,8 @@ module EDParamsMod
                                                               ! T_home term in Kumarathunge parameterization [years]
    integer,protected, public :: maintresp_leaf_model  ! switch for choosing between leaf maintenance
                                                       ! respiration model. 1=Ryan (1991), 2=Atkin et al (2017)
+   integer,protected, public :: maintresp_vert_scaling_model ! switch for choosing between vertical scaling of leaf mr
+                                                             ! 1 = Lloyd (2010), 2 = Atkin (2017), 3 = Lamour (2023)
    real(r8),protected, public :: sdlng_emerg_h2o_timescale !Length of the window for the exponential moving
                                                                  !average of smp used to calculate seedling emergence
    real(r8),protected, public :: sdlng_mort_par_timescale !Length of the window for the exponential moving average 
@@ -162,6 +164,7 @@ integer, parameter, public :: maxpft = 16      ! maximum number of PFTs allowed
    character(len=param_string_length),parameter,public :: ED_name_photo_temp_acclim_thome_time = "fates_leaf_photo_temp_acclim_thome_time"
    character(len=param_string_length),parameter,public :: name_photo_tempsens_model = "fates_leaf_photo_tempsens_model"
    character(len=param_string_length),parameter,public :: name_maintresp_model = "fates_maintresp_leaf_model"
+   character(len=param_string_length),parameter,public :: name_maintresp_vert_scaling_model = "fates_maintresp_vert_scaling_model"
    character(len=param_string_length),parameter,public :: name_radiation_model = "fates_rad_model"
    character(len=param_string_length),parameter,public :: ED_name_hydr_htftype_node = "fates_hydro_htftype_node"
    character(len=param_string_length),parameter,public :: ED_name_mort_disturb_frac = "fates_mort_disturb_frac"
@@ -337,6 +340,7 @@ contains
     photo_temp_acclim_thome_time          = nan
     photo_tempsens_model                  = -9
     maintresp_leaf_model                  = -9
+    maintresp_vert_scaling_model          = -9
     radiation_model                       = -9
     fates_mortality_disturbance_fraction  = nan
     ED_val_comp_excln                     = nan
@@ -441,6 +445,9 @@ contains
          dimension_names=dim_names_scalar)
     
     call fates_params%RegisterParameter(name=name_maintresp_model,dimension_shape=dimension_shape_scalar, &
+         dimension_names=dim_names_scalar)
+
+    call fates_params%RegisterParameter(name=name_maintresp_vert_scaling_model,dimension_shape=dimension_shape_scalar, &
          dimension_names=dim_names_scalar)
     
     call fates_params%RegisterParameter(name=name_theta_cj_c3, dimension_shape=dimension_shape_scalar, &
@@ -663,6 +670,10 @@ contains
     call fates_params%RetrieveParameter(name=name_maintresp_model, &
          data=tmpreal)
     maintresp_leaf_model = nint(tmpreal)
+
+    call fates_params%RetrieveParameter(name=name_maintresp_vert_scaling_model, &
+         data=tmpreal)
+    maintresp_vert_scaling_model = nint(tmpreal)
     
     call fates_params%RetrieveParameter(name=ED_name_mort_disturb_frac, &
           data=fates_mortality_disturbance_fraction)
@@ -888,6 +899,7 @@ contains
         write(fates_log(),fmt0) 'ED_val_cwd_fcel = ',ED_val_cwd_fcel
         write(fates_log(),fmt0) 'ED_val_cwd_flig = ',ED_val_cwd_flig
         write(fates_log(),fmt0) 'fates_maintresp_nonleaf_baserate = ', maintresp_nonleaf_baserate
+        write(fates_log(),fmt0) 'fates_maintresp_vert_scaling_model = ', maintresp_vert_scaling_model
         write(fates_log(),fmt0) 'ED_val_phen_a = ',ED_val_phen_a
         write(fates_log(),fmt0) 'ED_val_phen_b = ',ED_val_phen_b
         write(fates_log(),fmt0) 'ED_val_phen_c = ',ED_val_phen_c

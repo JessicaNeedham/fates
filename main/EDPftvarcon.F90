@@ -91,7 +91,9 @@ module EDPftvarcon
                                                                    ! per Atkin et al 2017
 
      real(r8), allocatable :: maintresp_leaf_ryan1991_baserate(:)  ! leaf maintenance respiration per Ryan et al 1991
-
+     real(r8), allocatable :: maintresp_leaf_lamour2023_slope(:)   ! leaf maintenance respiraiton vertical scaling
+                                                                   ! slope of linear model
+     
      real(r8), allocatable :: bmort(:)
      real(r8), allocatable :: mort_ip_size_senescence(:) ! inflection point of dbh dependent senescence
      real(r8), allocatable :: mort_r_size_senescence(:)  ! rate of change in mortality with dbh
@@ -467,6 +469,10 @@ contains
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
         dimension_names=dim_names, lower_bounds=dim_lower_bound)
 
+    name = 'fates_maintresp_leaf_lamour2023_slope'
+    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
+        dimension_names=dim_names, lower_bounds=dim_lower_bound)
+    
     name = 'fates_prescribed_npp_canopy'
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
@@ -891,6 +897,10 @@ contains
     name = 'fates_maintresp_leaf_ryan1991_baserate'
     call fates_params%RetrieveParameterAllocate(name=name, &
          data=this%maintresp_leaf_ryan1991_baserate)
+
+    name = 'fates_maintresp_leaf_lamour2023_slope'
+    call fates_params%RetrieveParameterAllocate(name=name, &
+         data=this%maintresp_leaf_lamour2023_slope)
 
     name = 'fates_prescribed_npp_canopy'
     call fates_params%RetrieveParameterAllocate(name=name, &
