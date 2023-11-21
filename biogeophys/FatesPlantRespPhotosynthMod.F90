@@ -1920,15 +1920,6 @@ subroutine quadratic_f (a, b, c, r1, r2)
    else
       r2 = 1.e36_r8
    end if
-
-  if ( (b*b - 4._r8 *a*c)  < 0._r8 )  then
-      write(fates_log(),*) 'jfn a', a
-      write(fates_log(),*) 'jfn b',b
-      write(fates_log(),*) 'jfn c',c
-      write(fates_log(),*) 'jfn r1',r1
-      write(fates_log(),*) 'jfn r2',r2
-      write(fates_log(),*) 'jfn (b*b  - 4._r8 *a*c) ', (b*b - 4._r8*a*c)
-   end if
    
 end subroutine quadratic_f
 
