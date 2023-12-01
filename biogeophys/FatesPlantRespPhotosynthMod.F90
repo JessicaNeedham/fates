@@ -22,7 +22,7 @@ module FATESPlantRespPhotosynthMod
 
   use FatesGlobals,      only : endrun => fates_endrun
   use FatesGlobals,      only : fates_log
-  use FatesGlobals,      only : FatesWarn,N2S,A2S
+  use FatesGlobals,      only : FatesWarn,N2S,A2S,I2S
   use FatesConstantsMod, only : r8 => fates_r8
   use FatesConstantsMod, only : itrue
   use FatesConstantsMod, only : nearzero
@@ -435,7 +435,7 @@ contains
                       do iv = 1,currentCohort%nv
                          call VegAreaLayer(currentCohort%treelai, &
                               currentCohort%treesai,              &
-                              currentCohort%hite,                 &
+                              currentCohort%height,               &
                               iv,                                 &
                               currentCohort%nv,                   &
                               currentCohort%pft,                  &
@@ -1914,9 +1914,9 @@ subroutine quadratic_f (a, b, c, r1, r2)
    end if
 
    if (b >= 0._r8) then
-      q = -0.5_r8 * (b + sqrt(b*b - 4._r8*a*c))
+      q = -0.5_r8 * (b + max(0._r8, sqrt(b*b - 4._r8*a*c)))
    else
-      q = -0.5_r8 * (b - sqrt(b*b - 4._r8*a*c))
+      q = -0.5_r8 *  (b - max(0._r8, sqrt(b*b - 4._r8*a*c)))
    end if
 
    r1 = q / a
@@ -1925,7 +1925,7 @@ subroutine quadratic_f (a, b, c, r1, r2)
    else
       r2 = 1.e36_r8
    end if
-
+   
 end subroutine quadratic_f
 
 ! ====================================================================================
@@ -2252,6 +2252,11 @@ subroutine LeafLayerMaintenanceRespiration_Atkin_etal_2017(lnc_top, &
    use FatesConstantsMod, only : tfrz => t_water_freeze_k_1atm
    use FatesConstantsMod, only : umolC_to_kgC
    use FatesConstantsMod, only : g_per_kg
+   use FatesConstantsMod, only : lmr_b
+   use FatesConstantsMod, only : lmr_c
+   use FatesConstantsMod, only : lmr_TrefC
+   use FatesConstantsMod, only : lmr_r_1
+   use FatesConstantsMod, only : lmr_r_2
    use EDPftvarcon      , only : EDPftvarcon_inst
 
    ! Arguments
@@ -2272,15 +2277,6 @@ subroutine LeafLayerMaintenanceRespiration_Atkin_etal_2017(lnc_top, &
    real(r8) :: lamour_slope ! slope of decrease in respiration with lai
    real(r8) :: lnc       ! leaf nitrogen content - for use in  Atkin vertical scaling
    real(r8) :: rdark_scaler ! scaler for respiration with vertical profile - for use in Lamour vertical scaling scheme
-
-   ! Parameters
-   ! values from Atkin et al., 2017 https://doi.org/10.1007/978-3-319-68703-2_6
-   ! and Heskel et al., 2016 https://doi.org/10.1073/pnas.1520282113
-   real(r8), parameter :: b = 0.1012_r8       ! (degrees C**-1)
-   real(r8), parameter :: c = -0.0005_r8      ! (degrees C**-2)
-   real(r8), parameter :: TrefC = 25._r8      ! (degrees C)
-   real(r8), parameter :: r_1 = 0.2061_r8     ! (umol CO2/m**2/s / (gN/(m2 leaf))) 
-   real(r8), parameter :: r_2 = -0.0402_r8    ! (umol CO2/m**2/s/degree C)
 
    ! parameter values of r_0 as listed in Atkin et al 2017: (umol CO2/m**2/s) 
    ! Broad-leaved trees  1.7560
@@ -2306,16 +2302,21 @@ subroutine LeafLayerMaintenanceRespiration_Atkin_etal_2017(lnc_top, &
    case (vertical_scaling_atkin)  ! negative exponential with offset - Atkin et al. 2017
 
       lnc = lnc_top * nscaler
-      r_t_ref = ( r_0  + r_1 * lnc  + r_2 * max(0._r8, (tgrowth - tfrz) ) ) 
+      r_t_ref = max(0._r8, r_0  + lmr_r_1 * lnc  + lmr_r_2 * max(0._r8, (tgrowth - tfrz) ) ) 
 
    case (vertical_scaling_lamour) ! Linear - Lamour et al. 2023
 
       rdark_scaler = 1.0_r8 + (lamour_slope * cumulative_lai)  
-      r_t_ref = rdark_scaler * (r_0 + r_1 * lnc_top + r_2 * max(0._r8, (tgrowth - tfrz) ))
+      r_t_ref = rdark_scaler * (r_0 + lmr_r_1 * lnc_top + lmr_r_2 * max(0._r8, (tgrowth - tfrz) ))
 
    case (vertical_scaling_lloyd) ! negative exponential - Lloyd et al. 2015
 
-      r_t_ref = nscaler * (r_0 + r_1 * lnc_top + r_2 * max(0._r8, (tgrowth - tfrz) )) 
+      r_t_ref = max(0._r8, nscaler * (r_0 + lmr_r_1 * lnc_top + lmr_r_2 * max(0._r8, (tgrowth - tfrz) )) )
+
+      if (r_t_ref .eq. 0._r8) then
+         warn_msg = 'Rdark is negative at this temperature and is capped at 0. tgrowth (C): '//trim(N2S(tgrowth-tfrz))//' pft: '//trim(I2S(ft))
+         call FatesWarn(warn_msg,index=4)            
+      end if
 
    case DEFAULT
 
@@ -2325,7 +2326,8 @@ subroutine LeafLayerMaintenanceRespiration_Atkin_etal_2017(lnc_top, &
 
    end select
 
-   lmr = r_t_ref * exp(b * (veg_tempk - tfrz - TrefC) + c * ((veg_tempk-tfrz)**2 - TrefC**2))
+   lmr = r_t_ref * exp(lmr_b * (veg_tempk - tfrz - lmr_TrefC) + lmr_c * &
+        ((veg_tempk-tfrz)**2 - lmr_TrefC**2))
 
 end subroutine LeafLayerMaintenanceRespiration_Atkin_etal_2017
 
