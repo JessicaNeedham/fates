@@ -4922,9 +4922,9 @@ end subroutine flush_hvars
                   hio_ts_net_uptake_si_cnlf(io_si, cnlf_indx) = hio_ts_net_uptake_si_cnlf(io_si, cnlf_indx) + &
                        ccohort%ts_net_uptake(ileaf) * dt_tstep_inv * ccohort%c_area * area_inv
 
-                  cnlfpft_indx = ileaf + (ican-1) * nlevleaf + (ipft-1) * nlevleaf * nclmax
-                  hio_ts_net_uptake_si_cnlfpft(io_si, cnlfpft_indx) = &
-                       hio_ts_net_uptake_si_cnlfpft(io_si, cnlfpft_indx) + &
+                  clllpf_indx = ileaf + (ican-1) * nlevleaf + (ipft-1) * nlevleaf * nclmax
+                  hio_ts_net_uptake_si_cnlfpft(io_si, clllpf_indx) = &
+                       hio_ts_net_uptake_si_cnlfpft(io_si, clllpf_indx) + &
                        ccohort%ts_net_uptake(ileaf) * dt_tstep_inv * ccohort%c_area * area_inv
                end do
 
