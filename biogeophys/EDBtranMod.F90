@@ -12,7 +12,7 @@ module EDBtranMod
   use EDTypesMod        , only : ed_site_type
   use FatesPatchMod,      only : fates_patch_type
   use EDParamsMod,        only : maxpft
-  use EDParamsMod,        only :  soil_tfrz_thresh
+  use EDParamsMod,        only : soil_tfrz_thresh
   use FatesCohortMod,     only : fates_cohort_type
   use shr_kind_mod      , only : r8 => shr_kind_r8
   use FatesInterfaceTypesMod , only : bc_in_type, &
