@@ -35,7 +35,7 @@ module EDParamsMod
    integer,protected, public :: maintresp_leaf_model  ! switch for choosing between leaf maintenance
                                                       ! respiration model. 1=Ryan (1991), 2=Atkin et al (2017)
    integer,protected, public :: maintresp_vert_scaling_model ! switch for choosing between vertical scaling of leaf mr
-                                                             ! 1 = Lloyd (2010), 2 = Atkin (2017), 3 = Lamour (2023)
+                                                             ! 1 = Lloyd (2010), 2 = Atkin (2017), 3 = Lamour (2023), 4 = steeper version of Lloyd
    real(r8),protected, public :: sdlng_emerg_h2o_timescale !Length of the window for the exponential moving
                                                                  !average of smp used to calculate seedling emergence
    real(r8),protected, public :: sdlng_mort_par_timescale !Length of the window for the exponential moving average 
