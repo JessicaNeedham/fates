@@ -53,7 +53,7 @@ module FATESPlantRespPhotosynthMod
   use FatesConstantsMod, only : mr_vertical_scaling_1
   use FatesConstantsMod, only : mr_vertical_scaling_2
   use FatesConstantsMod, only : mr_vertical_scaling_3
-  use FatesConstatnsMod, only : mr_vertical_scaling_4
+  use FatesConstantsMod, only : mr_vertical_scaling_4
   use PRTGenericMod,     only : prt_carbon_allom_hyp
   use PRTGenericMod,     only : prt_cnp_flex_allom_hyp
   use PRTGenericMod,     only : carbon12_element
@@ -2303,6 +2303,9 @@ subroutine LeafLayerMaintenanceRespiration_Atkin_etal_2017(lnc_top, &
    real(r8) :: lnc       ! leaf nitrogen content - for use in  Atkin vertical scaling
    real(r8) :: rdark_scaler_linear ! linear vertical scaling of rkark
    real(r8) :: rdark_scaler_steep !  steep negative exponential  scaling of rdark
+   real(r8) :: kn
+   real(r8) :: rdark_decay  ! determines rate of rdark decay through canopy
+
    
    ! parameter values of r_0 as listed in Atkin et al 2017: (umol CO2/m**2/s) 
    ! Broad-leaved trees  1.7560
@@ -2318,6 +2321,7 @@ subroutine LeafLayerMaintenanceRespiration_Atkin_etal_2017(lnc_top, &
    ! all figs in Atkin et al 2017 stop at zero Celsius so we will assume acclimation is fixed below that
    r_0 = EDPftvarcon_inst%maintresp_leaf_atkin2017_baserate(ft)
    lamour_slope = EDPftvarcon_inst%maintresp_leaf_lamour2023_slope(ft)
+   rdark_decay = EDPftvarcon_inst%maintresp_leaf_decay(ft)
    
    ! JFN 06/23 - Adding in some new nscalers to test vertical scaling of respiration through the canopy
    ! kn = exp(0.00963_r8 * vcmax25top - 2.43_r8)
@@ -2338,15 +2342,15 @@ subroutine LeafLayerMaintenanceRespiration_Atkin_etal_2017(lnc_top, &
 
    case (mr_vertical_scaling_3) ! Linear - Lamour et al. 2023
 
-      rdark_scaler = 1.0_r8 + (lamour_slope * cumulative_lai)  
-      r_t_ref = rdark_scaler * (r_0 + lmr_r_1 * lnc_top + lmr_r_2 * max(0._r8, (tgrowth - tfrz) ))
+      rdark_scaler_linear = 1.0_r8 + (lamour_slope * cumulative_lai)  
+      r_t_ref = rdark_scaler_linear * (r_0 + lmr_r_1 * lnc_top + lmr_r_2 * max(0._r8, (tgrowth - tfrz) ))
 
    case (mr_vertical_scaling_4) ! negative exponential but steeper than Lloyd et al. 2015
 
-      kn = exp(0.00963_r8 * vcmax25top - 1.8225_r8)
-      nscaler_steep = exp(-kn * cumulative_lai)
+      kn = exp(0.00963_r8 * vcmax25top - rdark_decay)
+      rdark_scaler_steep = exp(-kn * cumulative_lai)
       
-      r_t_ref = max(0._r8, nscaler_steep * (r_0 + lmr_r_1 * lnc_top + lmr_r_2 * max(0._r8, (tgrowth - tfrz) )) )
+      r_t_ref = max(0._r8, rdark_scaler_steep * (r_0 + lmr_r_1 * lnc_top + lmr_r_2 * max(0._r8, (tgrowth - tfrz) )) )
 
    case DEFAULT
 
