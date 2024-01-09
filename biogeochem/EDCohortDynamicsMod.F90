@@ -447,6 +447,8 @@ end subroutine create_cohort
         endif
       endif    !  if (.not.currentCohort%isnew .and. level == 2) then
 
+      terminate = ifalse
+      
       if (terminate == itrue) then
          call terminate_cohort(currentSite, currentPatch, currentCohort, bc_in)
          deallocate(currentCohort, stat=istat, errmsg=smsg)
