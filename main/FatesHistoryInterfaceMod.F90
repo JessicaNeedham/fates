@@ -563,6 +563,7 @@ module FatesHistoryInterfaceMod
   integer :: ih_yesterdaycanopylevel_understory_si_scls
   
   ! indices to (site x pft) variables
+  integer :: ih_recruit_cflux_si_pft
   integer :: ih_biomass_si_pft
   integer :: ih_biomass_sec_si_pft
   integer :: ih_leafbiomass_si_pft
@@ -2243,6 +2244,7 @@ end subroutine flush_hvars
                hio_ba_weighted_height_si  => this%hvars(ih_ba_weighted_height_si)%r81d, &
                hio_ca_weighted_height_si  => this%hvars(ih_ca_weighted_height_si)%r81d, &
                hio_canopy_spread_si    => this%hvars(ih_canopy_spread_si)%r81d, &
+               hio_recruit_cflux_si_pft  => this%hvars(ih_recruit_cflux_si_pft)%r82d, &
                hio_biomass_si_pft      => this%hvars(ih_biomass_si_pft)%r82d, &
                hio_biomass_sec_si_pft  => this%hvars(ih_biomass_sec_si_pft)%r82d, &
                hio_leafbiomass_si_pft  => this%hvars(ih_leafbiomass_si_pft)%r82d, &
@@ -2961,13 +2963,18 @@ end subroutine flush_hvars
                      hio_nindivs_sec_si_pft(io_si,ft) = hio_nindivs_sec_si_pft(io_si,ft) + &
                         ccohort%n * AREA_INV
                   end if
-
+                  
                   hio_biomass_si_pft(io_si, ft) = hio_biomass_si_pft(io_si, ft) + &
-                     (ccohort%n * AREA_INV) * total_m
+                       (ccohort%n * AREA_INV) * total_m
+
+                  if(ccohort%isnew) then
+                     hio_recruit_cflux_si_pft(io_si, ft) = hio_recruit_cflux_si_pft(io_si, ft) + &
+                          (ccohort%n * AREA_INV) * total_m * days_per_year
+                  end if
 
                   if ( cpatch%anthro_disturbance_label .eq. secondaryforest ) then
                      hio_biomass_sec_si_pft(io_si, ft) = hio_biomass_sec_si_pft(io_si, ft) + &
-                        (ccohort%n * AREA_INV) * total_m
+                          (ccohort%n * AREA_INV) * total_m
                   end if
 
                   ! update total biomass per age bin
@@ -3864,7 +3871,6 @@ end subroutine flush_hvars
 
             hio_mortality_understory_si_scpf(io_si,i_scpf) = hio_mortality_understory_si_scpf(io_si,i_scpf) + &
                sites(s)%term_nindivs_ustory(i_scls,i_pft) * days_per_year / m2_per_ha
-
             !
             ! imort on its own
             hio_m4_si_scpf(io_si,i_scpf) = sites(s)%imort_rate(i_scls, i_pft) / m2_per_ha
@@ -3874,7 +3880,9 @@ end subroutine flush_hvars
             ! cohorts that may have been promoted as part of the patch creation, and use the pre-calculated site-level
             ! values to avoid biasing the results by the dramatically-reduced number densities in cohorts that are subject to imort
             hio_mortality_understory_si_scpf(io_si,i_scpf) = hio_mortality_understory_si_scpf(io_si,i_scpf) + &
-               sites(s)%imort_rate(i_scls, i_pft) / m2_per_ha
+                 sites(s)%imort_rate(i_scls, i_pft) / m2_per_ha
+
+            
             hio_mortality_understory_si_scls(io_si,i_scls) = hio_mortality_understory_si_scls(io_si,i_scls) + &
                sites(s)%imort_rate(i_scls, i_pft) / m2_per_ha
             !
@@ -3909,6 +3917,7 @@ end subroutine flush_hvars
             hio_mortality_understory_si_scpf(io_si,i_scpf) = hio_mortality_understory_si_scpf(io_si,i_scpf) + &
                sites(s)%fmort_rate_ustory(i_scls, i_pft) / m2_per_ha
 
+            
             hio_mortality_understory_si_scls(io_si,i_scls) = hio_mortality_understory_si_scls(io_si,i_scls) + &
                sites(s)%fmort_rate_ustory(i_scls, i_pft) / m2_per_ha
 
@@ -5500,9 +5509,15 @@ end subroutine update_history_hifrq
 
     call this%set_history_var(vname='FATES_VEGC_PF', units='kg m-2',           &
          long='total PFT-level biomass in kg of carbon per land area',         &
-         use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM', &
+         use_default='active', avgflag='I', vtype=site_pft_r8, hlms='CLM:ALM', &
          upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
          index=ih_biomass_si_pft)
+
+    call this%set_history_var(vname='FATES_RECRUIT_CFLUX_PF', units='kg m-2',  &
+         long='total PFT-level biomass of new recruits in kg of carbon per land area',         &
+         use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM', &
+         upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
+         index=ih_recruit_cflux_si_pft)
 
     call this%set_history_var(vname='FATES_VEGC_SE_PF', units='kg m-2',           &
          long='total PFT-level biomass in kg of carbon per land area, secondary patches',         &
@@ -7140,7 +7155,7 @@ end subroutine update_history_hifrq
 
     call this%set_history_var(vname='FATES_NPLANT_SZPF', units = 'm-2',        &
           long='stem number density by pft/size', use_default='inactive',      &
-          avgflag='A', vtype=site_size_pft_r8, hlms='CLM:ALM',                 &
+          avgflag='I', vtype=site_size_pft_r8, hlms='CLM:ALM',                 &
           upfreq=1, ivar=ivar, initialize=initialize_variables,                &
           index = ih_nplant_si_scpf)
 
