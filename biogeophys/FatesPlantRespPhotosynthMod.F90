@@ -591,8 +591,10 @@ contains
 
                                  case (lmrmodel_atkin_etal_2017)
 
+
                                     call LeafLayerMaintenanceRespiration_Atkin_etal_2017(lnc_top, &  ! in
-                                         nscaler,                            &  ! in
+                                         cumulative_lai,                     &  ! in
+                                         currentCohort%vcmax25top,           &  ! in
                                          ft,                                 &  ! in
                                          bc_in(s)%t_veg_pa(ifp),             &  ! in
                                          currentPatch%tveg_lpa%GetMean(),    &  ! in
