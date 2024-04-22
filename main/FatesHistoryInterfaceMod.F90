@@ -6499,11 +6499,6 @@ end subroutine update_history_hifrq
          avgflag='A', vtype=site_r8, hlms='CLM:ALM', upfreq=2,                 &
          ivar=ivar, initialize=initialize_variables, index = ih_rad_error_si)
 
-    call this%set_history_var(vname='FATES_AR', units='gC/m^2/s',                 &
-         long='autotrophic respiration', use_default='active',                  &
-         avgflag='A', vtype=site_r8, hlms='CLM:ALM', upfreq=2,   &
-         ivar=ivar, initialize=initialize_variables, index = ih_aresp_si )
-
     call this%set_history_var(vname='FATES_HARVEST_DEBT', units='kg C',                   &
          long='Accumulated carbon failed to be harvested',  use_default='active',     &
          avgflag='A', vtype=site_r8, hlms='CLM:ALM', upfreq=1,   &
@@ -6591,11 +6586,6 @@ end subroutine update_history_hifrq
          hlms='CLM:ALM', upfreq=2, ivar=ivar, initialize=initialize_variables, &
          index = ih_c_stomata_si_age)
 
-    call this%set_history_var(vname='FATES_AR_CANOPY', units='gC/m^2/s',                 &
-         long='autotrophic respiration of canopy plants', use_default='active',       &
-         avgflag='A', vtype=site_r8, hlms='CLM:ALM', upfreq=2,   &
-         ivar=ivar, initialize=initialize_variables, index = ih_ar_canopy_si )
-
     call this%set_history_var(vname='FATES_LBLAYER_COND_AP',                   &
          units='mol m-2 s-1',                                                  &
          long='mean leaf boundary layer conductance - by patch age',           &
@@ -6615,11 +6605,6 @@ end subroutine update_history_hifrq
          use_default='inactive', avgflag='A', vtype=site_age_r8,               &
          hlms='CLM:ALM', upfreq=2, ivar=ivar, initialize=initialize_variables, &
          index = ih_gpp_si_age)
-
-    call this%set_history_var(vname='FATES_AR_UNDERSTORY', units='gC/m^2/s',                 &
-         long='autotrophic respiration of understory plants', use_default='active',       &
-         avgflag='A', vtype=site_r8, hlms='CLM:ALM', upfreq=2,   &
-         ivar=ivar, initialize=initialize_variables, index = ih_ar_understory_si )
 
     ! fast fluxes separated canopy/understory
     call this%set_history_var(vname='FATES_GPP_CANOPY', units='kg m-2 s-1',    &
