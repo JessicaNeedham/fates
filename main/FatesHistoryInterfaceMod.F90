@@ -5436,7 +5436,7 @@ end subroutine update_history_hifrq
 
     call this%set_history_var(vname='FATES_VEGC_PF', units='kg m-2',           &
          long='total PFT-level biomass in kg of carbon per land area',         &
-         use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM', &
+         use_default='active', avgflag='I', vtype=site_pft_r8, hlms='CLM:ALM', &
          upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
          index=ih_biomass_si_pft)
 
@@ -5496,7 +5496,7 @@ end subroutine update_history_hifrq
 
     call this%set_history_var(vname='FATES_NPLANT_PF', units='m-2',           &
          long='total PFT-level number of individuals per m2 land area',        &
-         use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM', &
+         use_default='active', avgflag='I', vtype=site_pft_r8, hlms='CLM:ALM', &
          upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
          index=ih_nindivs_si_pft)
 
