@@ -593,6 +593,17 @@ module FatesHistoryInterfaceMod
   integer :: ih_seeds_out_gc_si_pft
   integer :: ih_seeds_in_gc_si_pft
 
+  ! JFN - DBEN history variables
+  integer :: ih_lai_si_pft
+  integer :: ih_ba_si_pft
+  integer :: ih_npp_sw_si_pft
+  integer :: ih_npp_dw_si_pft
+  integer :: ih_woody_si_pft
+  integer :: ih_woody_si_scls
+  integer :: ih_ag_woody_si_age
+  integer :: ih_ag_woody_si
+  integer :: ih_agb_si_age
+  
   ! indices to (site x patch-age) variables
   integer :: ih_area_si_age
   integer :: ih_lai_si_age
@@ -2607,7 +2618,17 @@ end subroutine flush_hvars
                hio_nplant_si_scag                   => this%hvars(ih_nplant_si_scag)%r82d, &
                hio_nplant_canopy_si_scag            => this%hvars(ih_nplant_canopy_si_scag)%r82d, &
                hio_nplant_understory_si_scag        => this%hvars(ih_nplant_understory_si_scag)%r82d, &
-               hio_lai_si                           => this%hvars(ih_lai_si)%r81d )
+               hio_lai_si                           => this%hvars(ih_lai_si)%r81d,  &
+               ! JFN
+               hio_woody_si_pft        => this%hvars(ih_woody_si_pft)%r82d, &
+               hio_woody_si_scls       => this%hvars(ih_woody_si_scls)%r82d, &
+               hio_lai_si_pft          => this%hvars(ih_lai_si_pft)%r82d, &
+               hio_ba_si_pft          => this%hvars(ih_ba_si_pft)%r82d, &
+               hio_npp_sw_si_pft          => this%hvars(ih_npp_sw_si_pft)%r82d, &
+               hio_npp_dw_si_pft          => this%hvars(ih_npp_dw_si_pft)%r82d, &
+               hio_ag_woody_si_age                => this%hvars(ih_ag_woody_si_age)%r82d, & 
+               hio_ag_woody_si                    => this%hvars(ih_ag_woody_si)%r81d, &
+               hio_agb_si_age                     => this%hvars(ih_agb_si_age)%r82d )
 
    ! If we don't have dynamics turned on, we just abort these diagnostics
    if (hlm_use_ed_st3.eq.itrue) return
@@ -3003,6 +3024,31 @@ end subroutine flush_hvars
                   hio_agb_si(io_si) = hio_agb_si(io_si) + n_perm2 *            &
                   ( leaf_m + (sapw_m + struct_m + store_m) * prt_params%allom_agb_frac(ccohort%pft) )
 
+                  ! JFN
+                  hio_ag_woody_si(io_si) = hio_ag_woody_si(io_si) + n_perm2 *            &
+                       (  (sapw_m + struct_m) * prt_params%allom_agb_frac(ccohort%pft) )
+
+                  ! JFN
+                  hio_lai_si_pft(io_si,ft) = hio_lai_si_pft(io_si,ft) + &
+                       ccohort%treelai*ccohort%c_area * AREA_INV
+
+                  ! JFN
+                  dbh = ccohort%dbh
+                  hio_ba_si_pft(io_si,ft) = hio_ba_si_pft(io_si,ft) + &
+                       0.25_r8*pi_const*((dbh/100.0_r8)**2.0_r8)*ccohort%n / m2_per_ha
+
+                  ! JFN
+                  hio_woody_si_pft(io_si,ft) = hio_woody_si_pft(io_si,ft) + n_perm2 * &
+                       (  sapw_m + struct_m )
+
+                  ! JFN
+                  hio_agb_si_age(io_si,cpatch%age_class) = hio_agb_si_age(io_si,cpatch%age_class)  + &
+                       n_perm2*(leaf_m+(sapw_m+struct_m+store_m)*prt_params%allom_agb_frac(ccohort%pft) )
+
+                  ! JFN
+                  hio_ag_woody_si_age(io_si,cpatch%age_class) = hio_ag_woody_si_age(io_si,cpatch%age_class) + &
+                       n_perm2 *( (sapw_m + struct_m) * prt_params%allom_agb_frac(ccohort%pft) )
+
 
                   ! Update PFT partitioned biomass components
                   hio_leafbiomass_si_pft(io_si,ft) = hio_leafbiomass_si_pft(io_si,ft) + &
@@ -3244,6 +3290,12 @@ end subroutine flush_hvars
                hio_npp_stor_si_scpf(io_si,scpf) = hio_npp_stor_si_scpf(io_si,scpf) + &
                   store_m_net_alloc*n_perm2 / days_per_year / sec_per_day
 
+               ! JFN
+               hio_npp_sw_si_pft(io_si,ft) = hio_npp_sw_si_pft(io_si,ft) + &
+                  sapw_m_net_alloc*n_perm2 / days_per_year / sec_per_day
+               ! JFN
+               hio_npp_dw_si_pft(io_si,ft) = hio_npp_dw_si_pft(io_si,ft) + &
+                  struct_m_net_alloc*n_perm2 / days_per_year / sec_per_day
               
                ! Woody State Variables (basal area growth increment)
                if ( prt_params%woody(ft) == itrue) then
@@ -3426,6 +3478,10 @@ end subroutine flush_hvars
                hio_biomass_si_scls(io_si,scls) = hio_biomass_si_scls(io_si,scls) + &
                   total_m * ccohort%n * AREA_INV
 
+               ! JFN
+               hio_woody_si_scls(io_si,scls) = hio_woody_si_scls(io_si,scls) + &
+                    (struct_m + sapw_m) * ccohort%n * AREA_INV
+               
                ! update size-class x patch-age related quantities
 
                iscag = get_sizeage_class_index(ccohort%dbh,cpatch%age)
@@ -8503,6 +8559,63 @@ end subroutine update_history_hifrq
              initialize=initialize_variables, index = ih_h2oveg_hydro_err_si)
     end if hydro_active_if
 
+    ! JFN DBEN
+    call this%set_history_var(vname='FATES_VEGC_ABOVEGROUND_AP', units='kg m-2',          &
+         long='aboveground biomass in kg carbon in each age bin per m2 land area',        &
+         use_default='active', avgflag='A', vtype=site_age_r8, hlms='CLM:ALM', &
+         upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
+         index = ih_agb_si_age)
+
+    call this%set_history_var(vname='FATES_WOODY_ABOVEGROUND', units='kg m-2',  &
+         long='aboveground woody biomass in kg carbon per m2 land area',             &
+         use_default='active', avgflag='A', vtype=site_r8, hlms='CLM:ALM',     &
+         upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
+         index = ih_ag_woody_si)
+    
+    call this%set_history_var(vname='FATES_WOODY_ABOVEGROUND_AP', units='kg m-2',        &
+         long='aboveground woody biomass in kg carbon in each age bin per m2 land area', &
+         use_default='active', avgflag='A', vtype=site_age_r8, hlms='CLM:ALM', &
+         upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
+         index = ih_ag_woody_si_age)
+
+    call this%set_history_var(vname='FATES_WOODC_SZ', units = 'kg m-2',         &
+          long='total woody biomass by size class in kg carbon per m2',              &
+          use_default='inactive', avgflag='A', vtype=site_size_r8,             &
+          hlms='CLM:ALM', upfreq=1, ivar=ivar,                                 &
+          initialize=initialize_variables, index = ih_woody_si_scls)
+
+    call this%set_history_var(vname='FATES_WOODC_PF', units='kg m-2',           &
+         long='total PFT-level woody biomass in kg of carbon per land area',         &
+         use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM', &
+         upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
+         index=ih_woody_si_pft)
+
+    call this%set_history_var(vname='FATES_BASALAREA_PF', units='kg m-2',         &
+         long='total PFT-level basal area per m2 land area',  &
+         use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM', &
+         upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
+         index=ih_ba_si_pft)
+
+    call this%set_history_var(vname='FATES_LAI_PF', units='kg m-2',         &
+         long='total PFT-level lAI per m2 land area ',  &
+         use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM', &
+         upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
+         index=ih_lai_si_pft)
+
+    call this%set_history_var(vname='FATES_SAPWOOD_ALLOC_PF',               &
+         units='kg m-2 s-1',                                                   &
+         long='allocation to sapwood by pft in kg carbon per m2 per second', &
+         use_default='inactive', avgflag='A', vtype=site_pft_r8,          &
+         hlms='CLM:ALM', upfreq=1, ivar=ivar, initialize=initialize_variables, &
+         index = ih_npp_sw_si_pft)
+
+   call this%set_history_var(vname = 'FATES_STRUCT_ALLOC_PF',              &
+         units='kg m-2 s-1',                                                   &
+         long='allocation to structural (deadwood) by pft in kg carbon per m2 per second', &
+         use_default='inactive', avgflag='A', vtype=site_pft_r8,          &
+         hlms='CLM:ALM', upfreq=1, ivar=ivar, initialize=initialize_variables, &
+         index = ih_npp_dw_si_pft)
+    
     ! Must be last thing before return
     this%num_history_vars_ = ivar
 
