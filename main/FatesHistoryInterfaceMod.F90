@@ -3340,14 +3340,6 @@ end subroutine flush_hvars
                repro_m  = ccohort%prt%GetState(repro_organ, carbon12_element)
                alive_m  = leaf_m + fnrt_m + sapw_m
                total_m  = alive_m + store_m + struct_m
-
-               hio_mortality_carbonflux_si_pft(io_si,ccohort%pft) = hio_mortality_carbonflux_si_pft(io_si,ccohort%pft) + &
-                    (ccohort%bmort + ccohort%hmort + ccohort%cmort + &
-                    ccohort%frmort + ccohort%smort + ccohort%asmort + ccohort%dgmort) * &
-                    total_m * ccohort%n * days_per_sec * years_per_day * ha_per_m2 + &
-                    (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * total_m * &
-                    ccohort%n * ha_per_m2
-
                
                hio_hydraulicmortality_carbonflux_si_pft(io_si,ccohort%pft) = hio_hydraulicmortality_carbonflux_si_pft(io_si,ccohort%pft) + &
                     ccohort%hmort * total_m * ccohort%n * days_per_sec * years_per_day * ha_per_m2
@@ -3468,13 +3460,6 @@ end subroutine flush_hvars
 
                   hio_m3_mortality_canopy_si_scls(io_si,scls) = hio_m3_mortality_canopy_si_scls(io_si,scls) + &
                        ccohort%cmort * ccohort%n / m2_per_ha
-
-                  hio_canopy_mortality_carbonflux_si(io_si) = hio_canopy_mortality_carbonflux_si(io_si) + &
-                     (ccohort%bmort + ccohort%hmort + ccohort%cmort + &
-                     ccohort%frmort + ccohort%smort + ccohort%asmort + ccohort%dgmort) * &
-                  total_m * ccohort%n * days_per_sec * years_per_day * ha_per_m2 + &
-                     (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * total_m * &
-                     ccohort%n * ha_per_m2
 
                   hio_canopy_mortality_crownarea_si(io_si) = hio_canopy_mortality_crownarea_si(io_si) + &
                        (ccohort%bmort + ccohort%hmort + ccohort%cmort + & 
@@ -3618,13 +3603,6 @@ end subroutine flush_hvars
 
                   hio_m3_mortality_understory_si_scls(io_si,scls) = hio_m3_mortality_understory_si_scls(io_si,scls) + &
                        ccohort%cmort * ccohort%n / m2_per_ha
-
-                  hio_understory_mortality_carbonflux_si(io_si) = hio_understory_mortality_carbonflux_si(io_si) + &
-                     (ccohort%bmort + ccohort%hmort + ccohort%cmort +   &
-                     ccohort%frmort + ccohort%smort + ccohort%asmort + ccohort%dgmort) * &
-                     total_m * ccohort%n * days_per_sec * years_per_day * ha_per_m2 + &
-                     (ccohort%lmort_direct + ccohort%lmort_collateral + ccohort%lmort_infra) * total_m * &
-                     ccohort%n * ha_per_m2
 
                   hio_understory_mortality_crownarea_si(io_si) = hio_understory_mortality_crownarea_si(io_si) + &
                        (ccohort%bmort + ccohort%hmort + ccohort%cmort + & 
@@ -3928,7 +3906,7 @@ end subroutine flush_hvars
          end do
       end do
 
-      !
+      
       ! carbon flux associated with mortality of trees dying by fire
       hio_canopy_mortality_carbonflux_si(io_si) = hio_canopy_mortality_carbonflux_si(io_si) + &
            sum(sites(s)%fmort_carbonflux_canopy(:)) / g_per_kg
@@ -3946,7 +3924,8 @@ end subroutine flush_hvars
               sites(s)%fmort_carbonflux_ustory(i_pft) ) / g_per_kg + &
               sites(s)%imort_carbonflux(i_pft) + & 
               sites(s)%term_carbonflux_ustory(i_pft) * days_per_sec * ha_per_m2 + &
-              sites(s)%term_carbonflux_canopy(i_pft) * days_per_sec * ha_per_m2 
+              sites(s)%term_carbonflux_canopy(i_pft) * days_per_sec * ha_per_m2 + &
+              sites(s)%carbonflux(i_pft) * days_per_sec * ha_per_m2
    
          hio_firemortality_carbonflux_si_pft(io_si,i_pft) = sites(s)%fmort_carbonflux_canopy(i_pft) / g_per_kg
       end do
@@ -4011,6 +3990,7 @@ end subroutine flush_hvars
       sites(s)%fmort_abg_flux(:,:) = 0._r8
       sites(s)%imort_abg_flux(:,:) = 0._r8
       sites(s)%term_abg_flux(:,:) = 0._r8
+      sites(s)%carbonflux(:) = 0._r8
 
       sites(s)%imort_rate_damage(:,:,:) = 0.0_r8
       sites(s)%term_nindivs_canopy_damage(:,:,:) = 0.0_r8
@@ -4411,10 +4391,12 @@ end subroutine flush_hvars
       ! mortality-associated carbon fluxes
 
       hio_canopy_mortality_carbonflux_si(io_si) = hio_canopy_mortality_carbonflux_si(io_si) + &
-         sum(sites(s)%term_carbonflux_canopy(:)) * days_per_sec * ha_per_m2
+           sum(sites(s)%term_carbonflux_canopy(:)) * days_per_sec * ha_per_m2 + &
+           sites(s)%carbonflux_canopy * days_per_sec * ha_per_m2 
 
       hio_understory_mortality_carbonflux_si(io_si) = hio_understory_mortality_carbonflux_si(io_si) + &
-         sum(sites(s)%term_carbonflux_ustory(:)) * days_per_sec * ha_per_m2
+           sum(sites(s)%term_carbonflux_ustory(:)) * days_per_sec * ha_per_m2 * &
+           sites(s)%carbonflux_ustory * days_per_sec * ha_per_m2
 
       ! add site level mortality counting to crownarea diagnostic
       hio_canopy_mortality_crownarea_si(io_si) = hio_canopy_mortality_crownarea_si(io_si) + &
@@ -4429,6 +4411,9 @@ end subroutine flush_hvars
       ! and zero the site-level termination carbon flux variable
       sites(s)%term_carbonflux_canopy(:) = 0._r8
       sites(s)%term_carbonflux_ustory(:) = 0._r8
+      sites(s)%carbonflux_canopy = 0._r8
+      sites(s)%carbonflux_ustory = 0._r8
+      
       !
 
       ! add the site-level disturbance-associated cwd and litter input fluxes to thir respective flux fields

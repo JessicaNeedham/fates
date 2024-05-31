@@ -369,6 +369,10 @@ module EDTypesMod
      real(r8), allocatable :: term_nindivs_ustory(:,:) ! number of understory individuals that were in cohorts which 
                                                        ! were terminated this timestep, on size x pft
 
+
+     real(r8), allocatable :: carbonflux(:)              ! carbon flux from live to dead pools associated 
+                                                         ! with all mortality, per pft. [kgC/ha/day]
+     
      real(r8), allocatable :: term_carbonflux_canopy(:)  ! carbon flux from live to dead pools associated 
                                                          ! with termination mortality, per canopy level. [kgC/ha/day]
      real(r8), allocatable :: term_carbonflux_ustory(:)  ! carbon flux from live to dead pools associated 
@@ -382,6 +386,8 @@ module EDTypesMod
      real(r8), allocatable :: fmort_abg_flux(:,:)         ! aboveground biomass lost due to fire mortality x size x pft
 
 
+     real(r8) :: carbonflux_canopy                       ! biomass of dead individuals from canopy [kgC/ha/day]
+     real(r8) :: carbonflux_ustory                       ! biomass of dead individuals from understory [kgC/ha/day]
      real(r8) :: demotion_carbonflux                     ! biomass of demoted individuals from canopy to understory [kgC/ha/day]
      real(r8) :: promotion_carbonflux                    ! biomass of promoted individuals from understory to canopy [kgC/ha/day]
      real(r8) :: recruitment_rate(1:maxpft)              ! number of individuals that were recruited into new cohorts
