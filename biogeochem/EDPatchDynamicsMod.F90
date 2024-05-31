@@ -95,6 +95,7 @@ module EDPatchDynamicsMod
   use FatesInterfaceTypesMod,      only : hlm_parteh_mode
   use PRTGenericMod,          only : prt_carbon_allom_hyp   
   use PRTGenericMod,          only : prt_cnp_flex_allom_hyp
+  use PRTGenericMod            , only : carbon12_element
   use SFParamsMod,            only : SF_VAL_CWD_FRAC
   use EDParamsMod,            only : logging_event_code
   use EDParamsMod,            only : logging_export_frac
@@ -173,8 +174,7 @@ contains
     use EDMortalityFunctionsMod , only : ExemptTreefallDist
     ! loging flux
     use EDLoggingMortalityMod , only : LoggingMortality_frac
-
-  
+   
     ! !ARGUMENTS:
     type(ed_site_type) , intent(inout) :: site_in
     type(bc_in_type) , intent(in) :: bc_in
@@ -207,7 +207,16 @@ contains
     real(r8) :: mean_temp
     real(r8) :: harvestable_forest_c(hlm_num_lu_harvest_cats)
     integer  :: harvest_tag(hlm_num_lu_harvest_cats)
-
+    real(r8) :: sapw_m             ! Sapwood mass (elemental, c,n or p) [kg/plant]
+    real(r8) :: struct_m           ! Structural mass ""
+    real(r8) :: leaf_m             ! Leaf mass ""
+    real(r8) :: fnrt_m             ! Fineroot mass ""
+    real(r8) :: store_m            ! Storage mass ""
+    real(r8) :: alive_m            ! Alive biomass (sap+leaf+fineroot+repro+storage) ""
+    real(r8) :: total_m            ! Total vegetation mass
+    real(r8) :: repro_m            ! Total reproductive mass (on plant) ""   
+    integer :: el                  ! element loop index
+    
     !----------------------------------------------------------------------------------------------
     ! Calculate Mortality Rates (these were previously calculated during growth derivatives)
     ! And the same rates in understory plants have already been applied to %dndt
@@ -257,6 +266,44 @@ contains
           currentCohort%lmort_collateral = lmort_collateral
           currentCohort%lmort_infra      = lmort_infra
           currentCohort%l_degrad         = l_degrad
+          
+          ! Loop over the different elements. 
+          do el = 1, num_elements
+
+             select case (element_list(el))
+             case (carbon12_element)
+
+                sapw_m   = currentCohort%prt%GetState(sapw_organ, element_list(el))
+                struct_m = currentCohort%prt%GetState(struct_organ, element_list(el))
+                leaf_m   = currentCohort%prt%GetState(leaf_organ, element_list(el))
+                fnrt_m   = currentCohort%prt%GetState(fnrt_organ, element_list(el))
+                store_m  = currentCohort%prt%GetState(store_organ, element_list(el))
+                repro_m  = currentCohort%prt%GetState(repro_organ, element_list(el))
+                alive_m  = leaf_m + fnrt_m + sapw_m
+                total_m  = alive_m + store_m + struct_m
+
+             end select
+          end do
+          
+          ! jfn - add carbon flux from mortality here
+          ! by pft
+          site_in%carbonflux(currentCohort%pft) = currentCohort%dmort * &
+               total_m * currentCohort%n * days_per_sec * years_per_day * ha_per_m2 + &
+               (lmort_direct + lmort_collateral + lmort_infra) * total_m * &
+               currentCohort%n * ha_per_m2
+        
+          ! and by canopy layer
+          if (currentCohort%canopy_layer .eq. 1) then
+             site_in%carbonflux_canopy = currentCohort%dmort * &
+                  total_m * currentCohort%n * days_per_sec * years_per_day * ha_per_m2 + &
+                  (lmort_direct + lmort_collateral + lmort_infra) * total_m * &
+                  currentCohort%n * ha_per_m2
+          else
+             site_in%carbonflux_ustory = currentCohort%dmort * &
+                  total_m * currentCohort%n * days_per_sec * years_per_day * ha_per_m2 + &
+                  (lmort_direct + lmort_collateral + lmort_infra) * total_m * &
+                  currentCohort%n * ha_per_m2
+          end if
 
           currentCohort => currentCohort%taller
        end do
