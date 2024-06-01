@@ -372,6 +372,10 @@ module EDTypesMod
 
      real(r8), allocatable :: carbonflux(:)              ! carbon flux from live to dead pools associated 
                                                          ! with all mortality, per pft. [kgC/ha/day]
+     real(r8), allocatable :: hydro_carbonflux(:)        ! carbon flux from live to dead pools associated 
+                                                         ! with hydraulic failure mortality, per pft. [kgC/ha/day]
+     real(r8), allocatable :: cstarve_carbonflux(:)       ! carbon flux from live to dead pools associated 
+                                                         ! with c starvation mortality, per pft. [kgC/ha/day]
      
      real(r8), allocatable :: term_carbonflux_canopy(:)  ! carbon flux from live to dead pools associated 
                                                          ! with termination mortality, per canopy level. [kgC/ha/day]
