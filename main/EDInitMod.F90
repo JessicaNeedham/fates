@@ -172,7 +172,10 @@ contains
     allocate(site_in%fmort_carbonflux_canopy(1:numpft))
     allocate(site_in%fmort_carbonflux_ustory(1:numpft))
     allocate(site_in%carbonflux(1:numpft))
+    allocate(site_in%hydro_carbonflux(1:numpft))
+    allocate(site_in%cstarve_carbonflux(1:numpft))
 
+    
     allocate(site_in%term_abg_flux(1:nlevsclass,1:numpft))
     allocate(site_in%imort_abg_flux(1:nlevsclass,1:numpft))
     allocate(site_in%fmort_abg_flux(1:nlevsclass,1:numpft))
@@ -298,6 +301,8 @@ contains
     site_in%term_carbonflux_canopy(:) = 0._r8
     site_in%term_carbonflux_ustory(:) = 0._r8
     site_in%carbonflux(:) = 0._r8
+    site_in%hydro_carbonflux(:) = 0._r8
+    site_in%cstarve_carbonflux(:) = 0._r8
     site_in%recruitment_rate(:) = 0._r8
     site_in%imort_rate(:,:) = 0._r8
     site_in%imort_carbonflux(:) = 0._r8

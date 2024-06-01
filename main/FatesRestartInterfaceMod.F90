@@ -245,6 +245,8 @@ module FatesRestartInterfaceMod
   integer :: ir_termcflux_cano_sipft
   integer :: ir_termcflux_usto_sipft
   integer :: ir_cflux_sipft
+  integer :: ir_hydrocflux_sipft
+  integer :: ir_cstarvcflux_sipft
   integer :: ir_democflux_si
   integer :: ir_promcflux_si
   integer :: ir_canopycflux_si
@@ -1390,10 +1392,20 @@ contains
          hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index = ir_termcflux_usto_sipft )
 
    call this%set_restart_var(vname='fates_cflux', vtype=cohort_r8, &
-         long_name='fates diagnostic carbon flux canopy', &
-         units='', flushval = flushzero, &
-         hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index =  ir_cflux_sipft )
-   
+        long_name='fates diagnostic carbon flux canopy', &
+        units='', flushval = flushzero, &
+        hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index =  ir_cflux_sipft )
+
+   call this%set_restart_var(vname='fates_hydrocflux', vtype=cohort_r8, &
+        long_name='fates diagnostic carbon flux canopy', &
+        units='', flushval = flushzero, &
+        hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index =  ir_hydrocflux_sipft )
+
+   call this%set_restart_var(vname='fates_cstarvcflux', vtype=cohort_r8, &
+        long_name='fates diagnostic carbon flux canopy', &
+        units='', flushval = flushzero, &
+        hlms='CLM:ALM', initialize=initialize_variables, ivar=ivar, index =  ir_cstarvcflux_sipft )
+
    call this%set_restart_var(vname='fates_abg_term_flux', vtype=cohort_r8, &
          long_name='fates aboveground biomass loss from termination mortality', &
          units='', flushval = flushzero, &
@@ -2124,6 +2136,8 @@ contains
            rio_termcflux_cano_sipft    => this%rvars(ir_termcflux_cano_sipft)%r81d, &
            rio_termcflux_usto_sipft    => this%rvars(ir_termcflux_usto_sipft)%r81d, &
            rio_cflux_sipft             => this%rvars(ir_cflux_sipft)%r81d, &
+           rio_hydrocflux_sipft        => this%rvars(ir_hydrocflux_sipft)%r81d, &
+           rio_cstarvcflux_sipft       => this%rvars(ir_cstarvcflux_sipft)%r81d, &
            rio_democflux_si            => this%rvars(ir_democflux_si)%r81d, &
            rio_promcflux_si            => this%rvars(ir_promcflux_si)%r81d, &
            rio_canopycflux_si          => this%rvars(ir_canopycflux_si)%r81d, &
@@ -2216,6 +2230,8 @@ contains
 
           do i_pft = 1, numpft
              rio_cflux_sipft(io_idx_si_pft)           = sites(s)%carbonflux(i_pft)
+             rio_hydrocflux_sipft(io_idx_si_pft)           = sites(s)%hydro_carbonflux(i_pft)
+             rio_cstarvcflux_sipft(io_idx_si_pft)           = sites(s)%cstarve_carbonflux(i_pft)
              rio_termcflux_cano_sipft(io_idx_si_pft)  = sites(s)%term_carbonflux_canopy(i_pft)
              rio_termcflux_usto_sipft(io_idx_si_pft)  = sites(s)%term_carbonflux_ustory(i_pft)
              rio_fmortcflux_cano_sipft(io_idx_si_pft) = sites(s)%fmort_carbonflux_canopy(i_pft)
@@ -3069,6 +3085,8 @@ contains
           rio_termcflux_cano_sipft    => this%rvars(ir_termcflux_cano_sipft)%r81d, &
           rio_termcflux_usto_sipft    => this%rvars(ir_termcflux_usto_sipft)%r81d, &
           rio_cflux_sipft             => this%rvars(ir_cflux_sipft)%r81d, &
+          rio_hydrocflux_sipft        => this%rvars(ir_hydrocflux_sipft)%r81d, &
+          rio_cstarvcflux_sipft       => this%rvars(ir_cstarvcflux_sipft)%r81d, &
           rio_democflux_si            => this%rvars(ir_democflux_si)%r81d, &
           rio_promcflux_si            => this%rvars(ir_promcflux_si)%r81d, &
           rio_canopycflux_si          => this%rvars(ir_canopycflux_si)%r81d, &
@@ -3166,6 +3184,8 @@ contains
              sites(s)%term_carbonflux_canopy(i_pft)   = rio_termcflux_cano_sipft(io_idx_si_pft)
              sites(s)%term_carbonflux_ustory(i_pft)   = rio_termcflux_usto_sipft(io_idx_si_pft)
              sites(s)%carbonflux(i_pft)               = rio_cflux_sipft(io_idx_si_pft)
+             sites(s)%hydro_carbonflux(i_pft)         = rio_hydrocflux_sipft(io_idx_si_pft)
+             sites(s)%cstarve_carbonflux(i_pft)       = rio_cstarvcflux_sipft(io_idx_si_pft)
              sites(s)%fmort_carbonflux_canopy(i_pft)  = rio_fmortcflux_cano_sipft(io_idx_si_pft)
              sites(s)%fmort_carbonflux_ustory(i_pft)  = rio_fmortcflux_usto_sipft(io_idx_si_pft)
              sites(s)%imort_carbonflux(i_pft)         = rio_imortcflux_sipft(io_idx_si_pft)

@@ -291,7 +291,13 @@ contains
                total_m * currentCohort%n * days_per_sec * years_per_day * ha_per_m2 + &
                (lmort_direct + lmort_collateral + lmort_infra) * total_m * &
                currentCohort%n * ha_per_m2
-        
+
+          site_in%hydro_carbonflux(currentCohort%pft) = currentCohort%hmort * &
+               total_m * currentCohort%n * days_per_sec * years_per_day * ha_per_m2
+
+          site_in%cstarve_carbonflux(currentCohort%pft) = currentCohort%cmort * &
+               total_m * currentCohort%n * days_per_sec * years_per_day * ha_per_m2
+
           ! and by canopy layer
           if (currentCohort%canopy_layer .eq. 1) then
              site_in%carbonflux_canopy = currentCohort%dmort * &

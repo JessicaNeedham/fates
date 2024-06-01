@@ -3341,12 +3341,6 @@ end subroutine flush_hvars
                alive_m  = leaf_m + fnrt_m + sapw_m
                total_m  = alive_m + store_m + struct_m
                
-               hio_hydraulicmortality_carbonflux_si_pft(io_si,ccohort%pft) = hio_hydraulicmortality_carbonflux_si_pft(io_si,ccohort%pft) + &
-                    ccohort%hmort * total_m * ccohort%n * days_per_sec * years_per_day * ha_per_m2
-
-               hio_cstarvmortality_carbonflux_si_pft(io_si,ccohort%pft) = hio_cstarvmortality_carbonflux_si_pft(io_si,ccohort%pft) + &
-                    ccohort%cmort * total_m * ccohort%n * days_per_sec * years_per_day * ha_per_m2
-
                ! Aboveground mortality
                hio_abg_mortality_cflux_si_scpf(io_si,scpf) = hio_abg_mortality_cflux_si_scpf(io_si,scpf) + &
                     (ccohort%bmort + ccohort%hmort + ccohort%cmort + &
@@ -3926,7 +3920,13 @@ end subroutine flush_hvars
               sites(s)%term_carbonflux_ustory(i_pft) * days_per_sec * ha_per_m2 + &
               sites(s)%term_carbonflux_canopy(i_pft) * days_per_sec * ha_per_m2 + &
               sites(s)%carbonflux(i_pft) * days_per_sec * ha_per_m2
-   
+
+         hio_hydraulicmortality_carbonflux_si_pft(io_si,i_pft) = hio_hydraulicmortality_carbonflux_si_pft(io_si,i_pft) + &
+              sites(s)%hydro_carbonflux(i_pft) * days_per_sec * ha_per_m2
+
+         hio_cstarvmortality_carbonflux_si_pft(io_si,i_pft) = hio_cstarvmortality_carbonflux_si_pft(io_si,i_pft) + &
+              sites(s)%cstarve_carbonflux(i_pft) * days_per_sec * ha_per_m2
+
          hio_firemortality_carbonflux_si_pft(io_si,i_pft) = sites(s)%fmort_carbonflux_canopy(i_pft) / g_per_kg
       end do
 
@@ -3980,6 +3980,8 @@ end subroutine flush_hvars
       sites(s)%term_nindivs_ustory(:,:) = 0._r8
       sites(s)%imort_carbonflux(:) = 0._r8
       sites(s)%imort_rate(:,:) = 0._r8
+      sites(s)%hydro_carbonflux(:) = 0._r8
+      sites(s)%cstarve_carbonflux(:) = 0._r8
       sites(s)%fmort_rate_canopy(:,:) = 0._r8
       sites(s)%fmort_rate_ustory(:,:) = 0._r8
       sites(s)%fmort_carbonflux_canopy(:) = 0._r8
