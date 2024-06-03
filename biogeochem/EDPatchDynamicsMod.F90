@@ -267,26 +267,17 @@ contains
           currentCohort%lmort_infra      = lmort_infra
           currentCohort%l_degrad         = l_degrad
           
-          ! Loop over the different elements. 
-          do el = 1, num_elements
+          ! Get vegetation carbon
+          sapw_m   = currentCohort%prt%GetState(sapw_organ, carbon12_element)
+          struct_m = currentCohort%prt%GetState(struct_organ, carbon12_element)
+          leaf_m   = currentCohort%prt%GetState(leaf_organ, carbon12_element)
+          fnrt_m   = currentCohort%prt%GetState(fnrt_organ, carbon12_element)
+          store_m  = currentCohort%prt%GetState(store_organ, carbon12_element)
+          repro_m  = currentCohort%prt%GetState(repro_organ, carbon12_element)
+          alive_m  = leaf_m + fnrt_m + sapw_m
+          total_m  = alive_m + store_m + struct_m
 
-             select case (element_list(el))
-             case (carbon12_element)
-
-                sapw_m   = currentCohort%prt%GetState(sapw_organ, element_list(el))
-                struct_m = currentCohort%prt%GetState(struct_organ, element_list(el))
-                leaf_m   = currentCohort%prt%GetState(leaf_organ, element_list(el))
-                fnrt_m   = currentCohort%prt%GetState(fnrt_organ, element_list(el))
-                store_m  = currentCohort%prt%GetState(store_organ, element_list(el))
-                repro_m  = currentCohort%prt%GetState(repro_organ, element_list(el))
-                alive_m  = leaf_m + fnrt_m + sapw_m
-                total_m  = alive_m + store_m + struct_m
-
-             end select
-          end do
-          
-          ! jfn - add carbon flux from mortality here
-          ! by pft
+          ! jfn - add carbon flux from mortality here by pft
           site_in%carbonflux(currentCohort%pft) = currentCohort%dmort * &
                total_m * currentCohort%n * days_per_sec * years_per_day * ha_per_m2 + &
                (lmort_direct + lmort_collateral + lmort_infra) * total_m * &
