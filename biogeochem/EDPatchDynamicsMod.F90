@@ -278,25 +278,35 @@ contains
           total_m  = alive_m + store_m + struct_m
 
           ! jfn - add carbon flux from mortality here by pft
-          site_in%carbonflux(currentCohort%pft) = currentCohort%dmort * &
+          site_in%carbonflux(currentCohort%pft) = site_in%carbonflux(currentCohort%pft) + &
+               currentCohort%dmort * &
                total_m * currentCohort%n * days_per_sec * years_per_day * ha_per_m2 + &
                (lmort_direct + lmort_collateral + lmort_infra) * total_m * &
                currentCohort%n * ha_per_m2
 
-          site_in%hydro_carbonflux(currentCohort%pft) = currentCohort%hmort * &
+!          write(fates_log(),*) 'jfn currentCohort%dmort ', currentCohort%dmort
+!          write(fates_log(),*) 'jfn total m ', total_m
+!          write(fates_log(),*) 'jfn sites_in%carbonflux ', site_in%carbonflux(currentCohort%pft)
+
+          
+          site_in%hydro_carbonflux(currentCohort%pft) = site_in%hydro_carbonflux(currentCohort%pft) + &
+               currentCohort%hmort * &
                total_m * currentCohort%n * days_per_sec * years_per_day * ha_per_m2
 
-          site_in%cstarve_carbonflux(currentCohort%pft) = currentCohort%cmort * &
+          site_in%cstarve_carbonflux(currentCohort%pft) = site_in%cstarve_carbonflux(currentCohort%pft) + &
+               currentCohort%cmort * &
                total_m * currentCohort%n * days_per_sec * years_per_day * ha_per_m2
 
           ! and by canopy layer
           if (currentCohort%canopy_layer .eq. 1) then
-             site_in%carbonflux_canopy = currentCohort%dmort * &
+             site_in%carbonflux_canopy = site_in%carbonflux_canopy + &
+                  currentCohort%dmort * &
                   total_m * currentCohort%n * days_per_sec * years_per_day * ha_per_m2 + &
                   (lmort_direct + lmort_collateral + lmort_infra) * total_m * &
                   currentCohort%n * ha_per_m2
           else
-             site_in%carbonflux_ustory = currentCohort%dmort * &
+             site_in%carbonflux_ustory = site_in%carbonflux_ustory + &
+                  currentCohort%dmort * &
                   total_m * currentCohort%n * days_per_sec * years_per_day * ha_per_m2 + &
                   (lmort_direct + lmort_collateral + lmort_infra) * total_m * &
                   currentCohort%n * ha_per_m2
