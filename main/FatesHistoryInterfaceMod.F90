@@ -6323,19 +6323,19 @@ contains
 
        call this%set_history_var(vname='FATES_SEED_BANK', units='kg m-2',         &
             long='total seed mass of all PFTs in kg carbon per m2 land area',     &
-            use_default='active', avgflag='A', vtype=site_r8, hlms='CLM:ALM',     &
+            use_default='active', avgflag='I', vtype=site_r8, hlms='CLM:ALM',     &
             upfreq=group_dyna_simple, ivar=ivar, initialize=initialize_variables,                 &
             index = ih_seed_bank_si)
 
        call this%set_history_var(vname='FATES_UNGERM_SEED_BANK', units='kg m-2',         &
             long='ungerminated seed mass of all PFTs in kg carbon per m2 land area',     &
-            use_default='active', avgflag='A', vtype=site_r8, hlms='CLM:ALM',     &
+            use_default='active', avgflag='I', vtype=site_r8, hlms='CLM:ALM',     &
             upfreq=group_dyna_simple, ivar=ivar, initialize=initialize_variables,                 &
             index = ih_ungerm_seed_bank_si)
 
        call this%set_history_var(vname='FATES_SEEDLING_POOL', units='kg m-2',         &
             long='total seedling (ie germinated seeds) mass of all PFTs in kg carbon per m2 land area',     &
-            use_default='active', avgflag='A', vtype=site_r8, hlms='CLM:ALM',     &
+            use_default='active', avgflag='I', vtype=site_r8, hlms='CLM:ALM',     &
             upfreq=group_dyna_simple, ivar=ivar, initialize=initialize_variables,                 &
             index = ih_seedling_pool_si)
 
@@ -6364,7 +6364,7 @@ contains
 
        call this%set_history_var(vname='FATES_VEGC', units='kg m-2',              &
             long='total biomass in live plants in kg carbon per m2 land area',    &
-            use_default='active', avgflag='A', vtype=site_r8, hlms='CLM:ALM',     &
+            use_default='active', avgflag='I', vtype=site_r8, hlms='CLM:ALM',     &
             upfreq=group_dyna_simple, ivar=ivar, initialize=initialize_variables,                 &
             index = ih_totvegc_si)
 
@@ -6532,7 +6532,7 @@ contains
 
        call this%set_history_var(vname='FATES_VEGC_ABOVEGROUND', units='kg m-2',  &
             long='aboveground biomass in kg carbon per m2 land area',             &
-            use_default='active', avgflag='A', vtype=site_r8, hlms='CLM:ALM',     &
+            use_default='active', avgflag='I', vtype=site_r8, hlms='CLM:ALM',     &
             upfreq=group_dyna_simple, ivar=ivar, initialize=initialize_variables,                 &
             index = ih_agb_si)
 
@@ -6754,7 +6754,7 @@ contains
 
           call this%set_history_var(vname='FATES_VEGC_PF', units='kg m-2',           &
                long='total PFT-level biomass in kg of carbon per land area',         &
-               use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM', &
+               use_default='active', avgflag='I', vtype=site_pft_r8, hlms='CLM:ALM', &
                upfreq=group_dyna_complx, ivar=ivar, initialize=initialize_variables,                 &
                index=ih_biomass_si_pft)
 
@@ -6976,7 +6976,7 @@ contains
 
           call this%set_history_var(vname='FATES_VEGC_AP', units='kg m-2',           &
                long='total biomass within a given patch age bin in kg carbon per m2 land area', &
-               use_default='inactive', avgflag='A', vtype=site_age_r8,               &
+               use_default='inactive', avgflag='I', vtype=site_age_r8,               &
                hlms='CLM:ALM', upfreq=group_dyna_complx, ivar=ivar, initialize=initialize_variables, &
                index=ih_biomass_si_age)
 
@@ -7393,7 +7393,7 @@ contains
 
           call this%set_history_var(vname='FATES_VEGC_APPF',units = 'kg m-2',        &
                long='biomass per PFT in each age bin in kg carbon per m2',          &
-               use_default='inactive', avgflag='A', vtype=site_agepft_r8,           &
+               use_default='inactive', avgflag='I', vtype=site_agepft_r8,           &
                hlms='CLM:ALM', upfreq=group_dyna_complx, ivar=ivar,                                 &
                initialize=initialize_variables, index = ih_biomass_si_agepft)
 
@@ -7543,7 +7543,7 @@ contains
           call this%set_history_var(vname='FATES_VEGC_ABOVEGROUND_SZPF',             &
                units = 'kg m-2',                                                     &
                long='aboveground biomass by pft/size in kg carbon per m2',           &
-               use_default='inactive', avgflag='A', vtype=site_size_pft_r8,          &
+               use_default='inactive', avgflag='I', vtype=site_size_pft_r8,          &
                hlms='CLM:ALM', upfreq=group_dyna_complx, ivar=ivar, initialize=initialize_variables, &
                index = ih_agb_si_scpf)
 
@@ -7835,13 +7835,13 @@ contains
           call this%set_history_var(vname='FATES_VEGC_ABOVEGROUND_SZ',               &
                units = 'kg m-2',                                                   &
                long='aboveground biomass by size class in kg carbon per m2',        &
-               use_default='active', avgflag='A', vtype=site_size_r8,               &
+               use_default='active', avgflag='I', vtype=site_size_r8,               &
                hlms='CLM:ALM', upfreq=group_dyna_complx, ivar=ivar,                                 &
                initialize=initialize_variables, index = ih_agb_si_scls)
 
           call this%set_history_var(vname='FATES_VEGC_SZ', units = 'kg m-2',         &
                long='total biomass by size class in kg carbon per m2',              &
-               use_default='inactive', avgflag='A', vtype=site_size_r8,             &
+               use_default='inactive', avgflag='I', vtype=site_size_r8,             &
                hlms='CLM:ALM', upfreq=group_dyna_complx, ivar=ivar,                                 &
                initialize=initialize_variables, index = ih_biomass_si_scls)
 
@@ -8424,7 +8424,7 @@ contains
           ! CARBON
           call this%set_history_var(vname='FATES_VEGC_SZPF', units='kg m-2',         &
                long='total vegetation biomass in live plants by size-class x pft in kg carbon per m2', &
-               use_default='inactive', avgflag='A', vtype=site_size_pft_r8,          &
+               use_default='inactive', avgflag='I', vtype=site_size_pft_r8,          &
                hlms='CLM:ALM', upfreq=group_dyna_complx, ivar=ivar, initialize=initialize_variables, &
                index = ih_totvegc_scpf)
 
