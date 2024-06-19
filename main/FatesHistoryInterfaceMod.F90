@@ -644,14 +644,11 @@ module FatesHistoryInterfaceMod
 
   ! JFN - DBEN history variables
   integer :: ih_lai_si_pft
-  integer :: ih_ba_si_pft
   integer :: ih_npp_sw_si_pft
   integer :: ih_npp_dw_si_pft
   integer :: ih_woody_si_pft
   integer :: ih_woody_si_scls
-  integer :: ih_ag_woody_si_age
   integer :: ih_ag_woody_si
-  integer :: ih_agb_si_age
   
   ! indices to (site x patch-age) variables
   integer :: ih_area_si_age
@@ -2455,15 +2452,8 @@ contains
          hio_elai_si                          => this%hvars(ih_elai_si)%r81d, &
                                 ! JFN
          hio_woody_si_pft        => this%hvars(ih_woody_si_pft)%r82d, &
-         hio_woody_si_scls       => this%hvars(ih_woody_si_scls)%r82d, &
          hio_lai_si_pft          => this%hvars(ih_lai_si_pft)%r82d, &
-         hio_ba_si_pft          => this%hvars(ih_ba_si_pft)%r82d, &
-         hio_npp_sw_si_pft          => this%hvars(ih_npp_sw_si_pft)%r82d, &
-         hio_npp_dw_si_pft          => this%hvars(ih_npp_dw_si_pft)%r82d, &
-         hio_ag_woody_si_age                => this%hvars(ih_ag_woody_si_age)%r82d, & 
-         hio_ag_woody_si                    => this%hvars(ih_ag_woody_si)%r81d, &
-         hio_agb_si_age                     => this%hvars(ih_agb_si_age)%r82d )
-      
+         hio_ag_woody_si                    => this%hvars(ih_ag_woody_si)%r81d )      
 
 
       ! ---------------------------------------------------------------------------------
@@ -2804,11 +2794,6 @@ contains
                      ! JFN
                      hio_lai_si_pft(io_si,ft) = hio_lai_si_pft(io_si,ft) + &
                           ccohort%treelai*ccohort%c_area * AREA_INV
-
-                     ! JFN
-                     dbh = ccohort%dbh
-                     hio_ba_si_pft(io_si,ft) = hio_ba_si_pft(io_si,ft) + &
-                          0.25_r8*pi_const*((dbh/100.0_r8)**2.0_r8)*ccohort%n / m2_per_ha
 
                      ! JFN
                      hio_woody_si_pft(io_si,ft) = hio_woody_si_pft(io_si,ft) + n_perm2 * &
@@ -3322,7 +3307,11 @@ contains
              hio_nplant_understory_si_scag        => this%hvars(ih_nplant_understory_si_scag)%r82d, &
              hio_disturbance_rate_si_lulu         => this%hvars(ih_disturbance_rate_si_lulu)%r82d, &
              hio_cstarvmortality_continuous_carbonflux_si_pft  => this%hvars(ih_cstarvmortality_continuous_carbonflux_si_pft)%r82d, &
-             hio_interr_liveveg_elem              => this%hvars(ih_interr_liveveg_elem)%r82d)
+             hio_interr_liveveg_elem              => this%hvars(ih_interr_liveveg_elem)%r82d, &
+             ! JFN 
+             hio_npp_sw_si_pft          => this%hvars(ih_npp_sw_si_pft)%r82d, &
+             hio_npp_dw_si_pft          => this%hvars(ih_npp_dw_si_pft)%r82d, &
+             hio_woody_si_scls       => this%hvars(ih_woody_si_scls)%r82d )
 
           model_day_int = nint(hlm_model_day)
 
@@ -3602,17 +3591,7 @@ contains
                          hio_biomass_si_age(io_si,cpatch%age_class) = hio_biomass_si_age(io_si,cpatch%age_class) &
                               + total_m * ccohort%n * AREA_INV
                          
-                         
-                         ! JFN
-                         hio_agb_si_age(io_si,cpatch%age_class) = hio_agb_si_age(io_si,cpatch%age_class)  + &
-                              n_perm2*(leaf_m+(sapw_m+struct_m+store_m)*prt_params%allom_agb_frac(ccohort%pft) )
-
-                         ! JFN
-                         hio_ag_woody_si_age(io_si,cpatch%age_class) = hio_ag_woody_si_age(io_si,cpatch%age_class) + &
-                              n_perm2 *( (sapw_m + struct_m) * prt_params%allom_agb_frac(ccohort%pft) )
-
-
-                         
+                          
                          if (ccohort%canopy_layer .eq. 1) then
                             storec_canopy_scpf(i_scpf) = &
                                  storec_canopy_scpf(i_scpf) + ccohort%n * store_m
@@ -8433,23 +8412,11 @@ contains
           end if if_crowndamage
 
           ! JFN DBEN
-          call this%set_history_var(vname='FATES_VEGC_ABOVEGROUND_AP', units='kg m-2',          &
-               long='aboveground biomass in kg carbon in each age bin per m2 land area',        &
-               use_default='active', avgflag='A', vtype=site_age_r8, hlms='CLM:ALM', &
-               upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
-               index = ih_agb_si_age)
-
           call this%set_history_var(vname='FATES_WOODY_ABOVEGROUND', units='kg m-2',  &
                long='aboveground woody biomass in kg carbon per m2 land area',             &
                use_default='active', avgflag='A', vtype=site_r8, hlms='CLM:ALM',     &
                upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
                index = ih_ag_woody_si)
-
-          call this%set_history_var(vname='FATES_WOODY_ABOVEGROUND_AP', units='kg m-2',        &
-               long='aboveground woody biomass in kg carbon in each age bin per m2 land area', &
-               use_default='active', avgflag='A', vtype=site_age_r8, hlms='CLM:ALM', &
-               upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
-               index = ih_ag_woody_si_age)
 
           call this%set_history_var(vname='FATES_WOODC_SZ', units = 'kg m-2',         &
                long='total woody biomass by size class in kg carbon per m2',              &
@@ -8462,12 +8429,6 @@ contains
                use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM', &
                upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
                index=ih_woody_si_pft)
-
-          call this%set_history_var(vname='FATES_BASALAREA_PF', units='kg m-2',         &
-               long='total PFT-level basal area per m2 land area',  &
-               use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM', &
-               upfreq=1, ivar=ivar, initialize=initialize_variables,                 &
-               index=ih_ba_si_pft)
 
           call this%set_history_var(vname='FATES_LAI_PF', units='kg m-2',         &
                long='total PFT-level lAI per m2 land area ',  &
