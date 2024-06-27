@@ -672,8 +672,9 @@ contains
 
           currentCohort%npp_acc  = 0.0_r8
           currentCohort%gpp_acc  = 0.0_r8
-          currentCohort%resp_acc = 0.0_r8
-
+          currentCohort%resp_m_acc = 0.0_r8
+          currentCohort%resp_g_acc = 0.0_r8
+          
           ! BOC...update tree 'hydraulic geometry'
           ! (size --> heights of elements --> hydraulic path lengths -->
           ! maximum node-to-node conductances)
