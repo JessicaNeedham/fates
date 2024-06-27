@@ -521,14 +521,17 @@ contains
              ! at this point we have the info we need to calculate growth respiration
              ! as a "tax" on the difference between daily GPP and daily maintenance respiration
              if (hlm_use_ed_prescribed_phys .eq. itrue) then
-                currentCohort%resp_g_acc = prt_params%grperc(ft) * &
-                     max(0._r8,(currentCohort%gpp_acc - currentCohort%resp_m_acc))
-                currentCohort%resp_g_acc_hold = currentCohort%resp_g_acc * real(hlm_days_per_year,r8)
-             else
+
                 ! set growth respiration to zero in prescribed physiology mode,
                 ! that way the npp_acc vars will be set to the nominal gpp values set above.
                 currentCohort%resp_g_acc = 0._r8
                 currentCohort%resp_g_acc_hold = 0._r8
+
+             else
+                currentCohort%resp_g_acc = prt_params%grperc(ft) * &
+                     max(0._r8,(currentCohort%gpp_acc - currentCohort%resp_m_acc))
+                currentCohort%resp_g_acc_hold = currentCohort%resp_g_acc * real(hlm_days_per_year,r8)
+
              endif
 
              ! calculate the npp as the difference between gpp and autotrophic respiration
