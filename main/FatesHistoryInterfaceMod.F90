@@ -3393,6 +3393,7 @@ contains
              cpatch => sites(s)%oldest_patch
              patchloop: do while(associated(cpatch))
 
+                area_frac = cpatch%area * AREA_INV
 
                 cpatch%age_class  = get_age_class_index(cpatch%age)
 
@@ -3492,8 +3493,6 @@ contains
                    ! Sum up total seed bank (just ungerminated)
                    hio_ungerm_seed_bank_si_pft(io_si,ft) = hio_ungerm_seed_bank_si_pft(io_si,ft) + &
                         litt%seed(ft) * area_frac
-
-
 
                    
                    ! get indices for size class x pft and cohort age x pft
