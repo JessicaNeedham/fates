@@ -293,6 +293,8 @@ module FatesHistoryInterfaceMod
   integer :: ih_litter_in_si            ! carbon only
   integer :: ih_litter_out_si           ! carbon only
   integer :: ih_seed_bank_si            ! carbon only
+  integer :: ih_seed_bank_si_pft        ! jn carbon only
+  integer :: ih_ungerm_seed_bank_si_pft ! jfn carbon only
   integer :: ih_seeds_in_si             ! carbon only
   integer :: ih_seeds_in_local_si       ! carbon only
   integer :: ih_ungerm_seed_bank_si        ! carbon only
@@ -2451,8 +2453,6 @@ contains
          hio_lai_si                           => this%hvars(ih_lai_si)%r81d, &
          hio_elai_si                          => this%hvars(ih_elai_si)%r81d, &
                                 ! JFN
-         hio_woody_si_pft        => this%hvars(ih_woody_si_pft)%r82d, &
-         hio_lai_si_pft          => this%hvars(ih_lai_si_pft)%r82d, &
          hio_ag_woody_si                    => this%hvars(ih_ag_woody_si)%r81d )      
 
 
@@ -2791,14 +2791,7 @@ contains
                      hio_ag_woody_si(io_si) = hio_ag_woody_si(io_si) + n_perm2 *            &
                           (  (sapw_m + struct_m) * prt_params%allom_agb_frac(ccohort%pft) )
 
-                     ! JFN
-                     hio_lai_si_pft(io_si,ft) = hio_lai_si_pft(io_si,ft) + &
-                          ccohort%treelai*ccohort%c_area * AREA_INV
-
-                     ! JFN
-                     hio_woody_si_pft(io_si,ft) = hio_woody_si_pft(io_si,ft) + n_perm2 * &
-                          (  sapw_m + struct_m )
-
+                    
                   elseif(element_list(el).eq.nitrogen_element)then
 
                      store_max = ccohort%prt%GetNutrientTarget(element_list(el),store_organ,stoich_growth_min)
@@ -3311,8 +3304,14 @@ contains
              ! JFN 
              hio_npp_sw_si_pft          => this%hvars(ih_npp_sw_si_pft)%r82d, &
              hio_npp_dw_si_pft          => this%hvars(ih_npp_dw_si_pft)%r82d, &
-             hio_woody_si_scls       => this%hvars(ih_woody_si_scls)%r82d )
+             hio_woody_si_scls       => this%hvars(ih_woody_si_scls)%r82d, &
+             hio_woody_si_pft        => this%hvars(ih_woody_si_pft)%r82d, &
+             hio_lai_si_pft          => this%hvars(ih_lai_si_pft)%r82d, &
+             hio_ungerm_seed_bank_si_pft    => this%hvars(ih_ungerm_seed_bank_si_pft)%r82d, &     ! jfn
+             hio_seed_bank_si_pft    => this%hvars(ih_seed_bank_si_pft)%r82d )     ! jfn
+        
 
+          
           model_day_int = nint(hlm_model_day)
 
           ! ---------------------------------------------------------------------------------
@@ -3484,6 +3483,19 @@ contains
 
                    ft = ccohort%pft
 
+
+                   ! Sum up total seed bank (germinated and ungerminated)
+                   hio_seed_bank_si_pft(io_si, ft) = hio_seed_bank_si_pft(io_si, ft) + &
+                        (litt%seed(ft)+litt%seed_germ(ft)) * &
+                        area_frac
+
+                   ! Sum up total seed bank (just ungerminated)
+                   hio_ungerm_seed_bank_si_pft(io_si,ft) = hio_ungerm_seed_bank_si_pft(io_si,ft) + &
+                        litt%seed(ft) * area_frac
+
+
+
+                   
                    ! get indices for size class x pft and cohort age x pft
                    ! size class is the fastest changing dimension
                    call sizetype_class_index(ccohort%dbh, ccohort%pft,                &
@@ -3531,6 +3543,11 @@ contains
 
                    call set_root_fraction(sites(s)%rootfrac_scr, ccohort%pft, sites(s)%zi_soil, &
                         bc_in(s)%max_rooting_depth_index_col )
+
+                    ! JFN
+                     hio_lai_si_pft(io_si,ft) = hio_lai_si_pft(io_si,ft) + &
+                          ccohort%treelai*ccohort%c_area * AREA_INV
+
 
                    ! Update biomass components
                    ! Mass pools [kg]
@@ -3587,10 +3604,17 @@ contains
                          hio_biomass_si_pft(io_si, ft) = hio_biomass_si_pft(io_si, ft) + &
                               (ccohort%n * AREA_INV) * total_m
 
+
+
                          ! update total biomass per age bin
                          hio_biomass_si_age(io_si,cpatch%age_class) = hio_biomass_si_age(io_si,cpatch%age_class) &
                               + total_m * ccohort%n * AREA_INV
+
                          
+                         ! JFN
+                         hio_woody_si_pft(io_si,ft) = hio_woody_si_pft(io_si,ft) + n_perm2 * &
+                              (  sapw_m + struct_m )
+
                           
                          if (ccohort%canopy_layer .eq. 1) then
                             storec_canopy_scpf(i_scpf) = &
@@ -6892,6 +6916,18 @@ contains
                upfreq=group_dyna_complx, ivar=ivar, initialize=initialize_variables,                 &
                index=ih_seeds_out_gc_si_pft)
 
+          call this%set_history_var(vname='FATES_SEED_BANK_PF', units='kg m-2',         &
+               long='total seed mass by PFT in kg carbon per m2 land area',     &
+               use_default='active', avgflag='I', vtype=site_r8, hlms='CLM:ALM',     &
+               upfreq=group_dyna_simple, ivar=ivar, initialize=initialize_variables,                 &
+               index = ih_seed_bank_si_pft)
+
+          call this%set_history_var(vname='FATES_UNGERM_SEED_BANK_PF', units='kg m-2',         &
+               long='ungerminated seed mass by PFT in kg carbon per m2 land area',     &
+               use_default='active', avgflag='I', vtype=site_r8, hlms='CLM:ALM',     &
+               upfreq=group_dyna_simple, ivar=ivar, initialize=initialize_variables,                 &
+               index = ih_ungerm_seed_bank_si_pft)
+          
           call this%set_history_var(vname='FATES_MORTALITY_PF', units='m-2 yr-1',    &
                long='PFT-level mortality rate in number of individuals per m2 land area per year', &
                use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM', &
