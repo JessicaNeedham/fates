@@ -293,8 +293,6 @@ module FatesHistoryInterfaceMod
   integer :: ih_litter_in_si            ! carbon only
   integer :: ih_litter_out_si           ! carbon only
   integer :: ih_seed_bank_si            ! carbon only
-  integer :: ih_seed_bank_si_pft        ! jn carbon only
-  integer :: ih_ungerm_seed_bank_si_pft ! jfn carbon only
   integer :: ih_seeds_in_si             ! carbon only
   integer :: ih_seeds_in_local_si       ! carbon only
   integer :: ih_ungerm_seed_bank_si        ! carbon only
@@ -612,6 +610,8 @@ module FatesHistoryInterfaceMod
 
   ! indices to (site x pft) variables
   integer :: ih_biomass_si_pft
+  integer :: ih_ungerm_seed_bank_si_pft
+  integer :: ih_seed_bank_si_pft
   integer :: ih_biomass_sec_si_pft
   integer :: ih_leafbiomass_si_pft
   integer :: ih_storebiomass_si_pft
@@ -3022,6 +3022,7 @@ contains
     type(fates_patch_type),  pointer :: cpatch
     type(litter_type), pointer :: litt_c   ! Pointer to the carbon12 litter pool
     type(litter_type), pointer :: litt     ! Generic pointer to any litter pool
+    
     integer  :: s                  ! site counter
     integer  :: ipa,ipa2           ! patch index matching host model array space
     integer  :: io_si              ! site's index in the history output array space
@@ -3087,8 +3088,10 @@ contains
     real(r8), parameter :: reallytalltrees = 1000.   ! some large number (m)
 
 !
-    associate( hio_err_fates_elem      => this%hvars(ih_err_fates_elem)%r82d, &
+    associate( hio_err_fates_elem     => this%hvars(ih_err_fates_elem)%r82d, &
          hio_biomass_si_pft      => this%hvars(ih_biomass_si_pft)%r82d, &
+         hio_seed_bank_si_pft      => this%hvars(ih_seed_bank_si_pft)%r82d, &
+         hio_ungerm_seed_bank_si_pft      => this%hvars(ih_ungerm_seed_bank_si_pft)%r82d, &
          hio_biomass_sec_si_pft  => this%hvars(ih_biomass_sec_si_pft)%r82d, &
          hio_leafbiomass_si_pft  => this%hvars(ih_leafbiomass_si_pft)%r82d, &
          hio_storebiomass_si_pft => this%hvars(ih_storebiomass_si_pft)%r82d, &
@@ -3183,9 +3186,7 @@ contains
          hio_m6_si_scls          => this%hvars(ih_m6_si_scls)%r82d, &
          hio_m7_si_scls          => this%hvars(ih_m7_si_scls)%r82d, &
          hio_m8_si_scls          => this%hvars(ih_m8_si_scls)%r82d, &
-         hio_m9_si_scls          => this%hvars(ih_m9_si_scls)%r82d, &
-         hio_m10_si_scls         => this%hvars(ih_m10_si_scls)%r82d, &
-         hio_m10_si_cacls        => this%hvars(ih_m10_si_cacls)%r82d)
+         hio_m9_si_scls          => this%hvars(ih_m9_si_scls)%r82d)
 
       ! Break up associates for NAG compilers
       associate(hio_m1_sec_si_scls      => this%hvars(ih_m1_sec_si_scls)%r82d, &
@@ -3302,14 +3303,14 @@ contains
              hio_cstarvmortality_continuous_carbonflux_si_pft  => this%hvars(ih_cstarvmortality_continuous_carbonflux_si_pft)%r82d, &
              hio_interr_liveveg_elem              => this%hvars(ih_interr_liveveg_elem)%r82d, &
              ! JFN 
-             hio_npp_sw_si_pft          => this%hvars(ih_npp_sw_si_pft)%r82d, &
-             hio_npp_dw_si_pft          => this%hvars(ih_npp_dw_si_pft)%r82d, &
-             hio_woody_si_scls       => this%hvars(ih_woody_si_scls)%r82d, &
-             hio_woody_si_pft        => this%hvars(ih_woody_si_pft)%r82d, &
-             hio_lai_si_pft          => this%hvars(ih_lai_si_pft)%r82d, &
-             hio_ungerm_seed_bank_si_pft    => this%hvars(ih_ungerm_seed_bank_si_pft)%r82d, &     ! jfn
-             hio_seed_bank_si_pft    => this%hvars(ih_seed_bank_si_pft)%r82d )     ! jfn
-        
+             hio_npp_sw_si_pft            => this%hvars(ih_npp_sw_si_pft)%r82d, &
+             hio_npp_dw_si_pft            => this%hvars(ih_npp_dw_si_pft)%r82d, &
+             hio_woody_si_scls            => this%hvars(ih_woody_si_scls)%r82d, &
+             hio_woody_si_pft             => this%hvars(ih_woody_si_pft)%r82d, &
+             hio_lai_si_pft               => this%hvars(ih_lai_si_pft)%r82d, &
+             hio_m10_si_scls         => this%hvars(ih_m10_si_scls)%r82d, &
+             hio_m10_si_cacls        => this%hvars(ih_m10_si_cacls)%r82d)
+           
 
           
           model_day_int = nint(hlm_model_day)
@@ -3475,25 +3476,12 @@ contains
                 ! Fuel sum [kg/m2]
                 hio_fire_sum_fuel_si_age(io_si, cpatch%age_class) = hio_fire_sum_fuel_si_age(io_si, cpatch%age_class) +  &
                      cpatch%sum_fuel * cpatch%area * AREA_INV
-
-
-
+                
                 ! loop through cohorts on patch
                 ccohort => cpatch%shortest
                 cohortloop: do while(associated(ccohort))
 
                    ft = ccohort%pft
-
-
-                   ! Sum up total seed bank (germinated and ungerminated)
-                   hio_seed_bank_si_pft(io_si, ft) = hio_seed_bank_si_pft(io_si, ft) + &
-                        (litt%seed(ft)+litt%seed_germ(ft)) * &
-                        area_frac
-
-                   ! Sum up total seed bank (just ungerminated)
-                   hio_ungerm_seed_bank_si_pft(io_si,ft) = hio_ungerm_seed_bank_si_pft(io_si,ft) + &
-                        litt%seed(ft) * area_frac
-
                    
                    ! get indices for size class x pft and cohort age x pft
                    ! size class is the fastest changing dimension
@@ -4287,7 +4275,8 @@ contains
 
 
                 do ilyr = 1,sites(s)%nlevsoil
-                   hio_fragmentation_scaler_sl(io_si,ilyr) = hio_fragmentation_scaler_sl(io_si,ilyr) + cpatch%fragmentation_scaler(ilyr) * cpatch%area * AREA_INV
+                   hio_fragmentation_scaler_sl(io_si,ilyr) = hio_fragmentation_scaler_sl(io_si,ilyr) + &
+                        cpatch%fragmentation_scaler(ilyr) * cpatch%area * AREA_INV
                 end do
 
                 do i_fuel = 1,nfsc
@@ -4313,7 +4302,6 @@ contains
 
                 litt_c       => cpatch%litter(element_pos(carbon12_element))
 
-
                 do i_cwd = 1, ncwd
 
                    hio_cwd_ag_si_cwdsc(io_si, i_cwd) = hio_cwd_ag_si_cwdsc(io_si, i_cwd) + &
@@ -4331,6 +4319,18 @@ contains
 
                 end do
 
+                do  i_pft = 1, numpft
+                   
+                   ! ! Sum up total seed bank (germinated and ungerminated)
+                   hio_seed_bank_si_pft(io_si,i_pft) = hio_seed_bank_si_pft(io_si,i_pft) + &
+                        (litt_c%seed(i_pft)+litt_c%seed_germ(i_pft)) * area_frac
+
+                   ! ! Sum up total seed bank (just ungerminated)
+                   hio_ungerm_seed_bank_si_pft(io_si,i_pft) = hio_ungerm_seed_bank_si_pft(io_si,i_pft) + &
+                        litt_c%seed(i_pft) * area_frac
+                end do
+                
+                
                 ipa = ipa + 1
                 cpatch => cpatch%younger
              end do patchloop !patch loop
@@ -6917,13 +6917,13 @@ contains
 
           call this%set_history_var(vname='FATES_SEED_BANK_PF', units='kg m-2',         &
                long='total seed mass by PFT in kg carbon per m2 land area',     &
-               use_default='active', avgflag='I', vtype=site_r8, hlms='CLM:ALM',     &
+               use_default='active', avgflag='I', vtype=site_pft_r8, hlms='CLM:ALM',     &
                upfreq=group_dyna_simple, ivar=ivar, initialize=initialize_variables,                 &
                index = ih_seed_bank_si_pft)
 
           call this%set_history_var(vname='FATES_UNGERM_SEED_BANK_PF', units='kg m-2',         &
                long='ungerminated seed mass by PFT in kg carbon per m2 land area',     &
-               use_default='active', avgflag='I', vtype=site_r8, hlms='CLM:ALM',     &
+               use_default='active', avgflag='I', vtype=site_pft_r8, hlms='CLM:ALM',     &
                upfreq=group_dyna_simple, ivar=ivar, initialize=initialize_variables,                 &
                index = ih_ungerm_seed_bank_si_pft)
           
