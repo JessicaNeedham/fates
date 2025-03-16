@@ -553,6 +553,22 @@ contains
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
 
+    name = 'fates_seed_germination_limit_north'
+    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
+         dimension_names=dim_names, lower_bounds=dim_lower_bound)
+
+    name = 'fates_seed_germination_limit_south'
+    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
+         dimension_names=dim_names, lower_bounds=dim_lower_bound)
+
+    name = 'fates_seed_germination_limit_east'
+    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
+         dimension_names=dim_names, lower_bounds=dim_lower_bound)
+
+    name = 'fates_seed_germination_limit_west'
+    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
+         dimension_names=dim_names, lower_bounds=dim_lower_bound)
+    
     name = 'fates_trs_repro_frac_seed'
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
@@ -975,6 +991,22 @@ contains
     name = 'fates_recruit_seed_germination_rate'
     call fates_params%RetrieveParameterAllocate(name=name, &
          data=this%germination_rate)
+
+    name = 'fates_seed_germination_limit_north'
+    call fates_params%RetrieveParameterAllocate(name=name, &
+         data=this%germination_limit_north)
+
+    name = 'fates_seed_germination_limit_south'
+    call fates_params%RetrieveParameterAllocate(name=name, &
+         data=this%germination_limit_south)
+
+    name = 'fates_seed_germination_limit_east'
+    call fates_params%RetrieveParameterAllocate(name=name, &
+         data=this%germination_limit_east)
+
+    name = 'fates_seed_germination_limit_west'
+    call fates_params%RetrieveParameterAllocate(name=name, &
+         data=this%germination_limit_west)
 
     name = 'fates_trs_repro_frac_seed'
     call fates_params%RetrieveParameterAllocate(name=name, &
@@ -1606,6 +1638,10 @@ contains
         write(fates_log(),fmt0) 'hf_flc_threshold = ',EDPftvarcon_inst%hf_flc_threshold
  
         write(fates_log(),fmt0) 'germination_timescale = ',EDPftvarcon_inst%germination_rate
+        write(fates_log(),fmt0) 'germination_limit_north = ',EDPftvarcon_inst%germination_limit_north
+        write(fates_log(),fmt0) 'germination_limit-south = ',EDPftvarcon_inst%germination_limit_south
+        write(fates_log(),fmt0) 'germination_limit_west = ',EDPftvarcon_inst%germination_limit_west
+        write(fates_log(),fmt0) 'germination_limit_east = ',EDPftvarcon_inst%germination_limit_east
         write(fates_log(),fmt0) 'seed_decay_turnover = ',EDPftvarcon_inst%seed_decay_rate
         write(fates_log(),fmt0) 'seed_dispersal_pdf_scale = ',EDPftvarcon_inst%seed_dispersal_pdf_scale
         write(fates_log(),fmt0) 'seed_dispersal_pdf_shape = ',EDPftvarcon_inst%seed_dispersal_pdf_shape
