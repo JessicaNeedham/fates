@@ -94,6 +94,10 @@ module EDPftvarcon
      real(r8), allocatable :: germination_rate(:)        ! Fraction of seed mass germinating per year (yr-1)
      real(r8), allocatable :: seed_decay_rate(:)         ! Fraction of seed mass (both germinated and
                                                          ! ungerminated), decaying per year    (yr-1)
+     real(r8), allocatable :: germination_limit_north(:) ! Latitudinal limit on germination (north)
+     real(r8), allocatable :: germination_limit_south(:) ! Latitudinal limit on germination (south)
+     real(r8), allocatable :: germination_limit_east(:)  ! Longitudinal limit on germination (east)
+     real(r8), allocatable :: germination_limit_west(:)  ! Longitudinal limit on germination (west)
      real(r8), allocatable :: seed_dispersal_pdf_scale(:)  ! Seed dispersal scale parameter, Bullock et al. (2017)
      real(r8), allocatable :: seed_dispersal_pdf_shape(:)  ! Seed dispersal shape parameter, Bullock et al. (2017)
      real(r8), allocatable :: seed_dispersal_max_dist(:) ! Maximum seed dispersal distance parameter (m)

@@ -91,7 +91,7 @@ module EDParamsMod
    real(r8), public :: dinc_vai(nlevleaf)   = fates_unset_r8 ! VAI bin widths array
    real(r8), public :: dlower_vai(nlevleaf) = fates_unset_r8 ! lower edges of VAI bins
  
-   integer, parameter, public :: maxpft = 16      ! maximum number of PFTs allowed
+   integer, parameter, public :: maxpft = 18      ! maximum number of PFTs allowed
    
    real(r8),protected,public  :: q10_mr     ! Q10 for respiration rate (for soil fragmenation and plant respiration)    (unitless)
    real(r8),protected,public  :: q10_froz   ! Q10 for frozen-soil respiration rates (for soil fragmentation)            (unitless)

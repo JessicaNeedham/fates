@@ -458,9 +458,20 @@ contains
 
     integer :: el                          ! Litter element loop index
     integer :: nlev_eff_decomp             ! Number of active layers over which
-    ! fragmentation fluxes are transfered
+                                           ! fragmentation fluxes are transfered
+    real(r8)  :: lat                       ! latitude and longitude of site                       
+    real(r8)  :: lon                       ! 
     !------------------------------------------------------------------------------------
 
+    ! Get the site lat and lon
+    lat = currentSite%lat
+    lon = currentSite%lon
+
+    ! Convert lon to -180 to 180
+    if (lon > 180.0_r8 ) then
+       lon = -1.0_r8 * (360.0_r8 - lon)
+    end if
+    
     ! Calculate the fragmentation rates
     call fragmentation_scaler(currentPatch, bc_in)
 
@@ -476,7 +487,8 @@ contains
          ! Calculate seed germination rate, the status flags prevent
          ! germination from occuring when the site is in a drought
          ! (for drought deciduous) or too cold (for cold deciduous)
-         call SeedGermination(litt, currentSite%cstatus, currentSite%dstatus(1:numpft), bc_in, currentPatch)
+         call SeedGermination(litt, currentSite%cstatus, currentSite%dstatus(1:numpft), &
+              bc_in, currentPatch, lat, lon)
          
          ! Send fluxes from newly created litter into the litter pools
          ! This litter flux is from non-disturbance inducing mortality, as well
@@ -2328,7 +2340,7 @@ contains
   end subroutine SeedDecay
 
   ! ============================================================================
-  subroutine SeedGermination( litt, cold_stat, drought_stat, bc_in, currentPatch )
+  subroutine SeedGermination( litt, cold_stat, drought_stat, bc_in, currentPatch, lat, lon)
     !
     ! !DESCRIPTION:
     !  Flux from seed bank into the seedling pool    
@@ -2341,7 +2353,9 @@ contains
     integer                   , intent(in) :: cold_stat    ! Is the site in cold leaf-off status?
     integer, dimension(numpft), intent(in) :: drought_stat ! Is the site in drought leaf-off status?
     type(bc_in_type),           intent(in) :: bc_in
-    type(fates_patch_type),        intent(in) :: currentPatch
+    type(fates_patch_type),     intent(in) :: currentPatch
+    real(r8)                  , intent(in) :: lat          ! site latitude
+    real(r8)                  , intent(in) :: lon          ! site longitude
     !
     ! !LOCAL VARIABLES:
     integer :: pft
@@ -2360,7 +2374,7 @@ contains
     real(r8) :: photoblastic_germ_modifier     ! seedling emergence rate modifier for light-sensitive germination
     real(r8) :: seedling_emerg_rate            ! the fraction of the seed bank emerging in the current time step
     !-------------------------------------------------------------------------------------------------------------
-
+    
 
     ! Turning of this cap? because the cap will impose changes on proportionality
     ! of nutrients. (RGK 02-2019)
@@ -2448,6 +2462,16 @@ contains
           end if
        end select
 
+       ! Is this grid cell within the PFT's biogeographic bounds 
+       if (lat > EDPftvarcon_inst%germination_limit_north(pft) .or.  &
+            lat < EDPftvarcon_inst%germination_limit_south(pft) .or. &
+            lon > EDPftvarcon_inst%germination_limit_east(pft) .or. &
+            lon < EDPftvarcon_inst%germination_limit_west(pft) ) then
+
+          litt%seed_germ_in(pft) = 0.0_r8
+          
+       end if
+       
     end do
 
   end subroutine SeedGermination
