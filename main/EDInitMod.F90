@@ -1086,6 +1086,8 @@ contains
       real(r8)                         :: fnrt_drop_fraction    ! fraction of fine roots to absciss when leaves absciss
       integer, parameter               :: recruitstatus = 0     ! whether the newly created cohorts are recruited or initialized
       real(r8),parameter               :: zero_co_age = 0._r8   ! The age of a newly recruited cohort is zero
+      real(r8)                         :: lat                   ! site latitude
+      real(r8)                         :: lon                   ! site longitude
       !-------------------------------------------------------------------------------------
 
       patch_in%tallest  => null()
@@ -1123,6 +1125,27 @@ contains
             endif
          endif
       end do
+
+      ! Add additional check to make sure that the site is not outside the
+      ! recruit lat lon limits. Note this is similar to fixed biogeography mode
+      ! but without needing custom land surface files
+      lat = site_in%lat
+      lon = site_in%lon
+
+      ! convert lon to -180 to 180
+      if(lon > 180.0_r8) then
+         lon = -1.0_r8 * (360.0_r8 - lon)
+      end if
+      
+      do pft = 1, numpft
+         if (lat > EDPftvarcon_inst%germination_limit_north(pft) .or.  &
+            lat < EDPftvarcon_inst%germination_limit_south(pft) .or. &
+            lon > EDPftvarcon_inst%germination_limit_east(pft) .or. &
+            lon < EDPftvarcon_inst%germination_limit_west(pft) ) then
+         use_pft_local(pft) = ifalse
+      end if
+      end do
+      
 
       pft_loop: do pft =  1, numpft
          if_use_this_pft: if (use_pft_local(pft) .eq. itrue) then
