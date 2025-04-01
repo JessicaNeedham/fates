@@ -158,6 +158,12 @@ module FatesInterfaceTypesMod
    integer, public :: hlm_use_tree_damage         ! This flag signals whether or not to turn on the
                                                   ! tree damage module
 
+   integer, public :: hlm_use_reforestation       ! This flag signals whether or not to turn on the
+                                                  ! tree reforestation module
+
+   integer, public :: hlm_daylength_factor_switch ! This switch enables the use of the daylength factor from the HLM
+                                                  ! 1 = TRUE, 0 = FALSE
+
    integer, public :: hlm_hydr_solver             ! Switch that defines which hydraulic solver to use
                                                   ! 1 = Taylor solution that solves plant fluxes with 1 layer
                                                   !     sequentially placing solution on top of previous layer solves
