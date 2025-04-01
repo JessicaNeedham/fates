@@ -1480,6 +1480,7 @@ contains
          hlm_decomp      = 'unset'
          hlm_nitrogen_spec = unset_int
          hlm_use_tree_damage = unset_int
+         hlm_use_reforestation = unset_int
          hlm_phosphorus_spec = unset_int
          hlm_use_ch4       = unset_int
          hlm_use_vertsoilc = unset_int
@@ -1907,6 +1908,12 @@ contains
                   write(fates_log(),*) 'Transfering hlm_use_tree_damage = ',ival,' to FATES'
                end if
                
+            case('use_reforestation')
+               hlm_use_reforestation = ival
+               if (fates_global_verbose()) then
+                  write(fates_log(),*) 'Transfering hlm_use_reforestation = ',ival,' to FATES'
+               end if
+
             case('nitrogen_spec')
                hlm_nitrogen_spec = ival
                if (fates_global_verbose()) then
