@@ -614,6 +614,7 @@ module FatesHistoryInterfaceMod
   integer :: ih_storebiomass_si_pft
   integer :: ih_nindivs_si_pft
   integer :: ih_recruitment_si_pft
+  integer :: ih_reforestation_si_pft
   integer :: ih_recruitment_cflux_si_pft
   integer :: ih_mortality_si_pft
   integer :: ih_mortality_carbonflux_si_pft
@@ -3079,6 +3080,7 @@ contains
          hio_storebiomass_si_pft => this%hvars(ih_storebiomass_si_pft)%r82d, &
          hio_nindivs_si_pft      => this%hvars(ih_nindivs_si_pft)%r82d, &
          hio_recruitment_si_pft  => this%hvars(ih_recruitment_si_pft)%r82d, &
+         hio_reforestation_si_pft  => this%hvars(ih_reforestation_si_pft)%r82d, &
          hio_recruitment_cflux_si_pft  => this%hvars(ih_recruitment_cflux_si_pft)%r82d, &
          hio_seeds_out_gc_si_pft => this%hvars(ih_seeds_out_gc_si_pft)%r82d, &
          hio_seeds_in_gc_si_pft  => this%hvars(ih_seeds_in_gc_si_pft)%r82d, &
@@ -4529,6 +4531,11 @@ contains
                 hio_seeds_in_gc_si_pft(io_si,ft) = sites(s)%seed_in(ft)
              end do
              sites(s)%recruitment_rate(:) = 0._r8
+
+             do ft = 1, numpft
+                hio_reforestation_si_pft(io_si,ft) = sites(s)%reforestation_rate(ft) / m2_per_ha
+             end do
+             sites(s)%reforestation_rate(:) = 0._r8
 
              ! summarize all of the mortality fluxes by PFT
              do ft = 1, numpft
@@ -6802,6 +6809,13 @@ contains
                use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM', &
                upfreq=group_dyna_complx, ivar=ivar, initialize=initialize_variables,                 &
                index=ih_recruitment_si_pft)
+
+          call this%set_history_var(vname='FATES_REFORESTATION_PF',                    &
+               units='m-2 yr-1',                                                     &
+               long='PFT-level planting rate in number of individuals per m2 land area per year',  &
+               use_default='active', avgflag='A', vtype=site_pft_r8, hlms='CLM:ALM', &
+               upfreq=group_dyna_complx, ivar=ivar, initialize=initialize_variables,                 &
+               index=ih_reforestation_si_pft)
 
           call this%set_history_var(vname='FATES_SEEDS_IN_GRIDCELL_PF',                    &
                units='kg',                                                      &

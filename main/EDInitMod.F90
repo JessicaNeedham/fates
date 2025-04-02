@@ -318,6 +318,7 @@ contains
     site_in%term_carbonflux_canopy(:,:) = 0._r8
     site_in%term_carbonflux_ustory(:,:) = 0._r8
     site_in%recruitment_rate(:) = 0._r8
+    site_in%reforestation_rate(:) = 0._r8
     site_in%imort_rate(:,:) = 0._r8
     site_in%imort_carbonflux(:) = 0._r8
     site_in%fmort_rate_canopy(:,:) = 0._r8
