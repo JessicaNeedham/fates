@@ -22,6 +22,7 @@ module EDMainMod
   use FatesInterfaceTypesMod        , only : hlm_use_tree_damage
   use FatesInterfaceTypesMod        , only : hlm_use_ed_st3
   use FatesInterfaceTypesMod        , only : hlm_use_sp
+  use FatesInterfaceTypesMod        , only : hlm_use_reforestation
   use FatesInterfaceTypesMod        , only : bc_in_type
   use FatesInterfaceTypesMod        , only : bc_out_type
   use FatesInterfaceTypesMod        , only : hlm_masterproc
@@ -43,6 +44,7 @@ module EDMainMod
   use EDPhysiologyMod          , only : phenology
   use EDPhysiologyMod          , only : satellite_phenology
   use EDPhysiologyMod          , only : recruitment
+  use EDPhysiologyMod          , only : reforestation
   use EDPhysiologyMod          , only : trim_canopy
   use EDPhysiologyMod          , only : SeedUpdate
   use EDPhysiologyMod          , only : ZeroAllocationRates
@@ -94,6 +96,7 @@ module EDMainMod
   use EDLoggingMortalityMod    , only : IsItLoggingTime
   use EDLoggingMortalityMod    , only : get_harvestable_carbon
   use DamageMainMod            , only : IsItDamageTime
+  use EDCohortDynamicsMod      , only : IsItReforestationTime
   use FatesGlobals             , only : endrun => fates_endrun
   use ChecksBalancesMod        , only : SiteMassStock
   use ChecksBalancesMod        , only : CheckIntegratedMassPools
@@ -180,7 +183,9 @@ contains
 
     ! Call a routine that identifies if damage should occur
     call IsItDamageTime(hlm_masterproc)
- 
+
+    ! Call a routine that identifies if reforestation should occur
+    call IsItReforestationTime(hlm_masterproc)
     !**************************************************************************
     ! Fire, growth, biogeochemistry.
     !**************************************************************************
@@ -260,6 +265,10 @@ contains
           !YL --------------
           ! call recruitment(currentSite, currentPatch, bc_in, bc_out)
 
+          if(hlm_use_reforestation .eq. itrue)then
+             call reforestation(currentSite, currentPatch, bc_in)
+          end if
+          
           currentPatch => currentPatch%younger
        enddo
 

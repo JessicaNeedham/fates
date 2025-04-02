@@ -212,6 +212,9 @@ module EDParamsMod
    integer, protected, public :: max_cohort_per_patch
    character(len=param_string_length), parameter, public :: maxcohort_name = "fates_maxcohort"
 
+   ! Reforestation code
+   integer, protected, public :: reforestation_event_code
+   character(len=param_string_length), parameter, public :: reforestation_name_event_code = "fates_reforestation_event_code"
    
    
    ! Logging Control Parameters (ONLY RELEVANT WHEN USE_FATES_LOGGING = TRUE)
@@ -341,6 +344,7 @@ module EDParamsMod
     dev_arbitrary                         = nan
     damage_event_code                     = -9
     damage_canopy_layer_code              = -9
+    reforestation_event_code              = -9
     landuse_grazing_carbon_use_eff        = nan
     landuse_grazing_nitrogen_use_eff      = nan
     landuse_grazing_phosphorus_use_eff    = nan
@@ -516,6 +520,9 @@ module EDParamsMod
          dimension_names=dim_names_scalar)
     
     call fates_params%RegisterParameter(name=damage_name_canopy_layer_code, dimension_shape=dimension_shape_scalar, &
+         dimension_names=dim_names_scalar)
+
+    call fates_params%RegisterParameter(name=reforestation_name_event_code, dimension_shape=dimension_shape_scalar, &
          dimension_names=dim_names_scalar)
 
     call fates_params%RegisterParameter(name=name_landuse_grazing_carbon_use_eff, dimension_shape=dimension_shape_scalar, &
@@ -737,7 +744,11 @@ module EDParamsMod
     call fates_params%RetrieveParameter(name=damage_name_canopy_layer_code, &
          data=tmpreal)
     damage_canopy_layer_code = nint(tmpreal)
-    
+
+    call fates_params%RetrieveParameter(name=reforestation_name_event_code, &
+         data=tmpreal)
+    reforestation_event_code = nint(tmpreal)
+
     ! parameters that are arrays of size defined within the params file and thus need allocating as well
     call fates_params%RetrieveParameterAllocate(name=ED_name_history_sizeclass_bin_edges, &
           data=ED_val_history_sizeclass_bin_edges)
@@ -863,7 +874,8 @@ module EDParamsMod
         write(fates_log(),'(a,L2)') 'active_crown_fire = ',active_crown_fire
         write(fates_log(),fmt0) 'damage_event_code = ',damage_event_code
         write(fates_log(),fmt0) 'damage_canopy_layer_code = ', damage_canopy_layer_code
-	write(fates_log(),fmt0) 'landuse_grazing_carbon_use_eff = ', landuse_grazing_carbon_use_eff
+        write(fates_log(),fmt0) 'reforestation_event_code = ',reforestation_event_code
+        write(fates_log(),fmt0) 'landuse_grazing_carbon_use_eff = ', landuse_grazing_carbon_use_eff
         write(fates_log(),fmt0) 'name_landuse_grazing_nitrogen_use_eff = ', name_landuse_grazing_nitrogen_use_eff
         write(fates_log(),fmt0) 'name_landuse_grazing_phosphorus_use_eff = ', name_landuse_grazing_phosphorus_use_eff
         write(fates_log(),fmt0) 'name_landuse_grazing_maxheight = ', name_landuse_grazing_maxheight

@@ -61,6 +61,10 @@ module EDPftvarcon
 
      real(r8), allocatable :: seed_suppl(:)          ! seeds that come from outside the gridbox.
 
+     real(r8), allocatable :: reforestation_density(:)  ! no. plants per m2 planted
+     real(r8), allocatable :: reforestation_height(:)   ! height of planted plants
+
+     
      real(r8), allocatable :: lf_flab(:)             ! Leaf litter labile fraction [-]
      real(r8), allocatable :: lf_fcel(:)             ! Leaf litter cellulose fraction [-]
      real(r8), allocatable :: lf_flig(:)             ! Leaf litter lignin fraction [-]
@@ -383,6 +387,14 @@ contains
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
 
     name = 'fates_recruit_seed_supplement'
+    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
+         dimension_names=dim_names, lower_bounds=dim_lower_bound)
+
+    name = 'fates_reforestation_density'
+    call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
+         dimension_names=dim_names, lower_bounds=dim_lower_bound)
+
+    name = 'fates_reforestation_height'
     call fates_params%RegisterParameter(name=name, dimension_shape=dimension_shape_1d, &
          dimension_names=dim_names, lower_bounds=dim_lower_bound)
 
@@ -794,6 +806,14 @@ contains
     name = 'fates_recruit_seed_supplement'
     call fates_params%RetrieveParameterAllocate(name=name, &
          data=this%seed_suppl)
+
+    name = 'fates_reforestation_density'
+    call fates_params%RetrieveParameterAllocate(name=name, &
+         data=this%reforestation_density)
+
+    name = 'fates_reforestation_height'
+    call fates_params%RetrieveParameterAllocate(name=name, &
+         data=this%reforestation_height)
 
     name = 'fates_frag_leaf_flab'
     call fates_params%RetrieveParameterAllocate(name=name, &
@@ -1582,6 +1602,8 @@ contains
         write(fates_log(),fmt0) 'crown_kill = ',EDPftvarcon_inst%crown_kill
         write(fates_log(),fmt0) 'initd = ',EDPftvarcon_inst%initd
         write(fates_log(),fmt0) 'seed_suppl = ',EDPftvarcon_inst%seed_suppl
+        write(fates_log(),fmt0) 'reforestation_density = ',EDPftvarcon_inst%reforestation_density
+        write(fates_log(),fmt0) 'reforestation_height = ',EDPftvarcon_inst%reforestation_height
         write(fates_log(),fmt0) 'lf_flab = ',EDPftvarcon_inst%lf_flab
         write(fates_log(),fmt0) 'lf_fcel = ',EDPftvarcon_inst%lf_fcel
         write(fates_log(),fmt0) 'lf_flig = ',EDPftvarcon_inst%lf_flig

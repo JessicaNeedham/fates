@@ -34,6 +34,7 @@ Module EDCohortDynamicsMod
   use EDTypesMod            , only : min_npm2, min_nppatch
   use EDTypesMod            , only : min_n_safemath
   use EDParamsMod            , only : nlevleaf
+  use EDParamsMod           , only : reforestation_event_code
   use FatesConstantsMod     , only : ican_upper
   use EDTypesMod            , only : elem_diag_type
   use PRTGenericMod         , only : num_elements
@@ -86,13 +87,20 @@ Module EDCohortDynamicsMod
   use FatesConstantsMod,      only : i_term_mort_type_cstarv
   use FatesConstantsMod,      only : i_term_mort_type_canlev
   use FatesConstantsMod,      only : i_term_mort_type_numdens
-
+  use FatesInterfaceTypesMod, only : hlm_current_day
+  use FatesInterfaceTypesMod, only : hlm_current_month
+  use FatesInterfaceTypesMod, only : hlm_current_year
+  use FatesInterfaceTypesMod, only : hlm_model_day
+  use FatesInterfaceTypesMod, only : hlm_day_of_year 
+  
   use shr_infnan_mod,         only : nan => shr_infnan_nan, assignment(=)  
   use shr_log_mod,            only : errMsg => shr_log_errMsg
 
   !
   implicit none
   private
+
+  logical, protected :: reforestation_time
   !
   public :: create_cohort
   public :: terminate_cohorts
@@ -102,6 +110,8 @@ Module EDCohortDynamicsMod
   public :: SendCohortToLitter
   public :: EvaluateAndCorrectDBH
   public :: DamageRecovery
+  public :: IsItReforestationTime
+  public :: reforestation_time
   
   logical, parameter :: debug  = .false. ! local debug flag
   
@@ -1576,7 +1586,89 @@ contains
   end subroutine DamageRecovery
 
 
+  !--------------------------------------------------------------------------
 
+  subroutine IsItReforestationTime(is_master)
+
+    !----------------------------------------------------------------------------
+    ! This subroutine determines whether reforestation should occur (it is called daily)
+    ! This is almost an exact replica of the IsItLoggingTime subroutine
+    !-----------------------------------------------------------------------------
+
+
+    integer, intent(in) :: is_master
+    !type(ed_site_type), intent(inout), target :: currentSite
+
+    integer :: icode     ! Integer equivalent of the event code (parameter file only allows reals)
+    integer :: reforestation_date  ! Day of month for reforestation extracted from event code
+    integer :: reforestation_month ! Month of year for reforestation extracted from event code
+    integer :: reforestation_year  ! Year for reforestation extracted from event code
+    integer :: model_day_int  ! Model day
+    
+    character(len=64) :: fmt = '(a,i2.2,a,i2.2,a,i4.4)'
+
+    reforestation_time = .false.
+    icode = int(reforestation_event_code)
+
+    model_day_int = int(hlm_model_day)
+    
+    if(icode .eq. 1) then
+       ! reforestation is turned off 
+       reforestation_time = .false.
+
+    else if(icode .eq. 2) then
+       ! reforestation event on first time step 
+       if(model_day_int .eq.1) then
+          reforestation_time = .true.
+       end if
+
+    else if(icode .eq. 3) then
+       ! reforestation event every day  
+       reforestation_time = .true.
+
+    else if(icode .eq. 4) then
+       ! reforestation event once a month
+       if(hlm_current_day.eq.1 ) then
+          reforestation_time = .true.
+       end if
+
+    else if(icode < 0 .and. icode > -366) then
+       ! reforestation event every year on a specific day of the year
+       ! specified as negative day of year
+       if(hlm_day_of_year .eq. abs(icode) ) then
+          reforestation_time = .true.
+       end if
+
+    else if(icode > 10000 ) then
+       ! Specific Event: YYYYMMDD
+       reforestation_date  = icode - int(100* floor(real(icode,r8)/100._r8))
+       reforestation_year  = floor(real(icode,r8)/10000._r8)
+       reforestation_month = floor(real(icode,r8)/100._r8) - reforestation_year*100
+
+       if(hlm_current_day .eq. reforestation_date .and. &
+            hlm_current_month .eq. reforestation_month .and. &
+            hlm_current_year .eq. reforestation_year ) then
+          reforestation_time = .true.
+       end if
+
+    else
+       ! Bad damage event flag
+       write(fates_log(),*) 'An invalid reforestation code was specified in fates_params'
+       write(fates_log(),*) 'Check IsItReforestationTime()'
+       write(fates_log(),*) 'for a breakdown of the valid codes and change'
+       write(fates_log(),*) 'fates_reforestation_event_code in the file accordingly.'
+       write(fates_log(),*) 'exiting'
+       call endrun(msg=errMsg(sourcefile, __LINE__))
+    end if
+
+    if(reforestation_time .and. (is_master.eq.itrue) ) then
+       write(fates_log(),fmt) 'Reforestation Event Enacted on date: ', &
+            hlm_current_month,'-', hlm_current_day,'-',hlm_current_year
+    end if
+  
+    return
+    
+  end subroutine IsItReforestationTime
 
 !:.........................................................................:
 
