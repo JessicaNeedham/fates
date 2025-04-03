@@ -4533,7 +4533,7 @@ contains
              sites(s)%recruitment_rate(:) = 0._r8
 
              do ft = 1, numpft
-                hio_reforestation_si_pft(io_si,ft) = sites(s)%reforestation_rate(ft) / m2_per_ha
+                hio_reforestation_si_pft(io_si,ft) = sites(s)%reforestation_rate(ft) * days_per_year / m2_per_ha
              end do
              sites(s)%reforestation_rate(:) = 0._r8
 
