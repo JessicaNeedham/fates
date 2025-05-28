@@ -517,16 +517,18 @@ contains
                                   ! (umol electrons/m**2/s)
                                   ! referred to as vqmax in Lamour et al.
     real(r8) :: Qsat              ! Saturating irradiance - assumed to be a constant (umol/m**2/s)
-                                  ! Here we asssume abosorbed irradiance
+                                  ! Here we asssume abosorbed irradiance (1800 * 0.85)
     real(r8) :: jsat              ! Electron transport rate estimated by the FvCB model for a
                                   ! given Jmax at Qsat
+
+                                  ! add a note about eta
 
     Qsat = 1530.0_r8
     
     phi = (1.0_r8 - fnps) * photon_to_e
 
     ! Calculate jsat
-    jsat = GetJe_FvCB(par_abs, jmax, fnps)
+    jsat = GetJe_FvCB(Qsat, jmax, fnps)
    
     ! Equation to convert PFT specific Jmax to cb6fmax
     cb6fmax = (Qsat * jsat) / &
