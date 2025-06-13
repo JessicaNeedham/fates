@@ -39,6 +39,8 @@ module EDPhysiologyMod
   use FatesConstantsMod, only    : nocomp_bareground_land
   use FatesConstantsMod, only    : is_crop
   use FatesConstantsMod, only    : area_error_2
+  use FatesConstantsMod, only    : days_per_sec
+  use FatesConstantsMod, only    : ha_per_m2
   use EDPftvarcon      , only    : EDPftvarcon_inst
   use PRTParametersMod , only    : prt_params
   use EDPftvarcon      , only    : GetDecompyFrac
