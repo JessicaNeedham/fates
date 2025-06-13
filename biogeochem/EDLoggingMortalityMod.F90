@@ -15,6 +15,7 @@ module EDLoggingMortalityMod
 
    use FatesConstantsMod , only : r8 => fates_r8
    use FatesConstantsMod , only : rsnbl_math_prec
+   use FatesConstatnsMod , only : fates_unset_int
    use FatesCohortMod    , only : fates_cohort_type
    use FatesPatchMod     , only : fates_patch_type
    use EDTypesMod        , only : site_massbal_type
@@ -244,6 +245,8 @@ contains
       logical  :: site_secondaryland_first_exceeding_min
       real(r8) :: secondary_young_fraction  ! what fraction of secondary land is young secondary land
 
+      cur_harvest_tag = fates_unset_int
+      
       ! todo: probably lower the dbhmin default value to 30 cm
       ! todo: change the default logging_event_code to 1 september (-244)
       ! todo: change the default logging_direct_frac to 1.0 for cmip inputs
@@ -288,7 +291,8 @@ contains
                ! 0=use fates logging parameters directly when logging_time == .true.
                ! this means harvest the whole cohort area
                harvest_rate = 1._r8
-
+               cur_harvest_tag = fates_bypass_harvest_debt
+               
             else if (hlm_use_lu_harvest == itrue .and. hlm_harvest_units == hlm_harvest_area_fraction) then
                ! We are harvesting based on areal fraction, not carbon/biomass terms. 
                ! 1=use area fraction from hlm
@@ -319,6 +323,7 @@ contains
                harvest_tag = fates_bypass_harvest_debt
                cur_harvest_tag = fates_bypass_harvest_debt
 
+               
                if (fates_global_verbose()) then
                   write(fates_log(), *) 'Successfully Read Harvest Rate from HLM.', hlm_harvest_rates(:), harvest_rate
                end if
@@ -331,6 +336,7 @@ contains
                     hlm_harvest_rates, secondary_age, harvestable_forest_c, &
                     harvest_rate, harvest_tag, cur_harvest_tag)
 
+
                if (fates_global_verbose()) then
                   write(fates_log(), *) 'Successfully Read Harvest Rate from HLM.', hlm_harvest_rates(:), harvest_rate, harvestable_forest_c
                end if
@@ -342,6 +348,7 @@ contains
             ! For area-based harvest, harvest_tag shall always be 2 (not applicable).
             harvest_tag = fates_bypass_harvest_debt
             cur_harvest_tag = fates_bypass_harvest_debt
+
          endif
 
          ! transfer of area to secondary land is based on overall area affected, not just logged crown area
@@ -723,7 +730,7 @@ contains
 
      ! If any harvest category available, assign to cur_harvest_tag and trigger logging event
      if(present(cur_harvest_tag))then
-       cur_harvest_tag = minval(harvest_tag)
+        cur_harvest_tag = minval(harvest_tag)
      end if
 
      ! Transfer carbon-based harvest rate to area-based harvest rate
