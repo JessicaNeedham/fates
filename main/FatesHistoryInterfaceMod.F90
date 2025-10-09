@@ -306,7 +306,7 @@ module FatesHistoryInterfaceMod
   integer :: ih_seedling_pool_si        ! carbon only
   integer :: ih_ba_weighted_height_si
   integer :: ih_ca_weighted_height_si
-  integer :: ih_patch_weighted_95hpctile_height_si
+  integer :: ih_patch_weighted_95thpctile_height_si
   integer :: ih_seeds_in_local_elem
   integer :: ih_seeds_in_extern_elem
   integer :: ih_seed_decay_elem
