@@ -1239,14 +1239,13 @@ contains
                                   ! now apply survivorship based on the type of landuse transition
                                   if ( clearing_matrix(i_donorpatch_landuse_type,i_landusechange_receiverpatchlabel) ) then
 
-
                                      ! If we are clearing for crops then kill everything
                                      ! Note crops needs to be last lu class for this logic to work 
                                      if (i_landusechange_receiverpatchlabel == end_receiver_lulabel ) then
                                         nc%n = 0._r8
                                      else
                                         ! Otherwise kill some proportion of the PFT based on the PFT-level clearing mortality parameter
-                                        nc%n = nc%n * EDPftvarcon_inst%landuse_clearing_mortality(currentCohort%pft)
+                                        nc%n = nc%n * (1.0_r8 - EDPftvarcon_inst%landuse_clearing_mortality(currentCohort%pft) )
                                      end if
 
                                   end if
