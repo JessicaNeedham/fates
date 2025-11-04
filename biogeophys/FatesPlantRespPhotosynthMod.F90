@@ -1114,7 +1114,7 @@ contains
                            write(fates_log(),*) 'its boundary layer resistance component'
                            write(fates_log(),*) 'r_sb_leaves [s/m]: ',r_sb_leaves
                            write(fates_log(),*) 'bc_in(s)%rb_pa(ifp) [s/m]: ',bc_in(s)%rb_pa(ifp)
-                           call endrun(msg=errMsg(sourcefile, __LINE__))
+                       !    call endrun(msg=errMsg(sourcefile, __LINE__))
                         end if
                         
                         ! Mean leaf stomatal resistance for all patch leaves

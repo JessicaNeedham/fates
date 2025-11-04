@@ -3405,8 +3405,8 @@ contains
 
              if ( .not. gotfused ) then
                 !! somehow didn't find a patch to fuse with.
-                write(fates_log(),*) 'Warning. small nocomp patch wasnt able to find another patch to fuse with.', &
-                     currentPatch%nocomp_pft_label, currentPatch%land_use_label, currentPatch%area
+                !write(fates_log(),*) 'Warning. small nocomp patch wasnt able to find another patch to fuse with.', &
+                 !    currentPatch%nocomp_pft_label, currentPatch%land_use_label, currentPatch%area
              endif
 
           else nocomp_if
