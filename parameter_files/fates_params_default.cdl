@@ -1,4 +1,4 @@
-netcdf fates_params_sci.1.88.6_api.42.0.0_14pft_nor_sci2_api1_default {
+netcdf fates_params_sci.1.88.6_api.42.0.0_14pft_nor_sci3_api1_c260209 {
 dimensions:
 	fates_NCWD = 4 ;
 	fates_history_age_bins = 7 ;
@@ -6,7 +6,7 @@ dimensions:
 	fates_history_damage_bins = 2 ;
 	fates_history_height_bins = 6 ;
 	fates_history_size_bins = 13 ;
-	fates_hlm_pftno = 14 ;
+	fates_hlm_pftno = 16 ;
 	fates_hydr_organs = 4 ;
 	fates_landuseclass = 5 ;
 	fates_leafage_class = 1 ;
@@ -1745,6 +1745,8 @@ data:
   0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0.1, 0.1, 0.8, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ;
 
