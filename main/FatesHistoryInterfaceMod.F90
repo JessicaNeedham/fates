@@ -3012,6 +3012,7 @@ contains
                ccohort => ccohort%taller
             enddo cohortloop ! cohort loop
 
+            
             ! mean 95th percentile height. loop through cohorts on patch again, this time from tallest to shortest
             crown_area_covered = 0._r8
             ccohort => cpatch%tallest
