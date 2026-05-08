@@ -74,6 +74,7 @@ module EDMainMod
   use PRTGenericMod            , only : element_pos
   use EDTypesMod               , only : phen_dstat_moiston
   use EDTypesMod               , only : phen_dstat_timeon
+  use EDTypesMod               , only : dump_site
   use FatesConstantsMod        , only : itrue,ifalse
   use FatesConstantsMod        , only : primaryland, secondaryland
   use FatesConstantsMod        , only : n_landuse_cats  
@@ -111,7 +112,8 @@ module EDMainMod
   use EDPftvarcon,            only : EDPftvarcon_inst
   use FatesHistoryInterfaceMod, only : fates_hist
   use FatesLandUseChangeMod,  only: FatesGrazing
-
+  use clm_time_manager,       only: get_nstep
+  
   ! CIME Globals
   use shr_log_mod         , only : errMsg => shr_log_errMsg
   use shr_infnan_mod      , only : nan => shr_infnan_nan, assignment(=)
@@ -159,12 +161,23 @@ contains
     type(fates_patch_type), pointer :: currentPatch
     integer :: el                ! Loop counter for variables 
     integer :: do_patch_dynamics ! for some modes, we turn off patch dynamics
-
+    integer :: nstep
+    
     !-----------------------------------------------------------------------
 
     if (debug .and.( hlm_masterproc==itrue)) write(fates_log(),'(A,I4,A,I2.2,A,I2.2)') 'FATES Dynamics: ',&
           hlm_current_year,'-',hlm_current_month,'-',hlm_current_day
 
+
+    ! dump site info if we are at the time step when things break
+    nstep = get_nstep()
+    if (currentSite%lat == 29.7110001 .and. currentSite%lon == 252.1875000 .and. &
+       (nstep == 1767986 .or. nstep==1767986-1)) then
+       call dump_site(currentSite)
+    end if
+    
+
+    
     ! Consider moving this towards the end, because some of these
     ! are being integrated over the short time-step
 
