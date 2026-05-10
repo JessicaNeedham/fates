@@ -113,6 +113,8 @@ module EDMainMod
   use FatesHistoryInterfaceMod, only : fates_hist
   use FatesLandUseChangeMod,  only: FatesGrazing
   use clm_time_manager,       only: get_nstep
+  use decompMod,              only: subgrid_level_column, subgrid_level_gridcell
+  use decompMod,              only: get_global_index
   
   ! CIME Globals
   use shr_log_mod         , only : errMsg => shr_log_errMsg
@@ -171,11 +173,19 @@ contains
 
     ! dump site info if we are at the time step when things break
     nstep = get_nstep()
-    if (currentSite%lat == 29.7110001 .and. currentSite%lon == 252.1875000 .and. &
-       (nstep == 1767986 .or. nstep==1767986-1)) then
+    if ( (abs(currentSite%lat - 29.7110001) .le. 0.1 .and. abs(currentSite%lon - 252.1875000) .le. 0.1) &
+         .and. (nstep == 1394 .or. nstep==1393) ) then
+       write(fates_log(),*) 'Dumping site'
+       write(fates_log(),*) 'nstep : ', nstep
        call dump_site(currentSite)
+       ! loop through patches and dump patch info
+       currentPatch => currentSite%oldest_patch
+       do while (associated(currentPatch))
+          call currentPatch%Dump()
+          currentPatch => currentPatch%younger
+       enddo
     end if
-    
+
 
     
     ! Consider moving this towards the end, because some of these
