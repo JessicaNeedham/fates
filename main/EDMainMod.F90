@@ -76,7 +76,7 @@ module EDMainMod
   use EDTypesMod               , only : phen_dstat_timeon
   use EDTypesMod               , only : dump_site
   use FatesConstantsMod        , only : itrue,ifalse
-  use FatesConstantsMod        , only : primaryland, secondaryland
+  use FatesConstantsMod        , only : primaryland, secondaryland, cropland
   use FatesConstantsMod        , only : n_landuse_cats  
   use FatesConstantsMod        , only : nearzero
   use FatesConstantsMod        , only : m2_per_ha
@@ -161,6 +161,7 @@ contains
     !
     ! !LOCAL VARIABLES:
     type(fates_patch_type), pointer :: currentPatch
+    type(fates_cohort_type), pointer :: currentCohort        
     integer :: el                ! Loop counter for variables 
     integer :: do_patch_dynamics ! for some modes, we turn off patch dynamics
     integer :: nstep
@@ -182,7 +183,19 @@ contains
        currentPatch => currentSite%oldest_patch
        do while (associated(currentPatch))
           call currentPatch%Dump()
+
+          ! if lu class is 5 dump the cohort info
+          if (currentPatch%land_use_label .eq. cropland) then
+             ! dump cohorts
+             currentCohort => currentPatch%tallest
+             do while(associated(currentCohort))
+                call currentCohort%Dump()
+                currentCohort => currentCohort%shorter
+             end do
+          end if
+
           currentPatch => currentPatch%younger
+
        enddo
     end if
 
