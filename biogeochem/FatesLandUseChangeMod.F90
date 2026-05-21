@@ -463,6 +463,7 @@ contains
        endif
 
        call PRTHerbivoryLosses(prt, leaf_organ, grazing_rate)
+       call PRTHerbivoryLosses(prt, storage_organ, grazing_rate)
     end if
 
   end subroutine FatesGrazing

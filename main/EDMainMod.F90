@@ -173,31 +173,31 @@ contains
 
 
     ! dump site info if we are at the time step when things break
-    nstep = get_nstep()
-    if ( (abs(currentSite%lat - 29.7110001) .le. 0.1 .and. abs(currentSite%lon - 252.1875000) .le. 0.1) &
-         .and. (nstep == 1394 .or. nstep==1393) ) then
-       write(fates_log(),*) 'Dumping site'
-       write(fates_log(),*) 'nstep : ', nstep
-       call dump_site(currentSite)
-       ! loop through patches and dump patch info
-       currentPatch => currentSite%oldest_patch
-       do while (associated(currentPatch))
-          call currentPatch%Dump()
+    ! nstep = get_nstep()
+    ! if ( (abs(currentSite%lat - 29.7110001) .le. 0.1 .and. abs(currentSite%lon - 252.1875000) .le. 0.1) &
+    !      .and. (nstep == 1394 .or. nstep==1393) ) then
+    !    write(fates_log(),*) 'Dumping site'
+    !    write(fates_log(),*) 'nstep : ', nstep
+    !    call dump_site(currentSite)
+    !    ! loop through patches and dump patch info
+    !    currentPatch => currentSite%oldest_patch
+    !    do while (associated(currentPatch))
+    !       call currentPatch%Dump()
 
-          ! if lu class is 5 dump the cohort info
-          if (currentPatch%land_use_label .eq. cropland) then
-             ! dump cohorts
-             currentCohort => currentPatch%tallest
-             do while(associated(currentCohort))
-                call currentCohort%Dump()
-                currentCohort => currentCohort%shorter
-             end do
-          end if
+    !       ! if lu class is 5 dump the cohort info
+    !       if (currentPatch%land_use_label .eq. cropland) then
+    !          ! dump cohorts
+    !          currentCohort => currentPatch%tallest
+    !          do while(associated(currentCohort))
+    !             call currentCohort%Dump()
+    !             currentCohort => currentCohort%shorter
+    !          end do
+    !       end if
 
-          currentPatch => currentPatch%younger
+    !       currentPatch => currentPatch%younger
 
-       enddo
-    end if
+    !    enddo
+    ! end if
 
 
     
