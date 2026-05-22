@@ -208,7 +208,7 @@ contains
              do j = 1, bc_in(s)%nlevsoil
                 bc_out(s)%rootr_pasl(ifp,j) = 0._r8
                 do ft = 1,numpft
-                   if( sum_pftgs > 0._r8)then !prevent problem with the first timestep - might fail
+                   if( sum_pftgs > nearzero)then !prevent problem with the first timestep - might fail
                       !bit-retart test as a result? FIX(RF,032414)  
                       bc_out(s)%rootr_pasl(ifp,j) = bc_out(s)%rootr_pasl(ifp,j) + &
                            root_resis(ft,j) * pftgs(ft)/sum_pftgs
