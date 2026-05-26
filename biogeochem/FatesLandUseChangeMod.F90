@@ -431,7 +431,7 @@ contains
 
   subroutine FatesGrazing(prt, ft, land_use_label, height)
 
-    use PRTGenericMod,    only : leaf_organ
+    use PRTGenericMod,    only : leaf_organ, store_organ
     use PRTGenericMod,    only : prt_vartypes
     use PRTLossFluxesMod, only : PRTHerbivoryLosses
     use EDParamsMod     , only : landuse_grazing_rate
@@ -463,7 +463,7 @@ contains
        endif
 
        call PRTHerbivoryLosses(prt, leaf_organ, grazing_rate)
-       call PRTHerbivoryLosses(prt, storage_organ, grazing_rate)
+!       call PRTHerbivoryLosses(prt, store_organ, grazing_rate)
     end if
 
   end subroutine FatesGrazing

@@ -15,6 +15,7 @@ Module EDCohortDynamicsMod
   use FatesConstantsMod     , only : fates_unset_r8
   use FatesConstantsMod     , only : nearzero
   use FatesConstantsMod     , only : calloc_abs_error
+  use FatesConstantsMod     , only : ievergreen
   use FatesInterfaceTypesMod     , only : nleafage
   use SFParamsMod           , only : SF_val_CWD_frac
   use EDPftvarcon           , only : EDPftvarcon_inst
@@ -103,7 +104,7 @@ Module EDCohortDynamicsMod
   public :: EvaluateAndCorrectDBH
   public :: DamageRecovery
   
-  logical, parameter :: debug  = .false. ! local debug flag
+  logical, parameter :: debug  = .true. ! local debug flag
   
   character(len=*), parameter, private :: sourcefile = &
        __FILE__
@@ -339,10 +340,10 @@ contains
        if (currentcohort%n <  min_n_safemath .and. level == 1) then
           terminate = itrue
           termination_type = i_term_mort_type_numdens
-          if ( debug ) then
-             write(fates_log(),*) 'terminating cohorts 0',currentCohort%n/currentPatch%area, &
-                  currentCohort%dbh,currentCohort%pft,call_index
-          endif
+        !  if ( debug ) then
+        !     write(fates_log(),*) 'terminating cohorts 0',currentCohort%n/currentPatch%area, &
+         !         currentCohort%dbh,currentCohort%pft,call_index
+         ! endif
        endif
 
        ! The rest of these are only allowed if we are not dealing with a recruit (level 2)
@@ -354,11 +355,11 @@ contains
               (currentCohort%dbh < 0.00001_r8 .and. store_c < 0._r8) ) then
             terminate = itrue
             termination_type = i_term_mort_type_numdens
-            if ( debug ) then
-               write(fates_log(),*) 'terminating cohorts 1', &
-                    currentCohort%n/currentPatch%area,currentCohort%dbh, &
-                    currentCohort%pft,call_index
-            endif
+          !  if ( debug ) then
+          !     write(fates_log(),*) 'terminating cohorts 1', &
+          !          currentCohort%n/currentPatch%area,currentCohort%dbh, &
+          !          currentCohort%pft,call_index
+           ! endif
          endif
 
         
@@ -368,22 +369,36 @@ contains
                store_c  < 1e-10_r8) then
             terminate = itrue
             termination_type = i_term_mort_type_cstarv
-            if ( debug ) then
-              write(fates_log(),*) 'terminating cohorts 3', &
-                    sapw_c,leaf_c,fnrt_c,store_c,currentCohort%pft,call_index
-            endif
+        !    if ( debug ) then
+        !      write(fates_log(),*) 'terminating cohorts 3', &
+        !            sapw_c,leaf_c,fnrt_c,store_c,currentCohort%pft,call_index
+        !    endif
          endif
 
          ! Total cohort biomass is negative
          if ( ( struct_c+sapw_c+leaf_c+fnrt_c+store_c ) < 0._r8) then
             terminate = itrue
             termination_type = i_term_mort_type_cstarv
-            if ( debug ) then
-               write(fates_log(),*) 'terminating cohorts 4', &
-                    struct_c,sapw_c,leaf_c,fnrt_c,store_c,currentCohort%pft,call_index
-            endif
+       !     if ( debug ) then
+        !       write(fates_log(),*) 'terminating cohorts 4', &
+        !            struct_c,sapw_c,leaf_c,fnrt_c,store_c,currentCohort%pft,call_index
+        !    endif
 
          endif
+
+         ! live biomass pools are terminally depleted by grazing grasses
+         if (prt_params%phen_leaf_habit(currentCohort%pft) == ievergreen .and. &
+              prt_params%woody(currentCohort%pft) .eq. ifalse) then
+            if ( ( leaf_c + fnrt_c) < 1e-10_r8 ) then
+               terminate = itrue
+               termination_type = i_term_mort_type_cstarv
+               if (debug ) then
+                  write(fates_log(),*) 'terminating cohorts grazing', &
+                  sapw_c, leaf_c, fnrt_c, store_c, currentCohort%pft, call_index
+               end if
+            end if
+         end if
+         
 
       end if if_level_2
       
@@ -391,9 +406,9 @@ contains
       if (currentCohort%canopy_layer > nclmax .and. level == 3) then
          terminate = itrue
          termination_type = i_term_mort_type_canlev
-         if ( debug ) then
-            write(fates_log(),*) 'terminating cohorts 2', currentCohort%canopy_layer,currentCohort%pft,call_index
-         endif
+        ! if ( debug ) then
+         !   write(fates_log(),*) 'terminating cohorts 2', currentCohort%canopy_layer,currentCohort%pft,call_index
+         !endif
       endif
 
       if (terminate == itrue) then
