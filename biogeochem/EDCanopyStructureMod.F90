@@ -566,7 +566,7 @@ contains
 
          sumpd_area = 0._r8
          ic  = 1
-         do while( ic<=n_layer .and. (promdem_area-sumpd_area)>co_area_target_precision and (promdem_area-sumpd_area)/promdem_area > rel_r8_precision)
+         do while( ic<=n_layer .and. (promdem_area-sumpd_area)>co_area_target_precision .and. (promdem_area-sumpd_area)/promdem_area > rel_r8_precision)
 
             cohort => layer_co(ic)%p
 
@@ -613,8 +613,10 @@ contains
          !    the cohort area within precision checks then fail
          
          
-         whole_or_part: if( ((layer_co(ic)%pd_area - cohort%c_area) > co_area_target_precision  .and. (layer_co(ic)%pd_area - cohort%c_area)/cohort%c_area) > rel_r8_precision) .or. &
-              (layer_co(ic)%pd_area < 0._r8) ) then
+         whole_or_part: if( ((layer_co(ic)%pd_area - cohort%c_area)> co_area_target_precision)  .and. &
+              (((layer_co(ic)%pd_area - cohort%c_area)/cohort%c_area) > rel_r8_precision) .or. &
+              (layer_co(ic)%pd_area < 0._r8)) then
+            
             write(fates_log(),*) 'negative,or more area than the cohort has is being promoted/demoted'
             write(fates_log(),*) 'change: ',layer_co(ic)%pd_area
             write(fates_log(),*) 'existing area:',cohort%c_area
