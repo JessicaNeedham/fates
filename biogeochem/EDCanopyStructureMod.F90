@@ -21,6 +21,7 @@ module EDCanopyStructureMod
   use FatesAllometryMod     , only : tree_lai_sai
   use EDTypesMod            , only : ed_site_type
   use EDTypesMod            , only : set_patchno
+  use EDTypesMod            , only : dump_site
   use FatesAllometryMod     , only : VegAreaLayer
   use FatesAllometryMod     , only : CrownDepth
   use FatesPatchMod,          only : fates_patch_type
@@ -617,6 +618,9 @@ contains
             write(fates_log(),*) 'change: ',layer_co(ic)%pd_area
             write(fates_log(),*) 'existing area:',cohort%c_area
             write(fates_log(),*) 'excess: ',layer_co(ic)%pd_area - cohort%c_area
+            call dump_site(site)
+            call patch%Dump()
+            call cohort%Dump()
             call endrun(msg=errMsg(sourcefile, __LINE__))
 
          
