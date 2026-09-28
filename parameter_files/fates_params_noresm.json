@@ -8,7 +8,7 @@
     "fates_history_coage_bins": 2,
     "fates_history_damage_bins": 2,
     "fates_history_height_bins": 6,
-    "fates_history_size_bins": 13,
+    "fates_history_size_bins": 20,
     "fates_hlm_pftno": 14,
     "fates_hydr_organs": 4,
     "fates_landuseclass": 5,
@@ -44,7 +44,7 @@
       "dims": ["fates_history_size_bins"],
       "long_name": "Lower edges for DBH size class bins used in size-resolved cohort history output",
       "units": "cm",
-      "data": [0.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0]
+	"data": [0.0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 115.0, 130.0, 150.0, 175.0, 200.0, 225.0]
     },
     "fates_history_damage_bin_edges":{
       "dtype": "float",
