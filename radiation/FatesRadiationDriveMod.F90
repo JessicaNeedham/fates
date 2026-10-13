@@ -11,7 +11,9 @@ module FatesRadiationDriveMod
 #include "shr_assert.h"
 
   use EDTypesMod        , only : ed_site_type
+  use EDTypesMod        , only : dump_site
   use FatesPatchMod,      only : fates_patch_type
+  use FatesCohortMod,     only : fates_cohort_type
   use EDParamsMod,        only : maxpft
   use EDParamsMod       , only : GetNVegLayers
   use FatesConstantsMod , only : r8 => fates_r8
@@ -34,6 +36,7 @@ module FatesRadiationDriveMod
   use FatesTwoStreamUtilsMod, only : FatesPatchFSun
   use FatesTwoStreamUtilsMod, only : CheckPatchRadiationBalance
   use FatesInterfaceTypesMod, only : hlm_hio_ignore_val
+  use FatesInterfaceTypesMod, only : hlm_current_year, hlm_current_month, hlm_current_day
   use EDParamsMod        , only : dinc_vai,dlower_vai
   use EDParamsMod        , only : nclmax
   use EDParamsMod        , only : nlevleaf
@@ -91,7 +94,8 @@ contains
                                                    ! index at lop of layer
     real(r8) :: vai                                ! total VAI of the scattering element
     type(fates_patch_type), pointer :: currentPatch   ! patch pointer
-
+    type(fates_cohort_type), pointer :: ccohort
+    
     !-----------------------------------------------------------------------
     ! -------------------------------------------------------------------------------
     ! TODO (mv, 2014-10-29) the filter here is different than below
@@ -111,6 +115,35 @@ contains
        do while (associated(currentpatch))
 
           ifp = currentpatch%patchno
+
+          ! jfn debugging statements here
+          if ( (abs(sites(s)%lat - 34.3979057591623) .le. 0.005) .and. &
+               (abs(sites(s)%lon - 3.75) .le. 0.005) .and. &
+               hlm_current_year .eq. 1956 .and. hlm_current_month .eq. 2 .and. &
+               hlm_current_day .eq. 3) then
+
+             write(fates_log(),*) 'jfn - writing bad grid cell diagnostics'
+             write(fates_log(),*) 'year ', hlm_current_year, 'month ', hlm_current_month, &
+                  'day ', hlm_current_day
+             
+             call dump_site(sites(s))
+             
+             call currentpatch%Dump()
+
+             ccohort => currentPatch%shortest
+
+             do while(associated(ccohort))
+
+                call ccohort%Dump()
+                
+                ccohort => ccohort%taller
+             end do
+             
+             
+             
+
+          end if
+          
           
           if_bareground: if(currentpatch%nocomp_pft_label.ne.nocomp_bareground)then
              
