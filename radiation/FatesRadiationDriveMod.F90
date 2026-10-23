@@ -117,32 +117,28 @@ contains
           ifp = currentpatch%patchno
 
           ! jfn debugging statements here
-          if ( (abs(sites(s)%lat - 34.3979057591623) .le. 0.005) .and. &
-               (abs(sites(s)%lon - 3.75) .le. 0.005) .and. &
-               hlm_current_year .eq. 1956 .and. hlm_current_month .eq. 2 .and. &
-               hlm_current_day .eq. 3) then
+          ! if ( (abs(sites(s)%lat - 34.3979057591623) .le. 0.005) .and. &
+          !      (abs(sites(s)%lon - 3.75) .le. 0.005) .and. &
+          !      hlm_current_year .eq. 1956 .and. hlm_current_month .eq. 2 .and. &
+          !      hlm_current_day .eq. 3) then
 
-             write(fates_log(),*) 'jfn - writing bad grid cell diagnostics'
-             write(fates_log(),*) 'year ', hlm_current_year, 'month ', hlm_current_month, &
-                  'day ', hlm_current_day
+          !    write(fates_log(),*) 'jfn - writing bad grid cell diagnostics'
+          !    write(fates_log(),*) 'year ', hlm_current_year, 'month ', hlm_current_month, &
+          !         'day ', hlm_current_day
              
-             call dump_site(sites(s))
+          !    call dump_site(sites(s))
              
-             call currentpatch%Dump()
+          !    call currentpatch%Dump()
 
-             ccohort => currentPatch%shortest
+          !    ccohort => currentPatch%shortest
 
-             do while(associated(ccohort))
+          !    do while(associated(ccohort))
 
-                call ccohort%Dump()
+          !       call ccohort%Dump()
                 
-                ccohort => ccohort%taller
-             end do
-             
-             
-             
-
-          end if
+          !       ccohort => ccohort%taller
+          !    end do
+          ! end if
           
           
           if_bareground: if(currentpatch%nocomp_pft_label.ne.nocomp_bareground)then
