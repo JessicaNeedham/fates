@@ -1649,8 +1649,9 @@ contains
                    ! now we want to make sure that either the buffer_patch has zero area (presumably it was never used),
                    ! in which case it should be deallocated, or else it does have area but it has been put into the site
                    ! linked list. if either of those, that means everything worked properly, if not, then something has gone wrong.
+                   ! Changed the test to relative error test to not falsely trigger on noise level area size
                    if ( .not. buffer_patch_in_linked_list) then
-                      if (buffer_patch%area .lt. rsnbl_math_prec) then
+                      if (buffer_patch%area/sum(nocomp_pft_area_vector_filled(:)) .lt. rsnbl_math_prec) then
                          ! here we need to deallocate the buffer patch so that we don't get a memory leak.
                          call buffer_patch%FreeMemory(hlm_regeneration_model, numpft)
                          deallocate(buffer_patch, stat=istat, errmsg=smsg)
