@@ -31,6 +31,8 @@ module EDPatchDynamicsMod
   use EDTypesMod           , only : min_patch_area_forced
   use FatesInterfaceTypesMod, only : hlm_regeneration_model
   use FatesInterfaceTypesMod, only : numpft
+  use FatesInterfaceTypesMod, only : hlm_current_year, hlm_current_month
+  use FatesInterfaceTypesMod, only : hlm_current_day
   use FatesConstantsMod     , only : dtype_ifall
   use FatesConstantsMod     , only : dtype_ilog
   use FatesConstantsMod     , only : dtype_ifire
@@ -362,9 +364,21 @@ contains
 
              ! Treefall Disturbance Rate.  Only count this for trees, not grasses
              if ( .not. ExemptTreefallDist(currentCohort) ) then
-                currentPatch%disturbance_rates(dtype_ifall) = currentPatch%disturbance_rates(dtype_ifall) + &
-                     mortality_disturbance_fraction * &
-                     min(1.0_r8,currentCohort%dmort)*hlm_freq_day*currentCohort%c_area/currentPatch%area
+
+                ! ai4pex
+                if ( hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
+                     hlm_current_day .eq. 1) then
+
+                   currentPatch%disturbance_rates(dtype_ifall) = currentPatch%disturbance_rates(dtype_ifall) + &
+                        currentCohort%c_area/currentPatch%area
+
+                else
+
+                   currentPatch%disturbance_rates(dtype_ifall) = currentPatch%disturbance_rates(dtype_ifall) + &
+                        mortality_disturbance_fraction * &
+                        min(1.0_r8,currentCohort%dmort)*hlm_freq_day*currentCohort%c_area/currentPatch%area
+
+                end if
              end if
 
              ! Logging Disturbance Rate
@@ -859,6 +873,13 @@ contains
                                      currentCohort%n = currentCohort%n * (1.0_r8 - mortality_disturbance_fraction * &
                                           min(1.0_r8,currentCohort%dmort * hlm_freq_day))
 
+                                     ! ai4pex
+                                     if ( hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
+                                          hlm_current_day .eq. 1) then
+                                        currentCohort%n = 0.0_r8
+                                     end if
+
+
                                      nc%n = 0.0_r8      ! kill all of the trees who caused the disturbance.
 
                                      nc%cmort = nan     ! The mortality diagnostics are set to nan
@@ -886,8 +907,15 @@ contains
                                         !          but since the patch is smaller and cohort counts
                                         !          are absolute, reduce this number.
 
-                                        nc%n = currentCohort%n * patch_site_areadis/currentPatch%area
+                                      nc%n = currentCohort%n * patch_site_areadis/currentPatch%area
 
+                                     ! ai4pex
+                                      if ( hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
+                                           hlm_current_day .eq. 1) then
+                                         nc%n = 0.0_r8
+                                      end if
+
+                                      
                                         ! because the mortality rate due to impact for the cohorts which
                                         ! had been in the understory and are now in the newly-
                                         ! disturbed patch is very high, passing the imort directly to history
@@ -944,7 +972,15 @@ contains
                                         ! Besides, the current and newly created patch sum to unity
 
                                         currentCohort%n = currentCohort%n * (1._r8 -  patch_site_areadis/currentPatch%area)
+                                        
+                                        ! ai4pex
+                                        if ( hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
+                                             hlm_current_day .eq. 1) then
+                                           currentCohort%n = 0.0_r8
+                                        end if
 
+
+                                        
                                      else
                                         ! grass is not killed by mortality disturbance events. Just move it into the new patch area.
                                         ! Just split the grass into the existing and new patch structures
@@ -2519,6 +2555,15 @@ contains
              
              num_dead = currentCohort%n * min(1.0_r8,currentCohort%dmort * &
                    hlm_freq_day * mortality_disturbance_fraction)
+
+             ! ai4pex
+             if ( hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
+                  hlm_current_day .eq. 1) then
+
+                num_dead = currentCohort%n
+                
+             end if
+
              
           elseif(prt_params%woody(pft) == itrue) then
              
@@ -2526,7 +2571,17 @@ contains
              ! function, and the total area of disturbance.
              
              num_dead = ED_val_understorey_death * currentCohort%n * &
-                   (patch_site_areadis/currentPatch%area) 
+                  (patch_site_areadis/currentPatch%area)
+
+             ! ai4pex
+             if ( hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
+                  hlm_current_day .eq. 1) then
+
+                num_dead = currentCohort%n
+                
+             end if
+
+             
 
           else
              

@@ -28,7 +28,7 @@ module EDMortalityFunctionsMod
    use FatesInterfaceTypesMod     , only : hlm_freq_day
    use FatesInterfaceTypesMod     , only : hlm_use_planthydro
    use FatesInterfaceTypesMod     , only : hlm_use_tree_damage
-   use FatesInterfaceTypesMod     , only : hlm_current_year, hlm_current_month, hlm_current_day
+   use FatesInterfaceTypesMod, only : hlm_current_year, hlm_current_month, hlm_current_day
    use EDLoggingMortalityMod , only : LoggingMortality_frac
    use EDParamsMod           , only : mortality_disturbance_fraction
    use FatesConstantsMod     , only : n_landuse_cats
@@ -169,8 +169,8 @@ contains
 
           if ( prt_params%woody(cohort_in%pft) == itrue ) then
 
-             bmort = 100.0_r8
-
+             bmort = 1.0_r8 * 365.0_r8
+             
           end if
           
        end if
