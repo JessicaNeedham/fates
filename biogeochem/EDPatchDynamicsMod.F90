@@ -31,8 +31,6 @@ module EDPatchDynamicsMod
   use EDTypesMod           , only : min_patch_area_forced
   use FatesInterfaceTypesMod, only : hlm_regeneration_model
   use FatesInterfaceTypesMod, only : numpft
-  use FatesInterfaceTypesMod, only : hlm_current_year, hlm_current_month
-  use FatesInterfaceTypesMod, only : hlm_current_day
   use FatesConstantsMod     , only : dtype_ifall
   use FatesConstantsMod     , only : dtype_ilog
   use FatesConstantsMod     , only : dtype_ifire
@@ -59,6 +57,8 @@ module EDPatchDynamicsMod
   use FatesInterfaceTypesMod    , only : hlm_use_luh
   use FatesInterfaceTypesMod    , only : hlm_num_luh2_states
   use FatesInterfaceTypesMod    , only : hlm_num_luh2_transitions
+  use FatesInterfaceTypesMod    , only : hlm_current_month, hlm_current_year
+  use FatesInterfaceTypesMod    , only : hlm_current_day
   use FatesGlobals         , only : endrun => fates_endrun
   use FatesConstantsMod    , only : r8 => fates_r8
   use FatesConstantsMod    , only : itrue, ifalse
@@ -364,21 +364,9 @@ contains
 
              ! Treefall Disturbance Rate.  Only count this for trees, not grasses
              if ( .not. ExemptTreefallDist(currentCohort) ) then
-
-                ! ai4pex
-                if ( hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
-                     hlm_current_day .eq. 1) then
-
-                   currentPatch%disturbance_rates(dtype_ifall) = currentPatch%disturbance_rates(dtype_ifall) + &
-                        currentCohort%c_area/currentPatch%area
-
-                else
-
-                   currentPatch%disturbance_rates(dtype_ifall) = currentPatch%disturbance_rates(dtype_ifall) + &
-                        mortality_disturbance_fraction * &
-                        min(1.0_r8,currentCohort%dmort)*hlm_freq_day*currentCohort%c_area/currentPatch%area
-
-                end if
+                currentPatch%disturbance_rates(dtype_ifall) = currentPatch%disturbance_rates(dtype_ifall) + &
+                     mortality_disturbance_fraction * &
+                     min(1.0_r8,currentCohort%dmort)*hlm_freq_day*currentCohort%c_area/currentPatch%area
              end if
 
              ! Logging Disturbance Rate
@@ -662,6 +650,19 @@ contains
                          else
                             disturbance_rate = currentPatch%landuse_transition_rates(i_landusechange_receiverpatchlabel)
                          endif
+
+                         ! ai4p4x - overwrite disturbances - 100% tree fall, 0% everything else 
+                         if (hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
+                              hlm_current_day .eq. 1 ) then
+
+                            if ( i_disturbance_type .eq. dtype_ifall) then
+                               disturbance_rate = 1.0_r8
+                            else
+                               disturbance_rate = 0.0_r8
+                            endif
+
+                         end if
+                         
                          
                          if(disturbance_rate > (1.0_r8 + rsnbl_math_prec)) then
                             write(fates_log(),*) 'patch disturbance rate > 1 ?',disturbance_rate
@@ -739,6 +740,21 @@ contains
                             disturbance_rate = currentPatch%landuse_transition_rates(i_landusechange_receiverpatchlabel)
                          endif
 
+
+                          ! ai4p4x - overwrite disturbances - 100% tree fall, 0% everything else 
+                         if (hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
+                              hlm_current_day .eq. 1 ) then
+
+                            if ( i_disturbance_type .eq. dtype_ifall) then
+                               disturbance_rate = 1.0_r8
+                            else
+                               disturbance_rate = 0.0_r8
+                            endif
+
+                         end if
+                        
+
+                         
                          ! patch_site_areadis is the absolute amount of the patch's area that is disturbed and donated
                          patch_site_areadis = currentPatch%area * disturbance_rate
                          
@@ -873,13 +889,6 @@ contains
                                      currentCohort%n = currentCohort%n * (1.0_r8 - mortality_disturbance_fraction * &
                                           min(1.0_r8,currentCohort%dmort * hlm_freq_day))
 
-                                     ! ai4pex
-                                     if ( hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
-                                          hlm_current_day .eq. 1) then
-                                        currentCohort%n = 0.0_r8
-                                     end if
-
-
                                      nc%n = 0.0_r8      ! kill all of the trees who caused the disturbance.
 
                                      nc%cmort = nan     ! The mortality diagnostics are set to nan
@@ -907,15 +916,13 @@ contains
                                         !          but since the patch is smaller and cohort counts
                                         !          are absolute, reduce this number.
 
-                                      nc%n = currentCohort%n * patch_site_areadis/currentPatch%area
+                                        nc%n = currentCohort%n * patch_site_areadis/currentPatch%area
+                                        ! ai4p4x - overwrite disturbances - 100% tree fall, 0% everything else 
+                                        if (hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
+                                             hlm_current_day .eq. 1 ) then
+                                           nc%n = 0.0_r8   
+                                        end if
 
-                                     ! ai4pex
-                                      if ( hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
-                                           hlm_current_day .eq. 1) then
-                                         nc%n = 0.0_r8
-                                      end if
-
-                                      
                                         ! because the mortality rate due to impact for the cohorts which
                                         ! had been in the understory and are now in the newly-
                                         ! disturbed patch is very high, passing the imort directly to history
@@ -946,6 +953,13 @@ contains
                                         ! by the overstorey trees dying...
                                         nc%n = nc%n * (1.0_r8 - ED_val_understorey_death)
 
+                                        ! ai4p4x - overwrite disturbances - 100% tree fall, 0% everything else 
+                                        if (hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
+                                             hlm_current_day .eq. 1 ) then
+                                           nc%n = 0.0_r8
+                                        end if
+
+
                                         ! since the donor patch split and sent a fraction of its members
                                         ! to the new patch and a fraction to be preserved in itself,
                                         ! when reporting diagnostic rates, we must carry over the mortality rates from
@@ -972,14 +986,12 @@ contains
                                         ! Besides, the current and newly created patch sum to unity
 
                                         currentCohort%n = currentCohort%n * (1._r8 -  patch_site_areadis/currentPatch%area)
-                                        
-                                        ! ai4pex
-                                        if ( hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
-                                             hlm_current_day .eq. 1) then
+
+                                        ! ai4p4x - overwrite disturbances - 100% tree fall, 0% everything else 
+                                        if (hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
+                                             hlm_current_day .eq. 1 ) then
                                            currentCohort%n = 0.0_r8
                                         end if
-
-
                                         
                                      else
                                         ! grass is not killed by mortality disturbance events. Just move it into the new patch area.
@@ -1393,6 +1405,13 @@ contains
                             oldarea = currentPatch%area
                             currentPatch%area = currentPatch%area - patch_site_areadis
 
+                            ! ai4p4x - overwrite disturbances - 100% tree fall, 0% everything else 
+                            if (hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
+                                 hlm_current_day .eq. 1 ) then
+                               write(fates_log(),*) 'currentPatch%area: ', currentPatch%area   
+                            end if
+
+                            
                             ! for all disturbance rates that haven't been resolved yet, increase their amount so that
                             ! they are the same amount of gridcell-scale disturbance relative to the original patch size
                             if (i_disturbance_type .lt. N_DIST_TYPES) then
@@ -1451,7 +1470,7 @@ contains
                 endif
 
 
-                call check_patch_area(currentSite)
+                call check_patch_area(currentSite, 1)
                 call set_patchno(currentSite,.false.,0)
 
              end do landusechange_receiverpatchlabel_loop
@@ -1739,7 +1758,7 @@ contains
                 end do
              endif more_than_1_pft_to_handle_if
           end if patch_area_to_reallocate_if
-          call check_patch_area(currentSite)
+          call check_patch_area(currentSite, 2)
        end do lu_loop
     else
        ! if not using a configuration where the changed_landuse_this_ts is relevant, loop through all patches and reset it
@@ -1862,7 +1881,7 @@ contains
 
   ! ============================================================================
 
-  subroutine check_patch_area( currentSite )
+  subroutine check_patch_area( currentSite, call_index )
     !
     ! !DESCRIPTION:
     !  Check to see that total area is not exceeded.  
@@ -1871,6 +1890,7 @@ contains
     !
     ! !ARGUMENTS:
     type(ed_site_type), intent(inout) :: currentSite
+    integer           , intent(in)    :: call_index
     !
     ! !LOCAL VARIABLES:
     real(r8)                     :: areatot
@@ -1905,7 +1925,8 @@ contains
        if ( abs(areatot-area_site) > area_error_fail ) then
           write(fates_log(),*) 'Patch areas do not sum to 10000 within tolerance'
           write(fates_log(),*) 'Total area: ',areatot,'absolute error: ',areatot-area_site
-
+          write(fates_log(),*) 'Call index: ', call_index
+          
           currentPatch => currentSite%oldest_patch
           do while(associated(currentPatch))
              write(fates_log(),*) 'area, LU, PFT', currentPatch%area, currentPatch%land_use_label, currentPatch%nocomp_pft_label
@@ -2555,34 +2576,27 @@ contains
              
              num_dead = currentCohort%n * min(1.0_r8,currentCohort%dmort * &
                    hlm_freq_day * mortality_disturbance_fraction)
-
-             ! ai4pex
-             if ( hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
-                  hlm_current_day .eq. 1) then
-
-                num_dead = currentCohort%n
-                
+             
+             ! ai4p4x - overwrite disturbances - 100% tree fall, 0% everything else 
+             if (hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
+                  hlm_current_day .eq. 1 ) then
+                num_dead = currentCohort%n   
              end if
 
-             
           elseif(prt_params%woody(pft) == itrue) then
              
              ! Understorey trees. The total dead is based on their survivorship
              ! function, and the total area of disturbance.
              
              num_dead = ED_val_understorey_death * currentCohort%n * &
-                  (patch_site_areadis/currentPatch%area)
+                   (patch_site_areadis/currentPatch%area) 
 
-             ! ai4pex
-             if ( hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
-                  hlm_current_day .eq. 1) then
-
-                num_dead = currentCohort%n
-                
+             ! ai4p4x - overwrite disturbances - 100% tree fall, 0% everything else 
+             if (hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
+                  hlm_current_day .eq. 1 ) then
+                num_dead = currentCohort%n   
              end if
-
              
-
           else
              
              ! The only thing left is uderstory grasses. These guys aren't
@@ -3718,7 +3732,7 @@ contains
     enddo ! current patch loop
     
     !check area is not exceeded
-    call check_patch_area( currentSite )
+    call check_patch_area( currentSite, 3 )
 
     call set_patchno( currentSite, .false., 0)
     
