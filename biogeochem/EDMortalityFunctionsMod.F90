@@ -161,21 +161,7 @@ contains
        !  density as in ED1.0 and ED2.0, but doesn't here for tractability) 
 
        bmort = EDPftvarcon_inst%bmort(cohort_in%pft)
-
-
-       ! AI4PEX - 100% tree mortality in 1950
-       if ( hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
-            hlm_current_day .eq. 1) then
-
-          if ( prt_params%woody(cohort_in%pft) == itrue ) then
-
-             bmort = 1.0_r8 * 365.0_r8
-             
-          end if
-          
-       end if
-       
-
+   
        
        ! Proxy for hydraulic failure induced mortality.
        hf_sm_threshold = EDPftvarcon_inst%hf_sm_threshold(cohort_in%pft)
