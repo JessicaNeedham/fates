@@ -481,7 +481,20 @@ contains
           end do
        end if
     end if
+    
+    ! ai4p4x - overwrite disturbances - 100% tree fall, 0% everything else 
+    if (hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
+         hlm_current_day .eq. 1 ) then
+       currentPatch => site_in%oldest_patch
+       do while (associated(currentPatch))
 
+          currentPatch%disturbance_rates(:) = 0.0_r8
+          currentPatch%disturbance_rates(dtype_ifall) = 1.0_r8
+
+          currentPatch => currentPatch%younger
+       end do
+    end if
+    
   end subroutine disturbance_rates
 
     ! ============================================================================
@@ -740,7 +753,6 @@ contains
                             disturbance_rate = currentPatch%landuse_transition_rates(i_landusechange_receiverpatchlabel)
                          endif
 
-
                           ! ai4p4x - overwrite disturbances - 100% tree fall, 0% everything else 
                          if (hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
                               hlm_current_day .eq. 1 ) then
@@ -753,7 +765,6 @@ contains
 
                          end if
                         
-
                          
                          ! patch_site_areadis is the absolute amount of the patch's area that is disturbed and donated
                          patch_site_areadis = currentPatch%area * disturbance_rate
@@ -889,6 +900,13 @@ contains
                                      currentCohort%n = currentCohort%n * (1.0_r8 - mortality_disturbance_fraction * &
                                           min(1.0_r8,currentCohort%dmort * hlm_freq_day))
 
+                                     ! ai4p4x - overwrite disturbances - 100% tree fall, 0% everything else 
+                                     if (hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
+                                          hlm_current_day .eq. 1 ) then
+                                        currentCohort%n = 0.0_r8   
+                                     end if
+                                     
+                                     
                                      nc%n = 0.0_r8      ! kill all of the trees who caused the disturbance.
 
                                      nc%cmort = nan     ! The mortality diagnostics are set to nan
@@ -1405,32 +1423,38 @@ contains
                             oldarea = currentPatch%area
                             currentPatch%area = currentPatch%area - patch_site_areadis
 
-                            ! ai4p4x - overwrite disturbances - 100% tree fall, 0% everything else 
+                            ! ai4p4x - overwrite disturbances - 100% tree fall, 0% everything else
+                            ! currentPatch%area is now 0 so we skip the next bit to avoid divide by 0
+                            ! might need to remove these patches somehow?
+                            
                             if (hlm_current_year .eq. 1950 .and. hlm_current_month .eq. 1 .and. &
                                  hlm_current_day .eq. 1 ) then
-                               write(fates_log(),*) 'currentPatch%area: ', currentPatch%area   
-                            end if
+                               !write(fates_log(),*) 'currentPatch%area: ', currentPatch%area   
 
-                            
-                            ! for all disturbance rates that haven't been resolved yet, increase their amount so that
-                            ! they are the same amount of gridcell-scale disturbance relative to the original patch size
-                            if (i_disturbance_type .lt. N_DIST_TYPES) then
-                               do i_dist2 = i_disturbance_type+1,N_DIST_TYPES-1
-                                  currentPatch%disturbance_rates(i_dist2) = currentPatch%disturbance_rates(i_dist2) &
-                                       * oldarea / currentPatch%area
-                               end do
-                               do i_dist2 = 1,n_landuse_cats
-                                  currentPatch%landuse_transition_rates(i_dist2) = currentPatch%landuse_transition_rates(i_dist2) &
-                                       * oldarea / currentPatch%area
-                               end do
+
                             else
-                               do i_dist2 = i_landusechange_receiverpatchlabel+1,n_landuse_cats
-                                  currentPatch%landuse_transition_rates(i_dist2) = currentPatch%landuse_transition_rates(i_dist2) &
-                                       * oldarea / currentPatch%area
-                               end do
+
+
+                               ! for all disturbance rates that haven't been resolved yet, increase their amount so that
+                               ! they are the same amount of gridcell-scale disturbance relative to the original patch size
+                               if (i_disturbance_type .lt. N_DIST_TYPES) then
+                                  do i_dist2 = i_disturbance_type+1,N_DIST_TYPES-1
+                                     currentPatch%disturbance_rates(i_dist2) = currentPatch%disturbance_rates(i_dist2) &
+                                          * oldarea / currentPatch%area
+                                  end do
+                                  do i_dist2 = 1,n_landuse_cats
+                                     currentPatch%landuse_transition_rates(i_dist2) = currentPatch%landuse_transition_rates(i_dist2) &
+                                          * oldarea / currentPatch%area
+                                  end do
+                               else
+                                  do i_dist2 = i_landusechange_receiverpatchlabel+1,n_landuse_cats
+                                     currentPatch%landuse_transition_rates(i_dist2) = currentPatch%landuse_transition_rates(i_dist2) &
+                                          * oldarea / currentPatch%area
+                                  end do
+                               end if
+
                             end if
 
-                            ! sort out the cohorts, since some of them may be so small as to need removing.
                             ! the first call to terminate cohorts removes sparse number densities,
                             ! the second call removes for all other reasons (sparse culling must happen
                             ! before fusion)
